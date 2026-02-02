@@ -1,0 +1,18 @@
+export {
+  about,
+  about2,
+  about3,
+  facebook,
+  google,
+  hero2,
+  hero3,
+  jazz,
+  land,
+  linkedin,
+  pazadark,
+  pazalight,
+  profile,
+  service,
+  twitter,
+  youtube,
+} from "./images";

@@ -1,0 +1,64 @@
+"use client"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Campaign } from "@/types/campaigns/campaignTypes";
+import { RiCalendarLine, RiEdit2Line, RiDeleteBin6Line, RiTeamLine, RiFileList3Line, RiMoneyDollarCircleLine } from "@remixicon/react";
+
+interface Props {
+  campaign: Campaign;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onOpen: (id: string) => void;
+}
+
+export default function CampaignCard({ campaign, onEdit, onDelete, onOpen }: Props) {
+  const creators = campaign.teams?.find(t => t.name.toLowerCase().includes("creator"))?.members?.length || 0;
+  const deliverables = campaign.milestones?.reduce((acc, m) => acc + (m.objectives?.length || 0), 0) || 0;
+  const amountSpent = campaign.milestones?.reduce((acc, m) => acc + (Number(m.budget) || 0), 0) || 0;
+  const posted = campaign.milestones && campaign.milestones[0]?.start ? new Date(campaign.milestones[0].start) : undefined;
+
+  return (
+    <Card className="group cursor-pointer overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-primary" onClick={() => onOpen(campaign._id)}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-lg line-clamp-1">{campaign.title}</h3>
+          {campaign.active ? <Badge className="bg-green-600 text-white">Active</Badge> : <Badge variant="secondary">Inactive</Badge>}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-0">
+        <p className="text-sm text-muted-foreground line-clamp-2">{campaign.description}</p>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <RiTeamLine className="h-4 w-4" />
+            <span className="font-medium">{creators}</span>
+            <span className="text-muted-foreground">creators</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <RiFileList3Line className="h-4 w-4" />
+            <span className="font-medium">{deliverables}</span>
+            <span className="text-muted-foreground">deliverables</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <RiMoneyDollarCircleLine className="h-4 w-4" />
+            <span className="font-medium">KSh {amountSpent.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <RiCalendarLine className="h-4 w-4" />
+            <span className="text-muted-foreground">{posted ? posted.toLocaleDateString() : "—"}</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="pt-0 flex items-center justify-between gap-2">
+        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEdit(campaign._id); }}>
+          <RiEdit2Line className="mr-2 h-4 w-4" /> Edit
+        </Button>
+        <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); onDelete(campaign._id); }}>
+          <RiDeleteBin6Line className="mr-2 h-4 w-4" /> Delete
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+

@@ -1,0 +1,16 @@
+export { default as about } from "./about.jpg";
+export { default as about2 } from "./about2.jpg";
+export { default as about3 } from "./about3.jpg";
+export { default as facebook } from "./facebook.png";
+export { default as google } from "./google.png";
+export { default as hero2 } from "./hero2.jpg";
+export { default as hero3 } from "./hero3.jpg";
+export { default as jazz } from "./jazz.jpeg";
+export { default as land } from "./landing1.jpg";
+export { default as linkedin } from "./linkedin.png";
+export { default as pazadark } from "./paza-dark.png";
+export { default as pazalight } from "./paza-light.png";
+export { default as profile } from "./profile.jpg";
+export { default as service } from "./service.jpg";
+export { default as twitter } from "./twitter.png";
+export { default as youtube } from "./youtube.png";
