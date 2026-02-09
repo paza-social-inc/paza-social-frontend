@@ -33,7 +33,7 @@ export interface CampaignFeedback {
 }
 
 export interface Campaign {
-  _id: string;
+  id: number;
   title: string;
   description?: string;
   goals?: string[];
@@ -58,6 +58,6 @@ export interface CampaignListResponse {
   data: Campaign[];
 }
 
-export interface CampaignGetResponse extends Campaign {}
+export interface CampaignGetResponse extends Campaign { }
 
 

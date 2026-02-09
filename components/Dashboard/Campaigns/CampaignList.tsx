@@ -269,7 +269,7 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { campaignApi } from "@/lib/data/campaigns";
-import { Campaign } from "@/types/campaign";
+import { Campaign } from "@/types/campaigns/campaignTypes";
 import CampaignCard from "./CampaignCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -288,7 +288,7 @@ import toast from "react-hot-toast";
 export default function CampaignList() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [selectedActive, setSelectedActive] = useState<string[]>([]);
@@ -328,7 +328,7 @@ export default function CampaignList() {
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (c.description || "").toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesActive = selectedActive.length === 0 || 
+      const matchesActive = selectedActive.length === 0 ||
         selectedActive.includes(c.active ? "Active" : "Inactive");
 
       const matchesTeams = selectedTeamNames.length === 0 ||
@@ -421,11 +421,11 @@ export default function CampaignList() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <RiSearchLine className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
-              <Input 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                placeholder="Search campaigns..." 
-                className="pl-10" 
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search campaigns..."
+                className="pl-10"
               />
             </div>
 
@@ -469,11 +469,11 @@ export default function CampaignList() {
                     <div className="space-y-3">
                       {["Active", "Inactive"].map(s => (
                         <div key={s} className="flex items-center space-x-3">
-                          <Checkbox 
-                            id={s} 
-                            checked={selectedActive.includes(s)} 
-                            onCheckedChange={() => toggleFilter(selectedActive, setSelectedActive, s)} 
-                            className="h-5 w-5" 
+                          <Checkbox
+                            id={s}
+                            checked={selectedActive.includes(s)}
+                            onCheckedChange={() => toggleFilter(selectedActive, setSelectedActive, s)}
+                            className="h-5 w-5"
                           />
                           <Label htmlFor={s} className="cursor-pointer">{s}</Label>
                         </div>
@@ -493,11 +493,11 @@ export default function CampaignList() {
                       <div className="space-y-3">
                         {allTeamNames.map(name => (
                           <div key={name} className="flex items-center space-x-3">
-                            <Checkbox 
-                              id={name} 
-                              checked={selectedTeamNames.includes(name)} 
-                              onCheckedChange={() => toggleFilter(selectedTeamNames, setSelectedTeamNames, name)} 
-                              className="h-5 w-5" 
+                            <Checkbox
+                              id={name}
+                              checked={selectedTeamNames.includes(name)}
+                              onCheckedChange={() => toggleFilter(selectedTeamNames, setSelectedTeamNames, name)}
+                              className="h-5 w-5"
                             />
                             <Label htmlFor={name} className="cursor-pointer">{name}</Label>
                           </div>
@@ -517,11 +517,11 @@ export default function CampaignList() {
                     <div className="space-y-3">
                       {allMilestoneCategories.map(cat => (
                         <div key={cat} className="flex items-center space-x-3">
-                          <Checkbox 
-                            id={cat} 
-                            checked={selectedMilestoneCategories.includes(cat)} 
-                            onCheckedChange={() => toggleFilter(selectedMilestoneCategories, setSelectedMilestoneCategories, cat)} 
-                            className="h-5 w-5" 
+                          <Checkbox
+                            id={cat}
+                            checked={selectedMilestoneCategories.includes(cat)}
+                            onCheckedChange={() => toggleFilter(selectedMilestoneCategories, setSelectedMilestoneCategories, cat)}
+                            className="h-5 w-5"
                           />
                           <Label htmlFor={cat} className="cursor-pointer">{cat}</Label>
                         </div>
@@ -534,13 +534,13 @@ export default function CampaignList() {
                     <Label className="text-lg font-semibold">
                       Budget Range: KSh {budgetRange[0].toLocaleString()} - KSh {budgetRange[1].toLocaleString()}
                     </Label>
-                    <Slider 
-                      min={0} 
-                      max={500000} 
-                      step={5000} 
-                      value={budgetRange} 
-                      onValueChange={setBudgetRange} 
-                      className="mt-4" 
+                    <Slider
+                      min={0}
+                      max={500000}
+                      step={5000}
+                      value={budgetRange}
+                      onValueChange={setBudgetRange}
+                      className="mt-4"
                     />
                   </div>
 
@@ -565,27 +565,27 @@ export default function CampaignList() {
             {selectedActive.map(s => (
               <Badge key={s} variant="secondary" className="gap-1 p-1">
                 {s}
-                <RiCloseLine 
-                  className='cursor-pointer ml-1 h-4 w-4' 
-                  onClick={() => toggleFilter(selectedActive, setSelectedActive, s)} 
+                <RiCloseLine
+                  className='cursor-pointer ml-1 h-4 w-4'
+                  onClick={() => toggleFilter(selectedActive, setSelectedActive, s)}
                 />
               </Badge>
             ))}
             {selectedTeamNames.map(n => (
               <Badge key={n} variant="secondary" className="gap-1 p-1">
                 {n}
-                <RiCloseLine 
-                  className='cursor-pointer ml-1 h-4 w-4' 
-                  onClick={() => toggleFilter(selectedTeamNames, setSelectedTeamNames, n)} 
+                <RiCloseLine
+                  className='cursor-pointer ml-1 h-4 w-4'
+                  onClick={() => toggleFilter(selectedTeamNames, setSelectedTeamNames, n)}
                 />
               </Badge>
             ))}
             {selectedMilestoneCategories.map(cat => (
               <Badge key={cat} variant="secondary" className="gap-1 p-1">
                 {cat}
-                <RiCloseLine 
-                  className='cursor-pointer ml-1 h-4 w-4' 
-                  onClick={() => toggleFilter(selectedMilestoneCategories, setSelectedMilestoneCategories, cat)} 
+                <RiCloseLine
+                  className='cursor-pointer ml-1 h-4 w-4'
+                  onClick={() => toggleFilter(selectedMilestoneCategories, setSelectedMilestoneCategories, cat)}
                 />
               </Badge>
             ))}

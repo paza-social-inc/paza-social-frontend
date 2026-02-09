@@ -7,9 +7,9 @@ import { RiCalendarLine, RiEdit2Line, RiDeleteBin6Line, RiTeamLine, RiFileList3L
 
 interface Props {
   campaign: Campaign;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onOpen: (id: string) => void;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+  onOpen: (id: number) => void;
 }
 
 export default function CampaignCard({ campaign, onEdit, onDelete, onOpen }: Props) {
@@ -50,10 +50,10 @@ export default function CampaignCard({ campaign, onEdit, onDelete, onOpen }: Pro
         </div>
       </CardContent>
       <CardFooter className="pt-0 flex items-center justify-between gap-2">
-        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEdit(campaign._id); }}>
+        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEdit(campaign.id); }}>
           <RiEdit2Line className="mr-2 h-4 w-4" /> Edit
         </Button>
-        <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); onDelete(campaign._id); }}>
+        <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); onDelete(campaign.id); }}>
           <RiDeleteBin6Line className="mr-2 h-4 w-4" /> Delete
         </Button>
       </CardFooter>

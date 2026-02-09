@@ -176,9 +176,15 @@ export const campaignApi = {
   },
 
   // Get single campaign by ID
+  // getById: async (id: number) => {
+  //   const response = await pazaApi.get<ApiResponse<Campaign>>(`/api/campaigns/${id}`);
+  //   return response.data.data; // Extract the data property
+  // },
   getById: async (id: number) => {
     const response = await pazaApi.get<ApiResponse<Campaign>>(`/api/campaigns/${id}`);
-    return response.data.data; // Extract the data property
+    //                                                        ^ PARENTHESIS here
+    // console.log(response.data)
+    return response.data.data;
   },
 
   // Create new campaign

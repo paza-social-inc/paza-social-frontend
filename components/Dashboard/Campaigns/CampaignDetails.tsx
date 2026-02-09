@@ -186,12 +186,28 @@ export default function CampaignDetails({ id }: { id: string }) {
   const queryClient = useQueryClient();
   const campaignId = parseInt(id); // Convert string ID to number
 
-  // Fetch campaign details
+
+  console.log('Raw id from URL:', id);
+  console.log('Parsed campaignId:', campaignId);
+  console.log('Is valid?', !isNaN(campaignId));
+
   const { data: campaign, isLoading, isError } = useQuery({
     queryKey: ['campaign', campaignId],
-    queryFn: () => campaignApi.getById(campaignId),
-    enabled: !isNaN(campaignId), // Only fetch if ID is valid
+    queryFn: () => {
+      console.log('Fetching campaign with ID:', campaignId);
+      return campaignApi.getById(campaignId);
+    },
+    enabled: !isNaN(campaignId),
   });
+
+  // Add this to see what you get back
+  console.log('Campaign data:', campaign);
+  // Fetch campaign details
+  // const { data: campaign, isLoading, isError } = useQuery({
+  //   queryKey: ['campaign', campaignId],
+  //   queryFn: () => campaignApi.getById(campaignId),
+  //   enabled: !isNaN(campaignId), // Only fetch if ID is valid
+  // });V
 
   // Toggle active status mutation
   const toggleActiveMutation = useMutation({
@@ -239,16 +255,16 @@ export default function CampaignDetails({ id }: { id: string }) {
     <div className="space-y-4 pb-3">
       {/* Hero Section */}
       <div className="relative h-80 w-full overflow-hidden border-b">
-        <img 
-          src={`https://picsum.photos/seed/${campaign.id}/1200/400`} 
-          alt={campaign.title} 
-          className="h-full w-full object-cover" 
+        <img
+          src={`https://picsum.photos/seed/${campaign.id}/1200/400`}
+          alt={campaign.title}
+          className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl md:text-3xl font-bold text-white">{campaign.title}</h1>
-            <Badge 
+            <Badge
               className={`cursor-pointer ${campaign.active ? 'bg-green-600' : 'bg-gray-600'} text-white`}
               onClick={() => toggleActiveMutation.mutate(!campaign.active)}
             >
@@ -279,7 +295,7 @@ export default function CampaignDetails({ id }: { id: string }) {
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {campaign.description || "No description provided."}
                   </p>
-                  
+
                   {campaign.goals && campaign.goals.length > 0 && (
                     <div className="mt-4">
                       <h3 className="font-semibold mb-2">Goals</h3>
@@ -410,13 +426,13 @@ export default function CampaignDetails({ id }: { id: string }) {
                 </p>
               </div>
 
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 onClick={() => router.push(`/campaigns/${campaign.id}/link`)}
               >
                 Link Campaign
               </Button>
-          
+
               {/* Teams & Referral Tabs */}
               <Tabs defaultValue="teams">
                 <TabsList className="w-full">
@@ -463,23 +479,23 @@ export default function CampaignDetails({ id }: { id: string }) {
                     <p className="text-sm text-muted-foreground">
                       Invite your partners or share referral links.
                     </p>
-                    
+
                     <div className="flex items-center gap-2 relative">
-                      <RiSearch2Line className="absolute left-3 text-muted-foreground h-4 w-4"/>
-                      <input 
-                        className="flex-1 ps-8 py-2 border rounded-md" 
+                      <RiSearch2Line className="absolute left-3 text-muted-foreground h-4 w-4" />
+                      <input
+                        className="flex-1 ps-8 py-2 border rounded-md"
                         placeholder="Search for a partner"
                       />
                     </div>
-                    
+
                     <p className="text-sm text-muted-foreground pt-2">Share referral link:</p>
                     <div className="flex items-center gap-2">
-                      <input 
-                        value={shareUrl} 
-                        readOnly 
+                      <input
+                        value={shareUrl}
+                        readOnly
                         className="flex-1 px-3 py-2 border rounded-md text-sm"
                       />
-                      <CopyButton 
+                      <CopyButton
                         content={shareUrl}
                         className="h-10 w-10"
                         onCopy={() => toast.success("Link copied to clipboard!")}
