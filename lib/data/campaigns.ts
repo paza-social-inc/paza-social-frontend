@@ -182,10 +182,14 @@ export const campaignApi = {
   // },
   getById: async (id: number) => {
     const response = await pazaApi.get<ApiResponse<Campaign>>(`/api/campaigns/${id}`);
-    //                                                        ^ PARENTHESIS here
-    // console.log(response.data)
+    console.log(response.data.data)
     return response.data.data;
   },
+  // getById: async (id: number) => {
+  //     const response = await pazaApi.get<ApiResponse<Job>>(`/api/jobs/${id}`);
+  //     return response.data.data;
+  //   },
+
 
   // Create new campaign
   create: async (data: CreateCampaignDto) => {

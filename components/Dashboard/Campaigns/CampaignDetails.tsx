@@ -181,33 +181,20 @@ import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import FeedBackTab from "./feedBack";
 
-export default function CampaignDetails({ id }: { id: string }) {
+interface CampaignDetailsProps {
+  id: string;
+}
+export default function CampaignDetails({ id }: CampaignDetailsProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const campaignId = parseInt(id); // Convert string ID to number
 
-
-  console.log('Raw id from URL:', id);
-  console.log('Parsed campaignId:', campaignId);
-  console.log('Is valid?', !isNaN(campaignId));
-
+  // Fetch campaign details
   const { data: campaign, isLoading, isError } = useQuery({
     queryKey: ['campaign', campaignId],
-    queryFn: () => {
-      console.log('Fetching campaign with ID:', campaignId);
-      return campaignApi.getById(campaignId);
-    },
-    enabled: !isNaN(campaignId),
+    queryFn: () => campaignApi.getById(campaignId),
+    enabled: !isNaN(campaignId), // Only fetch if ID is valid
   });
-
-  // Add this to see what you get back
-  console.log('Campaign data:', campaign);
-  // Fetch campaign details
-  // const { data: campaign, isLoading, isError } = useQuery({
-  //   queryKey: ['campaign', campaignId],
-  //   queryFn: () => campaignApi.getById(campaignId),
-  //   enabled: !isNaN(campaignId), // Only fetch if ID is valid
-  // });V
 
   // Toggle active status mutation
   const toggleActiveMutation = useMutation({

@@ -19,7 +19,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete, onOpen }: Pro
   const posted = campaign.milestones && campaign.milestones[0]?.start ? new Date(campaign.milestones[0].start) : undefined;
 
   return (
-    <Card className="group cursor-pointer overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-primary" onClick={() => onOpen(campaign._id)}>
+    <Card className="group cursor-pointer overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-primary" onClick={() => onOpen(campaign.id)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-lg line-clamp-1">{campaign.title}</h3>

@@ -11,6 +11,14 @@ import CampaignDetails from "@/components/Dashboard/Campaigns/CampaignDetails";
 // }
 
 
+export default async function Page({ params }: { params: { id: string } }) {
+  const { id } = await params || {};
+  return (
+    <div>
+      <CampaignDetails id={id} />
+    </div>
+  )
+}
 // import CampaignDetails from "@/components/Dashboard/Campaigns/CampaignDetails";
 //
 // export default async function Page({
@@ -32,6 +40,3 @@ import CampaignDetails from "@/components/Dashboard/Campaigns/CampaignDetails";
 // app/campaigns/[id]/page.tsx
 // import CampaignDetails from "@/components/campaigns/CampaignDetails";
 
-export default function CampaignPage({ params }: { params: { id: string } }) {
-  return <CampaignDetails id={params.id} />;
-}
