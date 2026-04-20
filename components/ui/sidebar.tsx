@@ -255,7 +255,8 @@ function SidebarTrigger({
     onClick,
     ...props
 }: React.ComponentProps<typeof Button>) {
-    const { toggleSidebar, open } = useSidebar();
+    const { toggleSidebar, open, isMobile, openMobile } = useSidebar();
+    const sidebarOpen = isMobile ? openMobile : open;
 
     return (
         <Button
@@ -270,9 +271,10 @@ function SidebarTrigger({
                 onClick?.(event);
                 toggleSidebar();
             }}
+            aria-expanded={sidebarOpen}
             {...props}
         >
-            {open ? (
+            {sidebarOpen ? (
                 <RiSkipLeftLine className="size-5.5" size={22} aria-hidden="true" />
             ) : (
                 <RiSkipRightLine className="size-5.5" size={22} aria-hidden="true" />

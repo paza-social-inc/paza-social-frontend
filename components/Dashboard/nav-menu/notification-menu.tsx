@@ -1,9 +1,8 @@
-
 "use client"
 
-import { useState } from "react"
-import { BellIcon } from "lucide-react"
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { messagesApi } from "@/lib/data/messages"
+import { notificationsApi } from "@/lib/data/notifications"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,57 +11,8 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { RiNotificationLine } from "@remixicon/react"
-
-const initialNotifications = [
-    {
-        id: 1,
-        user: "Chris Tompson",
-        action: "requested review on",
-        target: "PR #42: Feature implementation",
-        timestamp: "15 minutes ago",
-        unread: true,
-    },
-    {
-        id: 2,
-        user: "Emma Davis",
-        action: "shared",
-        target: "New component library",
-        timestamp: "45 minutes ago",
-        unread: true,
-    },
-    {
-        id: 3,
-        user: "James Wilson",
-        action: "assigned you to",
-        target: "API integration task",
-        timestamp: "4 hours ago",
-        unread: false,
-    },
-    {
-        id: 4,
-        user: "Alex Morgan",
-        action: "replied to your comment in",
-        target: "Authentication flow",
-        timestamp: "12 hours ago",
-        unread: false,
-    },
-    {
-        id: 5,
-        user: "Sarah Chen",
-        action: "commented on",
-        target: "Dashboard redesign",
-        timestamp: "2 days ago",
-        unread: false,
-    },
-    {
-        id: 6,
-        user: "Miky Derya",
-        action: "mentioned you in",
-        target: "Origin UI open graph image",
-        timestamp: "2 weeks ago",
-        unread: false,
-    },
-]
+import Link from "next/link"
+import { Loader2 } from "lucide-react"
 
 function Dot({ className }: { className?: string }) {
     return (
@@ -80,27 +30,59 @@ function Dot({ className }: { className?: string }) {
     )
 }
 
+const NOTIFICATIONS_QUERY_KEY = ["notifications"] as const
+const CONVERSATIONS_QUERY_KEY = ["conversations"] as const
+
+function formatChatTime(value?: string): string {
+    if (!value) return ""
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? "" : d.toLocaleString()
+}
+
 export default function NotificationMenu() {
-    const [notifications, setNotifications] = useState(initialNotifications)
-    const unreadCount = notifications.filter((n) => n.unread).length
+    const queryClient = useQueryClient()
+    const { data: notifications = [], isLoading } = useQuery({
+        queryKey: NOTIFICATIONS_QUERY_KEY,
+        queryFn: () => notificationsApi.getList(),
+    })
+    const { data: conversations = [] } = useQuery({
+        queryKey: CONVERSATIONS_QUERY_KEY,
+        queryFn: () => messagesApi.getConversations(),
+    })
+    const unreadNotifications = notifications.filter((n) => n.unread)
+    const unreadConversations = conversations.filter((c) => (c.unreadCount ?? 0) > 0)
+    const notificationUnread = unreadNotifications.length
+    const inboxUnread = unreadConversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
+    const unreadCount = notificationUnread + inboxUnread
+
+    const markAllReadMutation = useMutation({
+        mutationFn: () => notificationsApi.markAllRead(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY })
+        },
+    })
+
+    const markOneReadMutation = useMutation({
+        mutationFn: (id: number) => notificationsApi.markRead(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY })
+        },
+    })
+
+    const markConversationReadMutation = useMutation({
+        mutationFn: (id: string) => messagesApi.markAsRead(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: CONVERSATIONS_QUERY_KEY })
+        },
+    })
 
     const handleMarkAllAsRead = () => {
-        setNotifications(
-            notifications.map((notification) => ({
-                ...notification,
-                unread: false,
-            }))
-        )
+        if (unreadCount > 0) markAllReadMutation.mutate()
     }
 
     const handleNotificationClick = (id: number) => {
-        setNotifications(
-            notifications.map((notification) =>
-                notification.id === id
-                    ? { ...notification, unread: false }
-                    : notification
-            )
-        )
+        const notification = notifications.find((n) => n.id === id)
+        if (notification?.unread) markOneReadMutation.mutate(id)
     }
 
     return (
@@ -123,7 +105,7 @@ export default function NotificationMenu() {
             <PopoverContent className="w-80 p-1">
                 <div className="flex items-baseline justify-between gap-4 px-3 py-2">
                     <div className="text-sm font-semibold">Notifications</div>
-                    {unreadCount > 0 && (
+                    {notificationUnread > 0 && (
                         <button
                             className="text-xs font-medium hover:underline"
                             onClick={handleMarkAllAsRead}
@@ -132,44 +114,107 @@ export default function NotificationMenu() {
                         </button>
                     )}
                 </div>
+                {inboxUnread > 0 && (
+                    <Link
+                        href="/inbox"
+                        className="text-muted-foreground hover:text-foreground mx-3 mb-1 block text-xs font-medium underline-offset-2 hover:underline"
+                    >
+                        {inboxUnread} unread message{inboxUnread !== 1 ? "s" : ""} in Inbox
+                    </Link>
+                )}
                 <div
                     role="separator"
                     aria-orientation="horizontal"
                     className="bg-border -mx-1 my-1 h-px"
                 ></div>
-                {notifications.map((notification) => (
-                    <div
-                        key={notification.id}
-                        className="hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors"
-                    >
-                        <div className="relative flex items-start pe-3">
-                            <div className="flex-1 space-y-1">
-                                <button
-                                    className="text-foreground/80 text-left after:absolute after:inset-0"
-                                    onClick={() => handleNotificationClick(notification.id)}
-                                >
-                                    <span className="text-foreground font-medium hover:underline">
-                                        {notification.user}
-                                    </span>{" "}
-                                    {notification.action}{" "}
-                                    <span className="text-foreground font-medium hover:underline">
-                                        {notification.target}
-                                    </span>
-                                    .
-                                </button>
-                                <div className="text-muted-foreground text-xs">
-                                    {notification.timestamp}
-                                </div>
-                            </div>
-                            {notification.unread && (
-                                <div className="absolute end-0 self-center">
-                                    <span className="sr-only">Unread</span>
-                                    <Dot />
-                                </div>
-                            )}
+                {unreadConversations.length > 0 && (
+                    <div className="px-3 pb-2">
+                        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Chats
+                        </div>
+                        <div className="max-h-44 overflow-y-auto space-y-1">
+                            {unreadConversations.map((c) => {
+                                const unread = true
+                                const name = c.otherParticipant?.name ?? "User"
+                                const preview = c.lastMessage?.trim() || "No messages yet"
+                                return (
+                                    <Link
+                                        key={`chat-${c._id}`}
+                                        href="/inbox"
+                                        onClick={() => {
+                                            if (unread) markConversationReadMutation.mutate(c._id)
+                                        }}
+                                        className="hover:bg-accent block rounded-md px-2 py-1.5 text-xs transition-colors"
+                                    >
+                                        <div className="relative pe-4">
+                                            <p className="font-medium text-foreground truncate">{name}</p>
+                                            <p className="text-muted-foreground truncate">{preview}</p>
+                                            {c.lastMessageAt ? (
+                                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                    {formatChatTime(c.lastMessageAt)}
+                                                </p>
+                                            ) : null}
+                                            {unread ? (
+                                                <span className="absolute right-0 top-1 inline-flex items-center gap-1 text-[10px] text-primary">
+                                                    <Dot />
+                                                    {c.unreadCount}
+                                                </span>
+                                            ) : null}
+                                        </div>
+                                    </Link>
+                                )
+                            })}
                         </div>
                     </div>
-                ))}
+                )}
+                <div
+                    role="separator"
+                    aria-orientation="horizontal"
+                    className="bg-border -mx-1 my-1 h-px"
+                ></div>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                ) : unreadNotifications.length === 0 && unreadConversations.length === 0 ? (
+                    <p className="text-muted-foreground px-3 py-6 text-center text-sm">
+                        No notifications yet
+                    </p>
+                ) : (
+                    unreadNotifications.map((notification) => (
+                        <div
+                            key={notification.id}
+                            className="hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors"
+                        >
+                            <div className="relative flex items-start pe-3">
+                                <div className="flex-1 space-y-1">
+                                    <button
+                                        className="text-foreground/80 text-left after:absolute after:inset-0"
+                                        onClick={() => handleNotificationClick(notification.id)}
+                                    >
+                                        <span className="text-foreground block font-medium hover:underline">
+                                            {notification.user}
+                                        </span>
+                                        {notification.action ? (
+                                            <span className="text-muted-foreground mt-0.5 block text-xs leading-snug">
+                                                {notification.action}
+                                            </span>
+                                        ) : null}
+                                    </button>
+                                    <div className="text-muted-foreground text-xs">
+                                        {notification.timestamp}
+                                    </div>
+                                </div>
+                                {notification.unread && (
+                                    <div className="absolute end-0 self-center">
+                                        <span className="sr-only">Unread</span>
+                                        <Dot />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
             </PopoverContent>
         </Popover>
     )

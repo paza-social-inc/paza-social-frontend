@@ -48,7 +48,7 @@ export default function ShareProfile({ open, onOpenChange, user_id }: props) {
     return (
         <div className="flex flex-col gap-4">
             <Popover open={open} onOpenChange={onOpenChange}>
-                <PopoverTrigger>
+                <PopoverTrigger asChild>
                     <Button
                         variant="default" className="h-10" size="sm"><RiShareForwardFill /> Share Profile</Button>
                 </PopoverTrigger>

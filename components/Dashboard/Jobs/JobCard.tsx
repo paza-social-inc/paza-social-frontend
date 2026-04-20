@@ -1,13 +1,27 @@
+"use client";
+
+import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Job } from '@/types';
+import { MoreVertical } from 'lucide-react';
 import { RiCameraLine, RiMoneyDollarCircleLine, RiMedalLine, RiTimeLine, RiTeamLine, RiMapPinLine, RiGlobeLine } from '@remixicon/react';
 
 interface JobProps extends Job {
     onClick: () => void;
-    imageUrl: string;
+    imageUrl?: string;
+    canViewProposals?: boolean;
+    /** When true, show kebab menu with Edit / Delete (job owner). */
+    isOwner?: boolean;
+    onEdit?: () => void;
+    onDelete?: () => void;
 }
 
 const JobCard = ({
@@ -17,8 +31,14 @@ const JobCard = ({
     contents = [],
     platforms = [],
     proposals = [],
+    collaborators: collaboratorsProp,
+    collaboratorIds: collaboratorIdsProp,
     imageUrl = "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=2069&q=80",
     onClick,
+    canViewProposals = false,
+    isOwner = false,
+    onEdit,
+    onDelete,
 }: JobProps) => {
     const {
         title,
@@ -32,6 +52,22 @@ const JobCard = ({
         category,
         priority,
     } = values ?? {};
+
+    const collaborators = Array.isArray(collaboratorsProp) ? collaboratorsProp : [];
+    const collaboratorIds = Array.isArray(collaboratorIdsProp) ? collaboratorIdsProp : [];
+    const collaboratorLabel = (c: {
+        id?: number;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        firstname?: string;
+        lastname?: string;
+    }) => {
+        const fn = c.firstName ?? c.firstname ?? "";
+        const ln = c.lastName ?? c.lastname ?? "";
+        const n = `${fn} ${ln}`.trim();
+        return n || c.email || (c.id != null ? `User ${c.id}` : "");
+    };
 
     // Format payment display
     const getPaymentDisplay = () => {
@@ -47,7 +83,7 @@ const JobCard = ({
     // Get highest proposal fee
     const getHighestProposal = () => {
         if (proposals && proposals.length > 0) {
-            const highest = Math.max(...proposals.map(p => parseFloat(p.fee) || 0));
+            const highest = Math.max(...proposals.map(p => parseFloat(p.proposedBudget || "0") || 0));
             return highest > 0 ? `$${highest}` : null;
         }
         return null;
@@ -74,11 +110,17 @@ const JobCard = ({
         </div>
     );
 
+    const handleCardClick = (e: React.MouseEvent) => {
+        const el = e.target as HTMLElement | null;
+        if (el?.closest('[data-prevent-card-click]')) return;
+        onClick();
+    };
+
     return (
         <Card
             id={_id}
             className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary  rounded-xl !pt-0 !pb-1"
-            onClick={onClick}
+            onClick={handleCardClick}
         >
             <CardHeader className="p-0">
                 <div className="relative h-48 overflow-hidden">
@@ -87,6 +129,39 @@ const JobCard = ({
                         alt={title}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
+                    {isOwner && (onEdit || onDelete) && (
+                        <div className="absolute right-2 top-2 z-20">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        data-prevent-card-click
+                                        className="h-8 w-8 rounded-full bg-black/35 text-white hover:bg-black/45 hover:text-white"
+                                        aria-label="Job actions"
+                                    >
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48" data-prevent-card-click>
+                                    {onEdit ? (
+                                        <DropdownMenuItem onSelect={() => onEdit()}>
+                                            Edit Job
+                                        </DropdownMenuItem>
+                                    ) : null}
+                                    {onDelete ? (
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onSelect={() => onDelete()}
+                                        >
+                                            Delete Job
+                                        </DropdownMenuItem>
+                                    ) : null}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
                         <div className="absolute top-4 left-4 flex gap-2">
                             {priority && (
@@ -146,6 +221,39 @@ const JobCard = ({
                     {description || 'No description provided.'}
                 </p>
 
+                {(collaborators.length > 0 || collaboratorIds.length > 0) && (
+                    <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300">
+                            <RiTeamLine className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Brand collaborators</p>
+                            {collaborators.length > 0 ? (
+                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                    {collaborators.slice(0, 5).map((c, i) => (
+                                        <Badge
+                                            key={c.id ?? i}
+                                            variant="secondary"
+                                            className="max-w-[140px] truncate px-2 py-0.5 text-xs font-normal"
+                                        >
+                                            {collaboratorLabel(c) || "Teammate"}
+                                        </Badge>
+                                    ))}
+                                    {collaborators.length > 5 && (
+                                        <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                                            +{collaborators.length - 5}
+                                        </Badge>
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">
+                                    {collaboratorIds.length} teammate{collaboratorIds.length === 1 ? "" : "s"}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {skills.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {skills.slice(0, 4).map((skill, index) => (
@@ -197,17 +305,30 @@ const JobCard = ({
                 )}
             </CardContent>
 
-            <CardFooter className="p-4 mt-auto pt-0 !px-4 flex items-center justify-between">
-               
-                <Button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onClick();
-                    }}
-                    className="w-full"
-                >
-                    View Details
-                </Button>
+            <CardFooter className="mt-auto flex flex-col gap-2 p-4 pt-0 !px-4">
+                <div className="flex w-full items-center justify-between gap-3">
+                    <Button
+                        variant={canViewProposals ? "outline" : "default"}
+                        className={canViewProposals ? "flex-1" : "w-full"}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick();
+                        }}
+                    >
+                        View Details
+                    </Button>
+                    {canViewProposals && (
+                        <Button
+                            className="flex-1"
+                            asChild
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
+                            <Link href={`/jobs/${_id}/proposals`} data-prevent-card-click>View Proposals</Link>
+                        </Button>
+                    )}
+                </div>
             </CardFooter>
         </Card>
     );

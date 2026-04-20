@@ -1,75 +1,87 @@
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { ProfileMediaStepProps } from "@/types/preferences/Creator/CreatorType";
-import { RiUploadLine } from "@remixicon/react";
-
-
-
+import { RiCameraLine } from "@remixicon/react";
+import { cj } from "../creatorJourneyTheme";
+import { StepSection } from "./StepSection";
+import { cn } from "@/lib/utils";
 
 export default function ProfileMediaStep({ data, onUpdate }: ProfileMediaStepProps) {
-
     return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Profile Media</h2>
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <Label>Profile Avatar</Label>
-                    <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
-                        <RiUploadLine className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                            Click to upload or drag and drop
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            PNG, JPG up to 5MB
-                        </p>
-                        <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) onUpdate({ avatar: URL.createObjectURL(file) });
-                            }}
-                        />
+        <div className="space-y-8">
+            <StepSection title="Choose profile picture">
+                <div className="flex flex-col items-center">
+                    <div className="relative">
+                        <div
+                            className={cn(
+                                "flex h-40 w-40 items-center justify-center overflow-hidden rounded-full border-2 border-zinc-700 bg-zinc-900/80",
+                                data.avatar && "border-orange-500/40"
+                            )}
+                        >
+                            {data.avatar ? (
+                                <img
+                                    src={data.avatar}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+                                    Photo
+                                </span>
+                            )}
+                        </div>
+                        <label
+                            htmlFor="avatar-upload"
+                            className="absolute bottom-1 right-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 text-white shadow-lg transition-colors hover:bg-zinc-700"
+                        >
+                            <RiCameraLine className="h-5 w-5" />
+                            <Input
+                                id="avatar-upload"
+                                type="file"
+                                accept="image/*"
+                                className="sr-only"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) onUpdate({ avatar: URL.createObjectURL(file) });
+                                }}
+                            />
+                        </label>
                     </div>
-                    {data.avatar && (
-                        <img
-                            src={data.avatar}
-                            alt="Avatar preview"
-                            className="mt-4 w-32 h-32 rounded-full object-cover mx-auto"
-                        />
-                    )}
+                    <p className="mt-2 text-center text-[11px] text-zinc-500">PNG or JPG · up to 5MB</p>
                 </div>
-                <div className="space-y-2">
-                    <Label>Profile Preview/Banner</Label>
-                    <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
-                        <RiUploadLine className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                            Upload a banner image
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            PNG, JPG up to 5MB (recommended: 1200x400)
-                        </p>
-                        <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) onUpdate({ preview: URL.createObjectURL(file) });
-                            }}
-                        />
-                    </div>
-                    {data.preview && (
+            </StepSection>
+
+            <div className="space-y-3 border-t border-zinc-800 pt-6">
+                <p className={cj.labelMuted}>Banner (optional)</p>
+                <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-900/40 p-6 text-center">
+                    <Input
+                        id="banner-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) onUpdate({ preview: URL.createObjectURL(file) });
+                        }}
+                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
+                        onClick={() => document.getElementById("banner-upload")?.click()}
+                    >
+                        Upload banner
+                    </Button>
+                    <p className="mt-2 text-[11px] text-zinc-500">Recommended 1200×400</p>
+                    {data.preview ? (
                         <img
                             src={data.preview}
-                            alt="Banner preview"
-                            className="mt-4 w-full h-40 rounded-lg object-cover"
+                            alt=""
+                            className="mt-4 h-28 w-full rounded-lg object-cover"
                         />
-                    )}
+                    ) : null}
                 </div>
             </div>
         </div>
-
-    )
+    );
 }

@@ -1,14 +1,35 @@
-import Footer from './Footer';
-import Navbar from './Navbar';
+"use client";
 
-export default function HomeLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <main className="bg-background w-full min-h-screen relative py-4 px-16">
-            <Navbar />
+import { useState, useEffect } from "react";
+import Footer from "./Footer";
+import GrainOverlay from "./GrainOverlay";
+import Navbar from "./Navbar";
+import SmoothScroll from "./SmoothScroll";
 
-            {children}
+export default function HomeLayout({
+  children,
+  hideFooter = false,
+}: {
+  children: React.ReactNode;
+  hideFooter?: boolean;
+}) {
+  const [showBar, setShowBar] = useState(true);
 
-            <Footer showMain />
-        </main>
-    )
+  useEffect(() => {
+    const t = setTimeout(() => setShowBar(false), 1100);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <main className="min-h-screen w-full bg-background antialiased page-enter">
+      <SmoothScroll />
+      <GrainOverlay />
+      {showBar && <div className="loading-bar" />}
+      <Navbar />
+      <div className="relative">
+        {children}
+      </div>
+      {!hideFooter && <Footer showMain />}
+    </main>
+  );
 }

@@ -1,6 +1,22 @@
 export { default as about } from "./about.jpg";
 export { default as about2 } from "./about2.jpg";
 export { default as about3 } from "./about3.jpg";
+/** Campaign / lifestyle photography set (WhatsApp assets) */
+export { default as campaignPressStudio } from "./campaign-press-studio.png";
+export { default as campaignCommunityStoop } from "./campaign-community-stoop.png";
+export { default as campaignStreetCrew } from "./campaign-street-crew.png";
+export { default as campaignOutdoorCelebration } from "./campaign-outdoor-celebration.png";
+export { default as campaignUrbanBodega } from "./campaign-urban-bodega.png";
+export { default as campaignCrowdRadial } from "./campaign-crowd-radial.png";
+export { default as campaignConvertibleTrio } from "./campaign-convertible-trio.png";
+export { default as campaignPortraitElder } from "./campaign-portrait-elder.png";
+export { default as campaignMotionFocus } from "./campaign-motion-focus.png";
+export { default as campaignRedWallTrio } from "./campaign-red-wall-trio.png";
+export { default as campaignFashionEnsemble } from "./campaign-fashion-ensemble.png";
+export { default as campaignAerialSuits } from "./campaign-aerial-suits.png";
+export { default as campaignRooftopCrew } from "./campaign-rooftop-crew.png";
+export { default as campaignDjPerformance } from "./campaign-dj-performance.png";
+export { default as campaignTradingFloor } from "./campaign-trading-floor.png";
 export { default as facebook } from "./facebook.png";
 export { default as google } from "./google.png";
 export { default as hero2 } from "./hero2.jpg";

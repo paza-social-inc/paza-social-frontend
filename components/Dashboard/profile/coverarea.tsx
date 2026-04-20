@@ -1,5 +1,5 @@
-
 import { ChangeEvent, useRef, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RiCameraLine } from "@remixicon/react";
@@ -83,7 +83,9 @@ export default function CoverArea() {
                             </div>
                         </div>
                     </div>
-                    <Button className="mb-2">+ New Project</Button>
+                    <Button asChild className="mb-2 min-h-11 touch-manipulation">
+                        <Link href="/showcase/new">+ New Project</Link>
+                    </Button>
                 </div>
             </div>
         </div>

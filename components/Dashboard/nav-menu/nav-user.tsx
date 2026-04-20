@@ -23,6 +23,7 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/store/auth/useAuth";
 
 export function NavUser({
     user,
@@ -36,12 +37,21 @@ export function NavUser({
     const { isMobile } = useSidebar();
     const { theme, setTheme } = useTheme();
     const router = useRouter();
+    const { logout } = useAuth();
 
     const handleNavigate = (path: string) => {
         router.push(path);
     }
 
     const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
+    const handleLogout = () => {
+        if (typeof window !== "undefined") {
+            window.localStorage.removeItem("token");
+        }
+        logout();
+        router.push("/login");
+    };
 
     return (
         <SidebarMenu>
@@ -101,7 +111,7 @@ export function NavUser({
                             }
                             <span>{theme}</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-3 px-1">
+                        <DropdownMenuItem className="gap-3 px-1" onClick={handleLogout}>
                             <RiLogoutCircleLine
                                 size={20}
                                 className="text-muted-foreground/70"

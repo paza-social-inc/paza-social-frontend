@@ -1,157 +1,203 @@
-"use client"
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChatSidebar, Conversation } from "@/components/Dashboard/chat/ChatSidebar";
 import { ChatArea, Message } from "@/components/Dashboard/chat/ChatArea";
 import { UserInfoSheet } from "@/components/Dashboard/chat/UserInfoSheet";
+import { messagesApi } from "@/lib/data/messages";
+import type { Conversation as ApiConversation, Message as ApiMessage } from "@/types/messages/messageTypes";
+import { useAuth } from "@/hooks/store/auth/useAuth";
+import { useInboxWebSocket } from "@/hooks/useInboxWebSocket";
+import toast from "react-hot-toast";
 
-// Mock data for demo
-const initialConversations: Conversation[] = [
-    {
-        id: "1",
-        username: "Sarah Chen",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-        lastMessage: "Hey! How's the project going?",
-        timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 mins ago
-    },
-    {
-        id: "2",
-        username: "Mike Johnson",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-        lastMessage: "Thanks for the help earlier!",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
-    },
-    {
-        id: "3",
-        username: "Emma Wilson",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
-        lastMessage: "Let's catch up tomorrow",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
-    },
-];
+const POLL_CONVERSATIONS_MS = 8_000;
+const POLL_MESSAGES_MS = 5_000;
 
-const initialMessages: Record<string, Message[]> = {
-    "1": [
-        {
-            id: "1",
-            content: "Hey! How's the project going?",
-            sender: "other",
-            timestamp: new Date(Date.now() - 1000 * 60 * 5),
-            senderName: "Sarah Chen",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-        },
-        {
-            id: "2",
-            content: "It's going great! Just finished the chat interface 🎉",
-            sender: "user",
-            timestamp: new Date(Date.now() - 1000 * 60 * 4),
-        },
-        {
-            id: "3",
-            content: "That's awesome! Can't wait to see it in action",
-            sender: "other",
-            timestamp: new Date(Date.now() - 1000 * 60 * 3),
-            senderName: "Sarah Chen",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-        },
-    ],
-    "2": [
-        {
-            id: "1",
-            content: "Thanks for the help earlier!",
-            sender: "other",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60),
-            senderName: "Mike Johnson",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-        },
-        {
-            id: "2",
-            content: "No problem! Happy to help anytime 😊",
-            sender: "user",
-            timestamp: new Date(Date.now() - 1000 * 60 * 55),
-        },
-    ],
-    "3": [
-        {
-            id: "1",
-            content: "Let's catch up tomorrow",
-            sender: "other",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
-            senderName: "Emma Wilson",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
-        },
-    ],
-};
+const AVATAR_FALLBACK = (seed: string) =>
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
 
-const page = () => {
-    const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
-    const [activeConversationId, setActiveConversationId] = useState<string | null>("1");
-    const [messages, setMessages] = useState<Record<string, Message[]>>(initialMessages);
+function mapApiConversationToUI(api: ApiConversation, currentUserId: string): Conversation {
+    const other = api.otherParticipant ?? (() => {
+        const otherId = api.participants.find((p) => p !== currentUserId) ?? api.participants[0] ?? "";
+        return { id: otherId, name: "User", avatar: AVATAR_FALLBACK(otherId) };
+    })();
+    return {
+        id: api._id,
+        username: other.name ?? "User",
+        avatar: other.avatar ?? AVATAR_FALLBACK(other.id),
+        lastMessage: api.lastMessage ?? "No messages yet",
+        timestamp: api.lastMessageAt ? new Date(api.lastMessageAt) : new Date(),
+    };
+}
+
+function mapApiMessageToUI(api: ApiMessage, currentUserId: string): Message {
+    const isUser = String(api.sender) === String(currentUserId);
+    return {
+        id: api._id ?? "",
+        content: api.text,
+        sender: isUser ? "user" : "other",
+        timestamp: api.createdAt ? new Date(api.createdAt) : new Date(),
+        senderName: isUser ? undefined : undefined,
+        avatar: isUser ? undefined : AVATAR_FALLBACK(api.sender),
+    };
+}
+
+export default function InboxPage() {
+    const searchParams = useSearchParams();
+    const userParam = searchParams.get("user");
+    const queryClient = useQueryClient();
+    const { user: currentUser } = useAuth();
+    const currentUserId = currentUser?.id ? String(currentUser.id) : "";
+
+    const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
     const [userSheetOpen, setUserSheetOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<{ username: string; avatar: string } | null>(null);
+    const lastHandledUserParam = useRef<string | null>(null);
 
-    const handleNewConversation = (name: string) => {
-        const newId = Date.now().toString();
-        const newConversation: Conversation = {
-            id: newId,
-            username: name,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-            lastMessage: "No messages yet",
-            timestamp: new Date(),
-        };
-        setConversations([newConversation, ...conversations]);
-        setMessages({ ...messages, [newId]: [] });
-        setActiveConversationId(newId);
+    useInboxWebSocket(!!currentUserId);
+
+    const {
+        data: apiConversations = [],
+        isLoading: conversationsLoading,
+        error: conversationsError,
+    } = useQuery({
+        queryKey: ["conversations"],
+        queryFn: () => messagesApi.getConversations(),
+        enabled: !!currentUserId,
+        refetchInterval: POLL_CONVERSATIONS_MS,
+        refetchIntervalInBackground: false,
+    });
+
+    const conversations: Conversation[] = useMemo(
+        () => apiConversations.map((c) => mapApiConversationToUI(c, currentUserId)),
+        [apiConversations, currentUserId]
+    );
+
+    const {
+        data: apiMessages = [],
+        isLoading: messagesLoading,
+    } = useQuery({
+        queryKey: ["messages", activeConversationId],
+        queryFn: () => messagesApi.getMessages(activeConversationId!),
+        enabled: !!activeConversationId,
+        refetchInterval: POLL_MESSAGES_MS,
+        refetchIntervalInBackground: false,
+    });
+
+    const messages: Message[] = useMemo(
+        () => apiMessages.map((m) => mapApiMessageToUI(m, currentUserId)),
+        [apiMessages, currentUserId]
+    );
+
+    const sendMessageMutation = useMutation({
+        mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
+            messagesApi.sendMessage(conversationId, text),
+        onSuccess: (_, { conversationId }) => {
+            queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        },
+        onError: (err: unknown) => {
+            toast.error(err instanceof Error ? err.message : "Failed to send message");
+        },
+    });
+
+    const getOrCreateMutation = useMutation({
+        mutationFn: (participantId: string) => messagesApi.getOrCreateConversation(participantId),
+        onSuccess: (conv) => {
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
+            setActiveConversationId(conv._id);
+        },
+        onError: (err: unknown) => {
+            toast.error(err instanceof Error ? err.message : "Could not start conversation");
+        },
+    });
+
+    useEffect(() => {
+        if (!userParam || !currentUserId || conversationsLoading) return;
+        if (lastHandledUserParam.current === userParam) return;
+        lastHandledUserParam.current = userParam;
+        const existing = apiConversations.find((c) => c.participants.includes(userParam));
+        if (existing) {
+            setActiveConversationId(existing._id);
+        } else {
+            getOrCreateMutation.mutate(userParam);
+        }
+    }, [userParam, currentUserId, conversationsLoading, apiConversations]);
+
+    const handleNewConversation = (userId: string) => {
+        const existing = apiConversations.find((c) =>
+            c.participants.includes(userId)
+        );
+        if (existing) {
+            setActiveConversationId(existing._id);
+        } else {
+            getOrCreateMutation.mutate(userId);
+        }
     };
 
-    const handleUserClick = (username: string, avatar: string) => {
+    const handleUserClick = async (username: string, avatar: string) => {
         setSelectedUser({ username, avatar });
         setUserSheetOpen(true);
     };
 
     const handleSendMessage = (content: string) => {
         if (!activeConversationId) return;
-
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            content,
-            sender: "user",
-            timestamp: new Date(),
-        };
-
-        setMessages({
-            ...messages,
-            [activeConversationId]: [
-                ...(messages[activeConversationId] || []),
-                newMessage,
-            ],
-        });
-
-        // Update last message in conversation
-        setConversations(
-            conversations.map((conv) =>
-                conv.id === activeConversationId
-                    ? { ...conv, lastMessage: content, timestamp: new Date() }
-                    : conv
-            )
-        );
+        sendMessageMutation.mutate({ conversationId: activeConversationId, text: content });
     };
 
+    const activeConversation = conversations.find((c) => c.id === activeConversationId);
+
+    useEffect(() => {
+        if (conversationsError) {
+            toast.error("Could not load conversations. Check your connection.");
+        }
+    }, [conversationsError]);
+
+    useEffect(() => {
+        if (!activeConversationId) return;
+        messagesApi.markAsRead(activeConversationId).then(() => {
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        }).catch(() => {});
+    }, [activeConversationId, queryClient]);
+
+    const showListOnMobile = !activeConversationId;
+    const showChatOnMobile = !!activeConversationId;
+
     return (
-        <div className="flex h-screen w-full relative overflow-hidden">
-            <ChatSidebar
-                conversations={conversations}
-                activeConversationId={activeConversationId}
-                onSelectConversation={setActiveConversationId}
-                onNewConversation={handleNewConversation}
-            />
-            <ChatArea
-                conversationId={activeConversationId}
-                messages={messages[activeConversationId || ""] || []}
-                onSendMessage={handleSendMessage}
-                onUserClick={handleUserClick}
-                username={selectedUser?.username}
-                avatar={selectedUser?.avatar}
-            />
+        <div className="relative flex h-full min-h-0 w-full flex-1 overflow-hidden bg-background">
+            {/* Conversation list: full width on mobile when no chat open, sidebar on md+ */}
+            <div
+                className={`
+                    w-full md:w-80 shrink-0 h-full flex flex-col
+                    ${showListOnMobile ? "flex" : "hidden md:flex"}
+                `}
+            >
+                <ChatSidebar
+                    conversations={conversations}
+                    activeConversationId={activeConversationId}
+                    onSelectConversation={setActiveConversationId}
+                    onNewConversation={handleNewConversation}
+                />
+            </div>
+            {/* Chat: full width on mobile when conversation selected, flex-1 on md+ */}
+            <div
+                className={`
+                    flex-1 min-w-0 h-full flex flex-col
+                    ${showChatOnMobile ? "flex" : "hidden md:flex"}
+                `}
+            >
+                <ChatArea
+                    conversationId={activeConversationId}
+                    messages={messages}
+                    onSendMessage={handleSendMessage}
+                    onUserClick={handleUserClick}
+                    onBack={() => setActiveConversationId(null)}
+                    username={activeConversation?.username}
+                    avatar={activeConversation?.avatar}
+                />
+            </div>
 
             {selectedUser && (
                 <UserInfoSheet
@@ -163,7 +209,4 @@ const page = () => {
             )}
         </div>
     );
-};
-
-export default page;
-
+}

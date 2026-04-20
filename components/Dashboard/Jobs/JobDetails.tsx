@@ -1,4 +1,5 @@
 "use client"
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { jobsApi } from "@/lib/data/jobs";
@@ -14,14 +15,28 @@ import {
     RiMedalLine, 
     RiCheckboxCircleLine,
 } from "@remixicon/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
+import { SendProposalModal } from "./SendProposalModal";
+import { useAuth } from "@/hooks/store/auth/useAuth";
 
 interface JobDetailsProps {
     jobId: string;
 }
 
+function resolveJobOwnerId(job: {
+    owner_id?: number | string;
+    owner?: { id?: number | string };
+}): number | null {
+    const raw = job.owner_id ?? job.owner?.id;
+    if (raw == null || raw === "") return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 export default function JobDetails({ jobId }: JobDetailsProps) {
     const router = useRouter();
+    const { user } = useAuth();
+    const [proposalModalOpen, setProposalModalOpen] = useState(false);
 
     const { data: job, isLoading, isError } = useQuery({
         queryKey: ['job', jobId],
@@ -107,6 +122,18 @@ const {
     updatedAt,
 } = job;
 
+    const collaborators =
+        (job as { collaborators?: Array<{ id?: number; firstName?: string; lastName?: string; email?: string }> })
+            .collaborators ?? [];
+    const collaboratorIds =
+        (job as { collaboratorIds?: number[] | null }).collaboratorIds ?? [];
+
+    const viewerId = user?.id != null ? Number(user.id) : NaN;
+    const jobOwnerId = resolveJobOwnerId(job as { owner_id?: number | string; owner?: { id?: number | string } });
+    const isJobOwner =
+        Number.isFinite(viewerId) &&
+        jobOwnerId != null &&
+        viewerId === jobOwnerId;
 
     return (
         <div className="space-y-6">
@@ -248,6 +275,43 @@ const {
                         </CardContent>
                     </Card>
 
+                    {((collaborators && collaborators.length > 0) ||
+                        (collaboratorIds && collaboratorIds.length > 0)) && (
+                        <Card>
+                            <CardContent className="p-6">
+                                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                                    <Users className="h-5 w-5 text-muted-foreground" aria-hidden />
+                                    Collaborators
+                                </h3>
+                                <p className="text-sm text-muted-foreground mb-3">
+                                    Teammates who can help manage proposals for this job.
+                                </p>
+                                <ul className="space-y-2">
+                                    {collaborators && collaborators.length > 0
+                                        ? collaborators.map((c) => (
+                                              <li key={c.id ?? c.email} className="text-sm">
+                                                  <span className="font-medium">
+                                                      {[c.firstName, c.lastName].filter(Boolean).join(" ") ||
+                                                          "User"}
+                                                  </span>
+                                                  {c.email ? (
+                                                      <span className="text-muted-foreground"> · {c.email}</span>
+                                                  ) : null}
+                                                  {c.id != null ? (
+                                                      <span className="text-muted-foreground"> · ID {c.id}</span>
+                                                  ) : null}
+                                              </li>
+                                          ))
+                                        : (collaboratorIds ?? []).map((id) => (
+                                              <li key={id} className="text-sm font-mono">
+                                                  User ID {id}
+                                              </li>
+                                          ))}
+                                </ul>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Goals */}
                     {goals && goals.length > 0 && (
                         <Card>
@@ -342,17 +406,32 @@ const {
                 <div className="space-y-4">
                     <Card>
                         <CardContent className="p-6 space-y-4">
-                            <Button 
-                                className="w-full"
-                                onClick={() => router.push(`/jobs/${jobId}/apply`)}
-                            >
-                                <RiCheckboxCircleLine className="mr-2 h-4 w-4" />
-                                Send Proposal
-                            </Button>
+                            {!isJobOwner ? (
+                                <>
+                                    <Button
+                                        className="w-full"
+                                        onClick={() => setProposalModalOpen(true)}
+                                    >
+                                        <RiCheckboxCircleLine className="mr-2 h-4 w-4" />
+                                        Send Proposal
+                                    </Button>
+                                    <SendProposalModal
+                                        open={proposalModalOpen}
+                                        onOpenChange={setProposalModalOpen}
+                                        jobId={parseInt(jobId, 10)}
+                                        jobTitle={title}
+                                        jobOwnerUserId={jobOwnerId}
+                                    />
+                                </>
+                            ) : (
+                                <p className="text-sm text-muted-foreground rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                                    You posted this job. Creators can send proposals here; you can review them from your job dashboard.
+                                </p>
+                            )}
                             <Button 
                                 className="w-full"
                                 variant="outline"
-                                onClick={() => router.push(`/messages?user=${owner?.id}`)}
+                                onClick={() => router.push(`/inbox?user=${owner?.id}`)}
                             >
                                 <RiSendPlaneLine className="mr-2 h-4 w-4" />
                                 Message Creator

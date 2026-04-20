@@ -20,13 +20,13 @@ export function ConversationItem({
             whileTap={{ scale: 0.98 }}
             onClick={onClick}
             className={cn(
-                "w-full p-3 transition-all duration-200 text-left",
-                "hover:bg-secondary/30",
+                "w-full p-3 sm:p-3 py-4 sm:py-3 min-h-[72px] sm:min-h-0 transition-all duration-200 text-left touch-manipulation",
+                "hover:bg-secondary/30 active:bg-secondary/50",
                 isActive && "bg-secondary hover:bg-secondary"
             )}
         >
-            <div className="flex items-start gap-3">
-                <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+            <div className="flex items-center gap-3">
+                <Avatar className="w-11 h-11 sm:w-10 sm:h-10 shrink-0 ring-2 ring-primary/20">
                     <AvatarImage src={conversation.avatar} alt={conversation.username} />
                     <AvatarFallback className="bg-gradient-primary text-primary-foreground">
                         {conversation.username.charAt(0).toUpperCase()}

@@ -49,19 +49,18 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
     };
 
     return (
-        <div className="flex items-end gap-2">
-            {/* Attachment Button */}
-
-
-            {/* Message Input Area */}
-            <div className="flex-1 relative">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="absolute left-3 bottom-2">
+        <div className="flex items-end gap-2 p-2 sm:p-3 min-h-[52px] sm:min-h-0">
+            <div className="flex-1 relative min-w-0">
+                <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    className="absolute left-2 sm:left-3 bottom-2 hidden sm:block"
+                >
                     <Button
                         variant="outline"
                         size="icon"
-                        className="hover:bg-chat-hover rounded-full transition-colors h-8 w-8"
+                        className="h-9 w-9 rounded-full touch-manipulation"
                     >
-                        <Paperclip className="w-5 h-5" />
+                        <Paperclip className="w-4 h-4" />
                     </Button>
                 </motion.div>
                 <Textarea
@@ -70,49 +69,43 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
                     onChange={handleTextareaChange}
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
-                    className="h-full w-full min-h-24 resize-none bg-secondary border-none pr-12 py-3"
+                    className="min-h-[44px] sm:min-h-[40px] max-h-32 w-full resize-none bg-secondary border-none pl-11 pr-11 sm:pl-12 py-3 text-base sm:text-sm rounded-2xl touch-manipulation"
                     rows={1}
                 />
-
-                {/* Emoji Button */}
-                <div className="absolute left-13 bottom-2">
+                <div className="absolute left-2 sm:left-12 bottom-2 sm:bottom-2">
                     <Popover>
                         <PopoverTrigger asChild>
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="hover:bg-chat-hover rounded-full transition-colors h-8 w-8"
-                                >
-                                    <Smile className="w-5 h-5" />
-                                </Button>
-                            </motion.div>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-9 w-9 rounded-full touch-manipulation"
+                            >
+                                <Smile className="w-4 h-4" />
+                            </Button>
                         </PopoverTrigger>
                         <PopoverContent
                             side="top"
-                            align="end"
-                            className="w-auto p-0 border-border"
+                            align="start"
+                            className="w-auto p-0 border-border max-h-[min(400px,70vh)] overflow-auto"
                         >
                             <EmojiPicker
                                 onEmojiClick={handleEmojiClick}
-                                width={350}
-                                height={400}
+                                width={Math.min(350, typeof window !== "undefined" ? window.innerWidth - 24 : 350)}
+                                height={360}
                                 searchPlaceHolder="Search emoji..."
                             />
                         </PopoverContent>
                     </Popover>
                 </div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="absolute right-4 bottom-2">
-                    <Button
-                        onClick={handleSend}
-                        disabled={!message.trim()}
-                        className="bg-gradient-primary hover:opacity-90 transition-opacity  rounded-full"
-                        variant="outline"
-                        size="icon"
-                    >
-                        <Send className="w-5 h-5" />
-                    </Button>
-                </motion.div>
+                <Button
+                    onClick={handleSend}
+                    disabled={!message.trim()}
+                    className="absolute right-2 bottom-2 h-9 w-9 rounded-full touch-manipulation bg-gradient-primary hover:opacity-90"
+                    variant="outline"
+                    size="icon"
+                >
+                    <Send className="w-4 h-4" />
+                </Button>
             </div>
         </div>
     );

@@ -151,7 +151,7 @@
 
 // lib/api/campaigns.ts
 import { pazaApi } from "@/lib/axiosClients";
-import { Campaign, CreateCampaignDto } from "@/types/campaign";
+import { Campaign, CreateCampaignDto } from "@/types/campaigns/campaignTypes";
 
 export interface CampaignFilters {
   search?: string;
@@ -166,13 +166,123 @@ interface ApiResponse<T> {
   data: T;
 }
 
+/** Coerce API campaign id (number or numeric string) for URLs and payloads. */
+export function parseCampaignId(raw: unknown): number | null {
+  if (raw == null || raw === "") return null;
+  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) return Math.floor(raw);
+  const n = Number(String(raw).trim());
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.floor(n);
+}
+
+/**
+ * Coerce a campaign payload from the API into our `Campaign` shape.
+ * Handles `target_number` vs `targetNumber` and normalizes deadline to a string the UI can read.
+ */
+export function normalizeCampaign(raw: unknown): Campaign {
+  if (raw == null || typeof raw !== "object") {
+    return raw as Campaign;
+  }
+  const o = { ...(raw as Record<string, unknown>) };
+  if (!("targetNumber" in o) && "target_number" in o) {
+    o.targetNumber = o.target_number;
+  }
+  delete o.target_number;
+
+  if (!("targetDescription" in o) && "target_description" in o) {
+    o.targetDescription = o.target_description;
+  }
+  delete o.target_description;
+  if (!("goalDetails" in o) && "goal_details" in o) {
+    o.goalDetails = o.goal_details;
+  }
+  delete o.goal_details;
+
+  if (o.targetNumber === undefined) {
+    // leave undefined
+  } else if (o.targetNumber === null || o.targetNumber === "") {
+    o.targetNumber = null;
+  } else {
+    const n = Number(o.targetNumber);
+    o.targetNumber = Number.isFinite(n) ? Math.trunc(n) : null;
+  }
+
+  if (o.deadline != null && String(o.deadline).trim() !== "") {
+    const raw = String(o.deadline).trim();
+    const ym = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+    if (ym) {
+      o.deadline = `${ym[1]}-${ym[2]}-${ym[3]}`;
+    } else {
+      const d = o.deadline instanceof Date ? o.deadline : new Date(raw);
+      o.deadline = Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+    }
+  } else {
+    o.deadline = null;
+  }
+
+  const normalizedGoalDetails = Array.isArray(o.goalDetails)
+    ? o.goalDetails
+        .map((row) => {
+          if (row == null || typeof row !== "object") return null;
+          const rec = row as Record<string, unknown>;
+          const goal = String(rec.goal ?? "").trim();
+          if (!goal) return null;
+          const targetRaw = rec.targetNumber;
+          const targetNumber =
+            targetRaw == null || targetRaw === ""
+              ? null
+              : Number.isFinite(Number(targetRaw))
+                ? Math.trunc(Number(targetRaw))
+                : null;
+          let deadline: string | null = null;
+          if (rec.deadline != null && String(rec.deadline).trim() !== "") {
+            const dRaw = String(rec.deadline).trim();
+            const ym = /^(\d{4})-(\d{2})-(\d{2})/.exec(dRaw);
+            if (ym) {
+              deadline = `${ym[1]}-${ym[2]}-${ym[3]}`;
+            } else {
+              const d = new Date(dRaw);
+              deadline = Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+            }
+          }
+          const targetDescription =
+            rec.targetDescription == null || String(rec.targetDescription).trim() === ""
+              ? null
+              : String(rec.targetDescription).trim();
+          return { goal, targetNumber, deadline, targetDescription };
+        })
+        .filter(Boolean)
+    : [];
+  const fallbackGoalDetails = Array.isArray(o.goals)
+    ? o.goals
+        .map((g) => String(g ?? "").trim())
+        .filter(Boolean)
+        .map((goal) => ({
+          goal,
+          targetNumber: o.targetNumber as number | null,
+          deadline: o.deadline as string | null,
+          targetDescription: (o.targetDescription as string | null) ?? null,
+        }))
+    : [];
+  o.goalDetails = normalizedGoalDetails.length > 0 ? normalizedGoalDetails : fallbackGoalDetails;
+  o.goals = (o.goalDetails as Array<{ goal: string }>).map((g) => g.goal);
+
+  return o as Campaign;
+}
+
+function normalizeCampaignList(rows: unknown): Campaign[] {
+  if (!Array.isArray(rows)) return [];
+  return rows.map((r) => normalizeCampaign(r));
+}
+
 export const campaignApi = {
   // Get all campaigns
   getAll: async (filters?: CampaignFilters) => {
     const response = await pazaApi.get<ApiResponse<Campaign[]>>("/api/campaigns", {
       params: filters,
     });
-    return response.data.data; // Extract the data property
+    const rows = response.data?.data;
+    return normalizeCampaignList(Array.isArray(rows) ? rows : []);
   },
 
   // Get single campaign by ID
@@ -181,9 +291,12 @@ export const campaignApi = {
   //   return response.data.data; // Extract the data property
   // },
   getById: async (id: number) => {
-    const response = await pazaApi.get<ApiResponse<Campaign>>(`/api/campaigns/${id}`);
-    console.log(response.data.data)
-    return response.data.data;
+    const nid = parseCampaignId(id);
+    if (nid == null) {
+      throw new Error("Invalid campaign id");
+    }
+    const response = await pazaApi.get<ApiResponse<Campaign>>(`/api/campaigns/${nid}`);
+    return normalizeCampaign(response.data.data);
   },
   // getById: async (id: number) => {
   //     const response = await pazaApi.get<ApiResponse<Job>>(`/api/jobs/${id}`);
@@ -191,16 +304,16 @@ export const campaignApi = {
   //   },
 
 
-  // Create new campaign
+  // Create new campaign (POST /api/campaigns/create)
   create: async (data: CreateCampaignDto) => {
-    const response = await pazaApi.post<ApiResponse<Campaign>>("/api/campaigns", data);
-    return response.data.data; // Extract the data property
+    const response = await pazaApi.post<ApiResponse<Campaign>>("/api/campaigns/create", data);
+    return normalizeCampaign(response.data.data);
   },
 
-  // Update campaign
+  // Update campaign (PUT /api/campaigns/:id)
   update: async (id: number, data: Partial<CreateCampaignDto>) => {
     const response = await pazaApi.put<ApiResponse<Campaign>>(`/api/campaigns/${id}`, data);
-    return response.data.data; // Extract the data property
+    return normalizeCampaign(response.data.data);
   },
 
   // Delete campaign
@@ -215,7 +328,7 @@ export const campaignApi = {
       `/api/campaigns/${campaignId}/milestone`,
       milestone
     );
-    return response.data.data;
+    return normalizeCampaign(response.data.data);
   },
 
   // Update milestone
@@ -224,7 +337,7 @@ export const campaignApi = {
       `/api/campaigns/${campaignId}/milestone/${milestoneId}`,
       milestone
     );
-    return response.data.data;
+    return normalizeCampaign(response.data.data);
   },
 
   // Delete milestone
@@ -238,18 +351,47 @@ export const campaignApi = {
   // Add team
   addTeam: async (campaignId: number, team: any) => {
     const response = await pazaApi.post<ApiResponse<Campaign>>(
-      `/api/campaigns/${campaignId}/team`,
+      `/api/campaigns/${campaignId}/teams`,
       team
     );
-    return response.data.data;
+    return normalizeCampaign(response.data.data);
+  },
+
+  // Update team name
+  updateTeam: async (campaignId: number, teamId: number, payload: { name: string }) => {
+    const response = await pazaApi.put<ApiResponse<Campaign>>(
+      `/api/campaigns/${campaignId}/teams/${teamId}`,
+      payload
+    );
+    return normalizeCampaign(response.data.data);
   },
 
   // Delete team
   deleteTeam: async (campaignId: number, teamId: number) => {
     const response = await pazaApi.delete<ApiResponse<void>>(
-      `/api/campaigns/${campaignId}/team/${teamId}`
+      `/api/campaigns/${campaignId}/teams/${teamId}`
     );
     return response.data;
+  },
+
+  // Add member to a specific team
+  addTeamMember: async (
+    campaignId: number,
+    teamId: number,
+    member: { name: string; email: string; sendSignupInvite?: boolean }
+  ) => {
+    const response = await pazaApi.post<ApiResponse<Campaign>>(
+      `/api/campaigns/${campaignId}/teams/${teamId}/members`,
+      member
+    );
+    return normalizeCampaign(response.data.data);
+  },
+
+  removeTeamMember: async (campaignId: number, teamId: number, memberId: number) => {
+    const response = await pazaApi.delete<ApiResponse<Campaign>>(
+      `/api/campaigns/${campaignId}/teams/${teamId}/members/${memberId}`
+    );
+    return normalizeCampaign(response.data.data);
   },
 
   // Add feedback
@@ -258,7 +400,7 @@ export const campaignApi = {
       `/api/campaigns/${campaignId}/feedback`,
       feedback
     );
-    return response.data.data;
+    return normalizeCampaign(response.data.data);
   },
 
   // Get campaign feedback
@@ -282,7 +424,7 @@ export const campaignApi = {
     const response = await pazaApi.get<ApiResponse<Campaign[]>>("/api/campaigns/search", {
       params: { query },
     });
-    return response.data.data;
+    return normalizeCampaignList(response.data?.data);
   },
 
   // Get campaigns by user
@@ -290,6 +432,69 @@ export const campaignApi = {
     const response = await pazaApi.get<ApiResponse<Campaign[]>>("/api/campaigns/user", {
       params: { createdby },
     });
-    return response.data.data;
+    const rows = response.data?.data;
+    return normalizeCampaignList(Array.isArray(rows) ? rows : []);
+  },
+
+  /**
+   * Authenticated user's campaigns only (for task/job pickers).
+   * GET /api/campaigns/user?mine=true — owner is resolved from the Authorization JWT (user id + email on server).
+   * Do not send `createdby` here (avoids leaking email in the URL; backend ignores it when mine=true anyway).
+   */
+  getMine: async (): Promise<Campaign[]> => {
+    const r = await pazaApi.get<ApiResponse<Campaign[]>>("/api/campaigns/user", {
+      params: { mine: "true" },
+    });
+    return normalizeCampaignList(r.data?.data);
+  },
+
+  /** Users linked to the campaign (projects / creator) who are not on any team yet — for the create-team picker. */
+  getAvailableTeamMembers: async (
+    campaignId: number
+  ): Promise<Array<{ id: number; email: string; firstName: string; lastName: string }>> => {
+    const nid = parseCampaignId(campaignId);
+    if (nid == null) {
+      throw new Error("Invalid campaign id");
+    }
+    const response = await pazaApi.get<{
+      success?: boolean;
+      message?: string;
+      data: Array<{ id: number; email: string; firstName: string; lastName: string }>;
+    }>(`/api/campaigns/${nid}/available-team-members`);
+    const rows = response.data?.data;
+    return Array.isArray(rows) ? rows : [];
+  },
+
+  /**
+   * Other campaigns you own that have an accepted creator job proposal (hired),
+   * excluding the campaign you are linking from.
+   */
+  getLinkableAccepted: async (campaignId: number): Promise<Campaign[]> => {
+    const nid = parseCampaignId(campaignId);
+    if (nid == null) {
+      throw new Error("Invalid campaign id");
+    }
+    const response = await pazaApi.get<ApiResponse<Campaign[]>>(
+      `/api/campaigns/${nid}/linkable-accepted`
+    );
+    const rows = response.data?.data;
+    return normalizeCampaignList(Array.isArray(rows) ? rows : []);
+  },
+
+  /** Persist link on current campaign (`cocampaign` = linked campaign id). */
+  linkToAcceptedCampaign: async (
+    campaignId: number,
+    linkedCampaignId: number
+  ): Promise<Campaign> => {
+    const nid = parseCampaignId(campaignId);
+    const lid = parseCampaignId(linkedCampaignId);
+    if (nid == null || lid == null) {
+      throw new Error("Invalid campaign id");
+    }
+    const response = await pazaApi.post<ApiResponse<Campaign>>(
+      `/api/campaigns/${nid}/link-campaign`,
+      { linkedCampaignId: lid }
+    );
+    return normalizeCampaign(response.data.data);
   },
 };

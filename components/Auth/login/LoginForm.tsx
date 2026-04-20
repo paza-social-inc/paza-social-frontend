@@ -1,7 +1,7 @@
-"use client"
-
+"use client";
 
 import { setAuthToken } from "@/app/actions/auth";
+import { useAuthStore } from "@/hooks/store/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import {
     Field,
@@ -55,12 +55,26 @@ export function LoginForm({
     })
 
 
+    const setAuth = useAuthStore((s) => s.setAuth);
+
     const loginMutation = useMutation({
         mutationFn: (data: FormData) => pazaApi.post("/api/auth/login", data),
         onSuccess: async (res: AxiosResponse) => {
-            toast.success("Login Successful", res.data);
+            toast.success("Login successful!");
             const token = res.data.token;
+            const user = res.data.user;
             await setAuthToken(token);
+            if (typeof window !== "undefined") window.localStorage.setItem("token", token);
+            if (token && user) {
+                setAuth(token, {
+                    id: user.id != null ? String(user.id) : undefined,
+                    email: user.email ?? "",
+                    firstname: user.firstName,
+                    lastname: user.lastName,
+                    accountType: user.accountType,
+                });
+            }
+            window.location.href = "/overview";
         },
         onError: (res: AxiosResponse) => {
             toast.error(res.data || "Invalid Credentials")

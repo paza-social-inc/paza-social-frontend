@@ -20,7 +20,7 @@ interface ChatSidebarProps {
     conversations: Conversation[];
     activeConversationId: string | null;
     onSelectConversation: (id: string) => void;
-    onNewConversation: (name: string) => void;
+    onNewConversation: (userId: string) => void;
 }
 
 export function ChatSidebar({
@@ -36,19 +36,19 @@ export function ChatSidebar({
             initial={{ opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="w-80 bg-background  relative border-border flex flex-col h-full"
+            className="w-full md:w-80 bg-background relative border-r border-border flex flex-col h-full min-h-0"
         >
-            {/* Header */}
-            <div className="p-4 border-b border-border sticky top-0 bg-background z-10 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <RiChat1Line className="w-6 h-6 text-primary" />
-                    <h2 className="text-lg font-semibold">Chats</h2>
+            {/* Header: touch-friendly on mobile */}
+            <div className="p-3 sm:p-4 border-b border-border sticky top-0 bg-background z-10 flex items-center justify-between supports-[padding:env(safe-area-inset)]:pt-[env(safe-area-inset-top)]">
+                <div className="flex items-center gap-2 min-w-0">
+                    <RiChat1Line className="w-6 h-6 shrink-0 text-primary" />
+                    <h2 className="text-base sm:text-lg font-semibold truncate">Chats</h2>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1 sm:gap-2 shrink-0">
                     <Button
                         variant="outline"
                         size="icon"
-                        className="hover:bg-chat-hover transition-colors"
+                        className="h-10 w-10 sm:h-9 sm:w-9 touch-manipulation"
                         onClick={() => setIsNewChatOpen(true)}
                     >
                         <Plus className="w-5 h-5" />
@@ -56,7 +56,7 @@ export function ChatSidebar({
                     <Button
                         variant="outline"
                         size="icon"
-                        className="hover:bg-chat-hover transition-colors"
+                        className="h-10 w-10 sm:h-9 sm:w-9 touch-manipulation hidden sm:flex"
                     >
                         <Settings className="w-5 h-5" />
                     </Button>
@@ -64,8 +64,8 @@ export function ChatSidebar({
             </div>
 
             {/* Conversations List */}
-            <ScrollArea className="flex-1">
-                <div className="divide-y">
+            <ScrollArea className="flex-1 min-h-0">
+                <div className="divide-y divide-border">
                     {conversations.map((conversation) => (
                         <ConversationItem
                             key={conversation.id}

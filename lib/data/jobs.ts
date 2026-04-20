@@ -121,7 +121,7 @@
 // lib/api/jobs.ts
 // lib/api/jobs.ts
 import { pazaApi } from "@/lib/axiosClients";
-import { Job, JobCreateRequest, JobProposal } from "@/types/job.types";
+import { Job, JobCreateRequest, JobProposal, JobUpdateBody } from "@/types/job.types";
 
 // Filters interface
 export interface JobFilters {
@@ -181,9 +181,9 @@ export const jobsApi = {
     return response.data.data;
   },
 
-  // Update job
-  update: async (id: number, data: Partial<JobCreateRequest>) => {
-    const response = await pazaApi.patch<ApiResponse<Job>>(`/api/jobs/${id}`, data);
+  // Update job (PUT /api/jobs/:id — flat body per backend updateJob)
+  update: async (id: number, data: JobUpdateBody) => {
+    const response = await pazaApi.put<ApiResponse<Job>>(`/api/jobs/${id}`, data);
     return response.data.data;
   },
 
@@ -220,6 +220,10 @@ export const jobsApi = {
       description?: string;
       proposedBudget?: string;
       deliverables?: string[];
+      /** Other creator user IDs co-applying with you */
+      collaboratorIds?: number[];
+      /** Optional: emails resolved server-side and merged with collaboratorIds */
+      collaboratorEmails?: string[];
     }
   ) => {
     const response = await pazaApi.post<ApiResponse<JobProposal>>(
@@ -245,14 +249,18 @@ export const jobsApi = {
     return response.data.data;
   },
 
-  // Update proposal status
+  /**
+   * Brand / job owner (or collaborator): accept or reject a pending proposal.
+   * Backend: PUT /api/jobs/:jobId/proposals/:proposalId — body `{ status }` uses
+   * ProposalStatus enum values (lowercase): pending | accepted | rejected | …
+   */
   updateProposalStatus: async (
     jobId: number,
     proposalId: number,
-    status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
+    status: "accepted" | "rejected" | "completed" | "cancelled"
   ) => {
-    const response = await pazaApi.patch<ApiResponse<JobProposal>>(
-      `/api/jobs/${jobId}/proposals/${proposalId}/status`,
+    const response = await pazaApi.put<ApiResponse<JobProposal>>(
+      `/api/jobs/${jobId}/proposals/${proposalId}`,
       { status }
     );
     return response.data.data;

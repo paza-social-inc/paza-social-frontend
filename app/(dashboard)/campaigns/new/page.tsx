@@ -1,6 +1,5 @@
+import CreateCampaignForm from "@/components/Dashboard/Campaigns/CreateCampaignForm";
 
-export default function page() {
-    return (
-        <div>new campaign</div>
-    )
+export default function NewCampaignPage() {
+  return <CreateCampaignForm />;
 }

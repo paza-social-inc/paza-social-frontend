@@ -1,6 +1,10 @@
 "use client"
 
 import Logo from "@/assets/Logo"
+import BrandOnboarding from "@/components/Auth/accountType/Brand/BrandOnboarding"
+import CreatorRegistration from "@/components/Auth/accountType/Creator/Creator"
+import { setAuthToken } from "@/app/actions/auth"
+import { useAuthStore } from "@/hooks/store/auth/useAuth"
 import { Button } from "@/components/ui/button"
 import {
     Field,
@@ -9,6 +13,9 @@ import {
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field"
+import { Checkbox } from "@/components/ui/checkbox"
+import Link from "next/link"
+import { TermsModal } from "@/components/Legal/TermsModal"
 import {
     InputGroup,
     InputGroupAddon,
@@ -22,30 +29,57 @@ import { RiEyeLine, RiEyeOffLine, RiMailLine } from "@remixicon/react"
 import { useMutation } from "@tanstack/react-query"
 import { AxiosResponse } from "axios"
 import { Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { Controller, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z, infer as zInfer } from "zod"
+import type { Creator } from "@/types/preferences/Creator/CreatorType"
 
 
-const schema = z.object({
-    email: z.email(),
-    password: z
-        .string()
-        .min(6, "Password must be at least 6 characters long.")
-        // .max(50, "Password cannot exceed 50 characters.")
-        .regex(/[A-Z]/, "Password must include at least one uppercase letter.")
-        .regex(/[0-9]/, "Password must include at least one number.")
-        .regex(/[^A-Za-z0-9]/, "Password must include at least one special character."),
+const signupPasswordSchema = z
+    .string()
+    .min(6, "Password must be at least 6 characters long.")
+    .regex(/[A-Z]/, "Password must include at least one uppercase letter.")
+    .regex(/[0-9]/, "Password must include at least one number.")
+    .regex(/[^A-Za-z0-9]/, "Password must include at least one special character.");
+
+const signupSharedFields = {
+    firstname: z.string().min(2, "First name must be at least 2 characters"),
+    lastname: z.string().min(2, "Last name must be at least 2 characters"),
+    email: z.string().email(),
+    password: signupPasswordSchema,
     confirmPassword: z.string(),
-})
-    .refine((data) => data.password === data.confirmPassword, {
-        path: ["confirmPassword"],
-        message: "Passwords do not match."
-    })
+    agreeToTerms: z.boolean().refine((v) => v === true, {
+        message: "You must accept the Terms and Conditions to continue.",
+    }),
+} as const;
 
-type FormData = zInfer<typeof schema>;
+const passwordMatchRefine = {
+    path: ["confirmPassword"] as const,
+    message: "Passwords do not match.",
+};
+
+function buildSignupSchema(accountType: "brand" | "creator") {
+    if (accountType === "brand") {
+        return z
+            .object(signupSharedFields)
+            .refine((data) => data.password === data.confirmPassword, passwordMatchRefine);
+    }
+    return z
+        .object({
+            ...signupSharedFields,
+            birthday: z
+                .string()
+                .min(1, "Birthday is required")
+                .refine((val) => !Number.isNaN(Date.parse(val.trim())), {
+                    message: "Birthday must be a valid date",
+                }),
+        })
+        .refine((data) => data.password === data.confirmPassword, passwordMatchRefine);
+}
+
+type FormData = zInfer<ReturnType<typeof buildSignupSchema>>;
 
 interface SignUpFormProps extends React.ComponentProps<'div'> {
     accountType: "brand" | "creator"
@@ -57,13 +91,32 @@ export function SignupForm({
     className,
     ...props
 }: SignUpFormProps) {
-    const { handleSubmit, register, formState: { errors } } = useForm({
-        resolver: zodResolver(schema)
+    const searchParams = useSearchParams();
+    const schema = useMemo(() => buildSignupSchema(accountType), [accountType]);
+    const { handleSubmit, register, setValue, control, formState: { errors } } = useForm<FormData>({
+        resolver: zodResolver(schema),
+        defaultValues:
+            accountType === "creator"
+                ? { agreeToTerms: false, birthday: "" }
+                : { agreeToTerms: false },
     });
     const [showPass, setShowPass] = useState(false);
     const [showConfirmPass, setShowConfirmPass] = useState(false);
+    const [termsModalOpen, setTermsModalOpen] = useState(false);
+    /** After creator email/password signup, prefill the profile journey (name + DOB from the form). */
+    const [creatorPrefill, setCreatorPrefill] = useState<Partial<Creator> | null>(null);
 
     const router = useRouter()
+    const setAuth = useAuthStore((s) => s.setAuth);
+
+    useEffect(() => {
+        const raw = searchParams.get("email");
+        if (!raw) return;
+        const decoded = decodeURIComponent(raw.trim());
+        if (decoded.includes("@")) {
+            setValue("email", decoded);
+        }
+    }, [searchParams, setValue]);
 
     const onSubmit = (data: FormData) => {
         console.log(data);
@@ -71,40 +124,179 @@ export function SignupForm({
     };
 
     const signUpMutation = useMutation({
-        mutationFn: (data: FormData) =>
-            pazaApi.post("/api/auth/register", data)
-        ,
-        onSuccess: (res: AxiosResponse) => {
-            toast.success("Registration successfull");
+        mutationFn: (data: FormData) => {
+            const payload: Record<string, string> = {
+                firstname: data.firstname,
+                lastname: data.lastname,
+                email: data.email,
+                password: data.password,
+                accountType: accountType === "brand" ? "Business" : "Creator",
+            };
+            if (accountType === "creator") {
+                const b = "birthday" in data ? data.birthday?.trim() : "";
+                if (b) payload.birthday = b;
+            }
+            return pazaApi.post("/api/auth/register", payload);
         },
-        onError: (res: AxiosResponse) => {
-            toast.error(res.data);
+        onSuccess: async (res: AxiosResponse, variables: FormData) => {
+            const token = res.data?.token as string | undefined;
+            const user = res.data?.user as
+                | {
+                      id?: number | string;
+                      email?: string;
+                      firstName?: string;
+                      lastName?: string;
+                      accountType?: string;
+                  }
+                | undefined;
+
+            if (token && typeof window !== "undefined") {
+                await setAuthToken(token);
+                window.localStorage.setItem("token", token);
+            }
+            if (token && user) {
+                setAuth(token, {
+                    id: user.id != null ? String(user.id) : undefined,
+                    email: user.email ?? "",
+                    firstname: user.firstName,
+                    lastname: user.lastName,
+                    accountType: user.accountType,
+                });
+            }
+
+            if (accountType === "creator") {
+                setCreatorPrefill({
+                    firstName: variables.firstname,
+                    lastName: variables.lastname,
+                    dateOfBirth: variables.birthday,
+                });
+                toast.success("Account created — complete your creator profile");
+            } else if (accountType === "brand") {
+                toast.success("Account created — complete your brand profile");
+            } else {
+                toast.success("Registration successfull");
+            }
+        },
+        onError: (err: unknown) => {
+            const res = err as { response?: { data?: { details?: { field: string; message: string }[]; message?: string } } };
+            const details = res.response?.data?.details;
+            if (Array.isArray(details) && details.length) {
+                toast.error(details.map((d) => d.message).join(". "));
+            } else {
+                toast.error(res.response?.data?.message ?? "Registration failed.");
+            }
         }
     })
 
+    const showCreatorJourney =
+        accountType === "creator" && signUpMutation.isSuccess && creatorPrefill != null;
+
+    const showBrandJourney = accountType === "brand" && signUpMutation.isSuccess;
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            {signUpMutation.isSuccess ? 
-            <div className="flex flex-col gap-6 h-[calc(100vh-4rem)] justify-center">
-                <h1 className="text-3xl font-bold">Registration successful</h1>
-                <p className="text-muted-foreground text-base text-balance">
-                    We have sent a verification email to your email address.
-                    If you haven't received it, please check your spam folder.
-                </p>
-                <Button onClick={() => router.push('/login')}>Login</Button>
-            </div>
-            :
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {showCreatorJourney ? (
+                <CreatorRegistration
+                    embedded
+                    initialData={creatorPrefill}
+                    className="px-0 pt-0"
+                    mode="signup-lite"
+                    stepOffset={1}
+                    totalSteps={3}
+                    onComplete={() => router.push("/overview")}
+                />
+            ) : showBrandJourney ? (
+                <BrandOnboarding
+                    embedded
+                    className="px-0 pt-0"
+                    stepOffset={1}
+                    totalSteps={4}
+                    onComplete={() => router.push("/overview")}
+                />
+            ) : signUpMutation.isSuccess ? (
+                <div className="flex flex-col gap-6 h-[calc(100vh-4rem)] justify-center">
+                    <h1 className="text-3xl font-bold">Registration successful</h1>
+                    <p className="text-muted-foreground text-base text-balance">
+                        We have sent a verification email to your email address.
+                        If you haven&apos;t received it, please check your spam folder.
+                    </p>
+                    <Button onClick={() => router.push("/login")}>Login</Button>
+                </div>
+            ) : (
+            <form
+                key={accountType}
+                onSubmit={handleSubmit(onSubmit)}
+                className={cn(
+                    "space-y-6",
+                    (accountType === "creator" || accountType === "brand") &&
+                        "rounded-2xl border border-zinc-800/90 bg-zinc-950/50 p-5 sm:p-6"
+                )}
+            >
                 <FieldGroup className="gap-4">
                     <div className="flex justify-center w-full shadow">
                         <Logo />
                     </div>
-                    <div className="flex flex-col py-4 items-center gap-3 text-center">
-                        <h1 className="text-2xl font-bold">Create your account</h1>
-                        <p className="text-muted-foreground text-sm text-balance">
-                            Start with the basics - we'll ask for more details later
+                    <div
+                        className={cn(
+                            "flex flex-col items-center gap-2 py-2 text-center sm:gap-3 sm:py-4"
+                        )}
+                    >
+                        {accountType === "creator" || accountType === "brand" ? (
+                            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+                                Sign up · Credentials
+                            </p>
+                        ) : null}
+                        <h1
+                            className={cn(
+                                "text-2xl font-bold",
+                                (accountType === "creator" || accountType === "brand") && "text-white"
+                            )}
+                        >
+                            Create your account
+                        </h1>
+                        <p
+                            className={cn(
+                                "text-sm text-balance",
+                                accountType === "creator" || accountType === "brand"
+                                    ? "text-zinc-400"
+                                    : "text-muted-foreground"
+                            )}
+                        >
+                            {accountType === "creator"
+                                ? "Start with the basics — your creator profile journey comes next."
+                                : accountType === "brand"
+                                  ? "Start with the basics — your brand profile journey comes next."
+                                  : "Start with the basics - we'll ask for more details later"}
                         </p>
                     </div>
+
+                    {accountType === "creator" ? (
+                        <div className="space-y-1.5">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                                <div
+                                    className="h-full rounded-full bg-orange-600 transition-[width] duration-300 ease-out"
+                                    style={{ width: `${(1 / 3) * 100}%` }}
+                                />
+                            </div>
+                            <p className="text-center text-[10px] uppercase tracking-[0.2em] text-zinc-600">
+                                Step 1 of 3 · Credentials
+                            </p>
+                        </div>
+                    ) : null}
+
+                    {accountType === "brand" ? (
+                        <div className="space-y-1.5">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                                <div
+                                    className="h-full rounded-full bg-orange-600 transition-[width] duration-300 ease-out"
+                                    style={{ width: `${(1 / 4) * 100}%` }}
+                                />
+                            </div>
+                            <p className="text-center text-[10px] uppercase tracking-[0.2em] text-zinc-600">
+                                Step 1 of 4 · Credentials
+                            </p>
+                        </div>
+                    ) : null}
 
 
 
@@ -141,6 +333,56 @@ export function SignupForm({
                         <span className="px-4 text-sm text-muted-foreground">Or</span>
                         <hr className="w-1/2 border-input-border" />
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Field>
+                            <FieldLabel htmlFor="firstname">First name</FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    {...register("firstname")}
+                                    id="firstname"
+                                    type="text"
+                                    placeholder="Jane"
+                                    required
+                                />
+                            </InputGroup>
+                            {errors?.firstname && (
+                                <FieldError>{errors.firstname.message}</FieldError>
+                            )}
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="lastname">Last name</FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    {...register("lastname")}
+                                    id="lastname"
+                                    type="text"
+                                    placeholder="Doe"
+                                    required
+                                />
+                            </InputGroup>
+                            {errors?.lastname && (
+                                <FieldError>{errors.lastname.message}</FieldError>
+                            )}
+                        </Field>
+                    </div>
+
+                    {accountType === "creator" ? (
+                        <Field>
+                            <FieldLabel htmlFor="birthday">Birthday</FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    {...register("birthday")}
+                                    id="birthday"
+                                    type="date"
+                                    required
+                                />
+                            </InputGroup>
+                            {errors?.birthday && (
+                                <FieldError>{errors.birthday.message}</FieldError>
+                            )}
+                        </Field>
+                    ) : null}
 
                     <Field>
                         <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -194,9 +436,54 @@ export function SignupForm({
                             </FieldError>}
                     </Field>
 
+                    {/* Terms: full-width row above submit, checkbox + label as one clear block */}
+                    <div className="w-full pt-1">
+                        <div className="flex items-start gap-3 w-full rounded-lg border border-border bg-muted/30 p-3 sm:p-4">
+                            <Controller
+                                name="agreeToTerms"
+                                control={control}
+                                render={({ field }) => (
+                                    <Checkbox
+                                        id="agreeToTerms"
+                                        checked={field.value}
+                                        onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                                        onBlur={field.onBlur}
+                                        className="mt-0.5 shrink-0 border-border size-5"
+                                        aria-invalid={!!errors.agreeToTerms}
+                                    />
+                                )}
+                            />
+                            <div className="min-w-0 flex-1 space-y-1">
+                                <label
+                                    htmlFor="agreeToTerms"
+                                    className="text-sm font-medium leading-snug text-foreground cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    I agree to the{" "}
+                                    <button
+                                        type="button"
+                                        onClick={() => setTermsModalOpen(true)}
+                                        className="text-primary underline hover:no-underline touch-manipulation font-medium"
+                                    >
+                                        Terms and Conditions
+                                    </button>
+                                </label>
+                                {errors?.agreeToTerms && (
+                                    <p className="text-xs text-destructive">{errors.agreeToTerms.message}</p>
+                                )}
+                            </div>
+                        </div>
+                        <TermsModal open={termsModalOpen} onOpenChange={setTermsModalOpen} />
+                    </div>
 
-
-                    <Button type="submit" className="w-full mt-4" disabled={signUpMutation.isPending}>
+                    <Button
+                        type="submit"
+                        className={cn(
+                            "w-full mt-5",
+                            (accountType === "creator" || accountType === "brand") &&
+                                "bg-orange-600 font-semibold text-black hover:bg-orange-500"
+                        )}
+                        disabled={signUpMutation.isPending}
+                    >
                         {signUpMutation.isPending ? <Loader2 className="animate-spin" /> : "Create Account"}
                     </Button>
 
@@ -206,7 +493,7 @@ export function SignupForm({
                     </FieldDescription>
                 </FieldGroup>
             </form>
-            }
+            )}
         </div>
     )
 }

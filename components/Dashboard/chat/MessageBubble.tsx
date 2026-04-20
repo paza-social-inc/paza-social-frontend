@@ -23,7 +23,10 @@ export function MessageBubble({ message, index, onUserClick }: MessageBubbleProp
                 delay: index * 0.05,
                 ease: "easeOut",
             }}
-            className={cn("flex gap-3", isUser && "flex-row-reverse")}
+            className={cn(
+                "flex gap-3 max-w-[85%] sm:max-w-[70%]",
+                isUser ? "flex-row-reverse ml-auto w-fit" : "w-fit"
+            )}
         >
             {/* Avatar */}
             {!isUser && (
@@ -42,10 +45,10 @@ export function MessageBubble({ message, index, onUserClick }: MessageBubbleProp
                 </Avatar>
             )}
 
-            {/* Message Content */}
+            {/* Message Content: mobile-first width */}
             <div
                 className={cn(
-                    "max-w-[70%] rounded-2xl px-3 py-1.5 shadow-sm",
+                    "max-w-[85%] sm:max-w-[70%] rounded-2xl px-3 py-2 sm:py-1.5 shadow-sm",
                     isUser
                         ? "bg-primary text-primary-foreground rounded-br-md"
                         : "bg-card text-foreground rounded-bl-md"

@@ -14,11 +14,12 @@ export default function GoogleCallbackPage() {
 
     const googleAuthMutation = useMutation({
         mutationFn: (code: string) => pazaApi.post("/auth/google/callback", { code }),
-        onSuccess: (res) => {
+        onSuccess: async (res) => {
             const token = res.data.token
-            setAuthToken(token)
+            await setAuthToken(token)
+            if (typeof window !== "undefined") window.localStorage.setItem("token", token)
             toast.success("Successfully logged in with Google!")
-            router.push("/")
+            window.location.href = "/overview"
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || "Google authentication failed. Please try again.")

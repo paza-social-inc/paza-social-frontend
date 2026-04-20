@@ -36,18 +36,20 @@ export default function SearchBar() {
     return (
         <>
             <button
-                className="border-input min-w-52 bg-background text-foreground placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-11 w-fit rounded-md border px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] items-center outline-none focus-visible:ring-[3px]"
+                type="button"
+                className="border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-10 shrink-0 items-center justify-center rounded-md border px-0 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:ring-[3px] md:h-11 md:min-w-52 md:w-fit md:justify-start md:px-3 md:py-2"
                 onClick={() => setOpen(true)}
+                aria-label="Search"
             >
-                <span className="flex grow items-center">
+                <span className="flex items-center md:grow">
                     <SearchIcon
-                        className="text-muted-foreground/80 -ms-1 me-3"
+                        className="text-muted-foreground/80 md:-ms-1 md:me-3"
                         size={16}
                         aria-hidden="true"
                     />
-                    <span className="text-muted-foreground/70 font-normal">Search</span>
+                    <span className="hidden font-normal text-muted-foreground/70 md:inline">Search</span>
                 </span>
-                <kbd className="bg-background text-muted-foreground/70 ms-12 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
+                <kbd className="ml-3 hidden h-5 max-h-full items-center rounded border border-transparent bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70 md:ms-12 md:-me-1 md:inline-flex">
                     ⌘K
                 </kbd>
             </button>

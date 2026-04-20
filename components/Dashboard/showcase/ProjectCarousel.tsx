@@ -1,98 +1,208 @@
-'use client'
+"use client";
 
-import React from "react"
-import Image from "next/image"
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import { Card, CardContent } from "@/components/ui/card"
+import React, { useMemo, useState } from "react";
+import Image from "next/image";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
+import { mockProject, mockGuardrails } from "./showcaseData";
+import { AssetsFundingSection, mergeAssetsFundingFromProject } from "./AssetsFundingSection";
+import { GuardrailsSection } from "./GuardrailsSection";
+import { SlotsSection, mergeSlotsFromProject } from "./SlotsSection";
+import { ProgressSection, mergeProgressFromProject } from "./ProgressSection";
+import { AboutSection, mergeAboutFromProject } from "./AboutSection";
+import { cn } from "@/lib/utils";
+import type { Project } from "@/types/projects/projectTypes";
+import { ProjectQaSection } from "@/components/Dashboard/showcase/ProjectQaSection";
+import { useAuth } from "@/hooks/store/auth/useAuth";
 
-export function ProjectCarousel() {
+type ShowcaseTabId = "about" | "progress" | "assets-funding" | "slots" | "guardrails" | "qas";
 
-    const [activeTab, setActiveTab] = React.useState("about");
+const FALLBACK_PROJECT_IMAGE =
+  mockProject.images?.[0] ??
+  mockProject.imageUrl ??
+  "https://images.unsplash.com/photo-1586228044731-58323b1387f4?auto=format&fit=crop&q=80&w=1031";
 
-    const images = [
-        "https://images.unsplash.com/photo-1586228044731-58323b1387f4?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1031",
-        "https://images.unsplash.com/photo-1687322484985-ceef04a67288?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=840",
-        "https://images.unsplash.com/photo-1745878248949-06f72332f260?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=387",
-        "https://images.unsplash.com/photo-1564114330597-e94389745905?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774",
-    ]
+function looksLikeImageUrl(url: string): boolean {
+  const s = url.trim().toLowerCase();
+  if (!s) return false;
+  if (s.startsWith("data:image/")) return true;
+  if (s.includes("images.unsplash.com/")) return true;
+  return /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/.test(s);
+}
 
-    return (
-        <div className="flex flex-col  w-full md:w-3/4">
-            <Carousel className="w-full max-w-4xl">
-                <CarouselContent>
-                    {images.map((src, idx) => (
-                        <CarouselItem key={idx}>
-                            <Card className="overflow-hidden shadow-lg p-0">
-                                <CardContent className="p-0">
-                                    <Image
-                                        src={src}
-                                        alt={`slide-${idx}`}
-                                        width={1000}
-                                        height={600}
-                                        className="w-full h-[480px] object-cover"
-                                    />
-                                </CardContent>
-                            </Card>
-                        </CarouselItem>
-                    ))}
-                </CarouselContent>
-                <CarouselPrevious className="bg-primary text-white hover:opacity-80 absolute left-5 top-1/2 h-11 w-11" />
-                <CarouselNext className="bg-primary text-white hover:opacity-80 absolute right-5 top-1/2 h-11 w-11" />
-            </Carousel>
+export function ProjectCarousel({ project: projectProp }: { project?: Project }) {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = React.useState<ShowcaseTabId>("about");
+  const project = (projectProp ?? mockProject) as unknown as
+    typeof mockProject & Project & Record<string, unknown>;
+  const isOwner =
+    user?.id != null &&
+    project.creator?.id != null &&
+    Number(user.id) === Number(project.creator.id);
+  const isTeamMember = Boolean(
+    user?.id &&
+      project.teamMembers?.some((m) => Number(m.userId) === Number(user.id))
+  );
+  const isPublicProject = Boolean((project as Project).isPublic);
+  const hasRealProject = projectProp != null;
+  const assetsFundingMerged = useMemo(
+    () => mergeAssetsFundingFromProject(project as Project & Record<string, unknown>),
+    [project]
+  );
+  const slotsMerged = useMemo(
+    () => mergeSlotsFromProject(project as Project & Record<string, unknown>),
+    [project]
+  );
+  const progressMerged = useMemo(
+    () => mergeProgressFromProject(project as Project & Record<string, unknown>),
+    [project]
+  );
+  const aboutMerged = useMemo(
+    () => mergeAboutFromProject(project as Project & Record<string, unknown>),
+    [project]
+  );
+  const resolvedTitle = project.title ?? mockProject.title;
+  const images = useMemo(() => {
+    const candidates = (
+      project.images ??
+      (project as unknown as { mediaUrls?: string[] }).mediaUrls ??
+      []
+    ) as string[];
+    const cleaned = candidates
+      .map((u) => String(u ?? "").trim())
+      .filter(Boolean)
+      .filter(looksLikeImageUrl);
+    return cleaned.length > 0 ? cleaned : [FALLBACK_PROJECT_IMAGE];
+  }, [project.images, project]);
+  const tabs: { id: ShowcaseTabId; label: string }[] = [
+    { id: "about", label: "About" },
+    { id: "progress", label: "Progress" },
+    { id: "assets-funding", label: "Assets & Funding" },
+    { id: "slots", label: "Slots" },
+    { id: "guardrails", label: "Guardrails" },
+    { id: "qas", label: "Q&As" },
+  ];
 
-            <div className="flex gap-2 my-6 mx-auto max-w-md">
-                <div className="w-3 h-3 rounded-full bg-primary" />
-                <div className="w-3 h-3 rounded-full bg-gray-300" />
-                <div className="w-3 h-3 rounded-full bg-gray-300" />
-            </div>
+  return (
+    <div className="flex flex-col w-full md:w-2/3 lg:w-3/4 min-w-0">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4 truncate">
+        {resolvedTitle}
+      </h1>
+      <Carousel className="w-full max-w-4xl">
+        <CarouselContent>
+          {images.map((src, idx) => (
+            <CarouselItem key={idx}>
+              <Card className="overflow-hidden shadow-lg p-0 border-border">
+                <CardContent className="p-0">
+                  <div className="relative w-full aspect-16/10 sm:h-[320px] md:h-[400px] lg:h-[480px] bg-muted">
+                    <Image
+                      src={src}
+                      alt={`${resolvedTitle} slide ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 75vw, 1031px"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="bg-primary text-primary-foreground hover:opacity-90 border-0 left-2 sm:left-5 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-11 sm:w-11 rounded-full touch-manipulation" />
+        <CarouselNext className="bg-primary text-primary-foreground hover:opacity-90 border-0 right-2 sm:right-5 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-11 sm:w-11 rounded-full touch-manipulation" />
+      </Carousel>
 
+      <div className="flex gap-2 my-4 sm:my-6 mx-auto">
+        {images.map((_, idx) => (
+          <div
+            key={idx}
+            className={cn(
+              "w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors",
+              idx === 0 ? "bg-primary" : "bg-muted-foreground/30"
+            )}
+          />
+        ))}
+      </div>
 
-            <div className="pt-6 pb-2">
-                <div className="flex gap-8 border-b">
-                    <button
-                        onClick={() => setActiveTab("about")}
-                        className={`pb-2 font-medium ${activeTab === "about" ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
-                    >
-                        About
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("progress")}
-                        className={`pb-2 font-medium ${activeTab === "progress" ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
-                    >
-                        Progress
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("faqs")}
-                        className={`pb-2 font-medium ${activeTab === "faqs" ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
-                    >
-                        Q & A's
-                    </button>
-                </div>
-            </div>
-
-
-
-            <div className="py-6">
-                {activeTab === "about" && (
-                    <div className="space-y-6">
-                        about
-                    </div>
-                )}
-
-                {activeTab === "progress" && (
-                    <div className="space-y-6">
-                        progress
-                    </div>
-                )}
-
-                {activeTab === "faqs" && (
-                    <div className="space-y-6">
-                        faqs
-                    </div>
-                )}
-            </div>
-
-
+      <div className="pt-2 sm:pt-6 pb-2">
+        <div className="flex gap-4 sm:gap-8 border-b border-border overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "pb-2 sm:pb-3 font-medium text-sm sm:text-base whitespace-nowrap touch-manipulation transition-colors",
+                activeTab === tab.id
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-    )
+      </div>
+
+      <div className="py-4 sm:py-6 min-h-[200px]">
+        {activeTab === "about" && (
+          <AboutSection
+            projectId={String(project.id ?? mockProject.id)}
+            initial={aboutMerged}
+            canEdit={Boolean(isOwner)}
+          />
+        )}
+
+        {activeTab === "progress" && (
+          <ProgressSection
+            projectId={String(project.id ?? mockProject.id)}
+            initial={progressMerged}
+            canEdit={Boolean(isOwner)}
+          />
+        )}
+
+        {activeTab === "assets-funding" && (
+          <AssetsFundingSection
+            projectId={String(project.id ?? mockProject.id)}
+            initial={assetsFundingMerged}
+            canEdit={Boolean(isOwner)}
+          />
+        )}
+
+        {activeTab === "slots" && (
+          <SlotsSection
+            projectId={String(project.id ?? mockProject.id)}
+            initial={slotsMerged}
+            canEdit={Boolean(isOwner)}
+          />
+        )}
+
+        {activeTab === "guardrails" && (
+          <GuardrailsSection guardrails={mockGuardrails} />
+        )}
+
+        {activeTab === "qas" &&
+          (hasRealProject ? (
+            <ProjectQaSection
+              projectId={String(project.id ?? "")}
+              enabled
+              isOwner={Boolean(isOwner)}
+              isTeamMember={isTeamMember}
+              isPublic={isPublicProject}
+            />
+          ) : (
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <h2 className="text-lg font-semibold text-foreground">Frequently Asked Questions</h2>
+              <p>Q&amp;A is available when viewing a saved showcase project.</p>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
 }

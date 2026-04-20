@@ -3,6 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bell, CreditCard, Settings, Shield, User } from "lucide-react";
 import { useState } from "react";
+import { DASHBOARD_TABS_LIST_CLASS } from "@/components/layout/DashboardPageShell";
 import { BillingSection } from "./sections/BillingSection";
 import { IntegrationsSection } from "./sections/IntergrationsSection";
 import { NotificationsSection } from "./sections/NotificationsSection";
@@ -23,18 +24,15 @@ export function SettingsPage() {
     const [activeSection, setActiveSection] = useState("profile");
 
     return (
-        <div className="bg-background flex flex-col min-h-screen p-6 lg:p-8">
-            <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-                <TabsList className="w-full h-12">
+        <div className="flex min-h-[60vh] flex-col bg-background">
+            <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full min-w-0">
+                <TabsList className={DASHBOARD_TABS_LIST_CLASS}>
                     {sidebarItems.map((item) => {
                         const Icon = item.icon;
                         return (
-                            <TabsTrigger key={item.id} value={item.id}>
-                                <div className="flex items-center">
-                                    <Icon className="mr-2 h-4 w-4" />
-                                    {item.label}
-
-                                </div>
+                            <TabsTrigger key={item.id} value={item.id} className="gap-1.5 px-2.5 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+                                <Icon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                                <span className="truncate">{item.label}</span>
                             </TabsTrigger>
                         );
                     })}

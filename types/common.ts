@@ -6,6 +6,8 @@ export interface BaseUser {
   email: string;
   firstname?: string;
   lastname?: string;
+  /** From API / JWT: Individual | Business | Creator | None */
+  accountType?: string;
   avatar?: string;
   preview?: string;
 }

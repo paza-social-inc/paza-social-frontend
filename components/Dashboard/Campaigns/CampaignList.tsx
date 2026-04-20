@@ -266,7 +266,7 @@
 //
 //
 "use client"
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { campaignApi } from "@/lib/data/campaigns";
 import { Campaign } from "@/types/campaigns/campaignTypes";
@@ -284,10 +284,29 @@ import { useRouter } from "next/navigation";
 import { RiAddLine, RiCloseLine, RiFilterLine, RiSearchLine } from "@remixicon/react";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import CreateProjectForm from "@/components/Dashboard/showcase/CreateProjectForm";
+import { EditCampaignModal } from "./EditCampaignModal";
+import { useAuth } from "@/hooks/store/auth/useAuth";
+import {
+  canManageCampaign as campaignManageableByUser,
+  canSeeCampaignInMyList,
+} from "@/lib/campaignPermissions";
+import {
+  decodeJwtPayload,
+  getAccountTypeFromPayload,
+  getEmailFromPayload,
+  getUserIdStringFromPayload,
+} from "@/lib/jwtPayload";
+import { DASHBOARD_TABS_LIST_TWO_UP_CLASS } from "@/components/layout/DashboardPageShell";
 
-export default function CampaignList() {
+interface CampaignListProps {
+  onOpenCreateCampaign?: () => void;
+}
+
+export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { user, token } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("recent");
@@ -295,12 +314,72 @@ export default function CampaignList() {
   const [selectedTeamNames, setSelectedTeamNames] = useState<string[]>([]);
   const [selectedMilestoneCategories, setSelectedMilestoneCategories] = useState<string[]>([]);
   const [budgetRange, setBudgetRange] = useState<number[]>([0, 500000]);
+  const [projectWizardCampaignId, setProjectWizardCampaignId] = useState<number | null>(null);
+  const [editingCampaignId, setEditingCampaignId] = useState<number | null>(null);
+
+  /** Store may be empty on first paint; axios still reads localStorage — match that for ownership checks. */
+  const effectiveToken =
+    token ??
+    (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+
+  const tokenPayload = useMemo(
+    () => decodeJwtPayload(effectiveToken),
+    [effectiveToken]
+  );
+
+  const campaignActor = useMemo(
+    () => ({
+      userId: String(user?.id ?? getUserIdStringFromPayload(tokenPayload) ?? "").trim(),
+      emailLower: String(user?.email ?? getEmailFromPayload(tokenPayload) ?? "")
+        .trim()
+        .toLowerCase(),
+    }),
+    [user?.id, user?.email, tokenPayload]
+  );
+
+  const canManageCampaign = (campaign: Campaign) =>
+    campaignManageableByUser(campaign, campaignActor);
+
+  const accountType = useMemo(() => {
+    const userAny = user as { accountType?: string; account?: { accountType?: string } } | null;
+    const direct = userAny?.accountType ?? userAny?.account?.accountType;
+    if (direct) return String(direct).trim();
+    return getAccountTypeFromPayload(tokenPayload);
+  }, [user, tokenPayload]);
+  /** Business / Individual / other non-creator → job flow; Creator → project flow. */
+  const isCreatorAccount = accountType.toLowerCase() === "creator";
+  const usePrimaryCreateJob = !isCreatorAccount;
+
+  const handleCampaignPrimaryCta = (campaignId: number) => {
+    if (isCreatorAccount) {
+      setProjectWizardCampaignId(campaignId);
+      return;
+    }
+    router.push(`/jobs?createJob=1&campaignId=${campaignId}`);
+  };
 
   // Fetch campaigns from backend
-  const { data: campaigns = [], isLoading, isError } = useQuery({
-    queryKey: ['campaigns'],
+  const {
+    data: campaigns = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["campaigns"],
     queryFn: () => campaignApi.getAll(),
+    staleTime: 0,
+    // Ensure ownership changes in DB show up immediately (avoid stale cache
+    // causing "modal shows more than list" discrepancies).
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
+
+  // If ownership identity becomes available after first paint (rehydration),
+  // force a fresh fetch so edit/delete buttons are consistent.
+  useEffect(() => {
+    void refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refetch, campaignActor.userId, campaignActor.emailLower]);
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -314,9 +393,11 @@ export default function CampaignList() {
     }
   });
 
-  // Extract unique team names from actual data
+  // Extract unique team names from actual data (new campaigns may omit teams[])
   const allTeamNames = useMemo(() => {
-    return Array.from(new Set(campaigns.flatMap(c => c.teams.map(t => t.name))));
+    return Array.from(
+      new Set(campaigns.flatMap((c) => (c.teams ?? []).map((t) => t.name)))
+    );
   }, [campaigns]);
 
   const allMilestoneCategories = ["Major Milestone", "Minor Milestone"];
@@ -324,35 +405,64 @@ export default function CampaignList() {
   // Filter and sort campaigns (client-side)
   const filteredAndSortedCampaigns = useMemo(() => {
     let filtered = campaigns.filter(c => {
+      /**
+       * Owner/creator OR anyone on a campaign team (linked after invite/proposal accept).
+       * Without this, high-budget campaigns disappear for collaborators when the default
+       * budget slider cap is below the campaign budget.
+       */
+      const isMineOrCollaborator = canSeeCampaignInMyList(c, campaignActor);
+
       const matchesSearch = !searchTerm ||
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (c.description || "").toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesActive = selectedActive.length === 0 ||
-        selectedActive.includes(c.active ? "Active" : "Inactive");
+      // Treat missing `active` as true (matches new API rows / partial payloads)
+      const activeLabel = (c.active ?? true) ? "Active" : "Inactive";
+      const matchesActive =
+        isMineOrCollaborator ||
+        selectedActive.length === 0 ||
+        selectedActive.includes(activeLabel);
 
-      const matchesTeams = selectedTeamNames.length === 0 ||
-        c.teams.some(t => selectedTeamNames.includes(t.name));
+      const teams = c.teams ?? [];
+      const milestones = c.milestones ?? [];
 
-      const matchesMilestoneCategory = selectedMilestoneCategories.length === 0 ||
-        c.milestones.some(m => m.category && selectedMilestoneCategories.includes(m.category));
+      const matchesTeams =
+        isMineOrCollaborator ||
+        selectedTeamNames.length === 0 ||
+        teams.some((t) => selectedTeamNames.includes(t.name));
+
+      const matchesMilestoneCategory =
+        isMineOrCollaborator ||
+        selectedMilestoneCategories.length === 0 ||
+        milestones.some(
+          (m) => m.category && selectedMilestoneCategories.includes(m.category)
+        );
 
       const budget = Number(c.budget) || 0;
-      const matchesBudget = budget >= budgetRange[0] && budget <= budgetRange[1];
+      const matchesBudget =
+        isMineOrCollaborator ||
+        (budget >= budgetRange[0] && budget <= budgetRange[1]);
 
       return matchesSearch && matchesActive && matchesTeams && matchesMilestoneCategory && matchesBudget;
     });
 
+    const sortTime = (c: Campaign) => {
+      const t = c.createdAt ? new Date(c.createdAt).getTime() : NaN;
+      return Number.isFinite(t) ? t : 0;
+    };
+
     // Sort campaigns
     filtered.sort((a, b) => {
-      if (sortBy === 'budget-high') return (Number(b.budget) || 0) - (Number(a.budget) || 0);
-      if (sortBy === 'budget-low') return (Number(a.budget) || 0) - (Number(b.budget) || 0);
-      if (sortBy === 'recent') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortBy === "budget-high")
+        return (Number(b.budget) || 0) - (Number(a.budget) || 0);
+      if (sortBy === "budget-low")
+        return (Number(a.budget) || 0) - (Number(b.budget) || 0);
+      if (sortBy === "recent") return sortTime(b) - sortTime(a) || b.id - a.id;
       return 0;
     });
 
     return filtered;
-  }, [campaigns, searchTerm, sortBy, selectedActive, selectedTeamNames, selectedMilestoneCategories, budgetRange]);
+  }, [campaigns, campaignActor, searchTerm, sortBy, selectedActive, selectedTeamNames, selectedMilestoneCategories, budgetRange]);
 
   const toggleFilter = (arr: string[], setArr: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
     if (arr.includes(value)) setArr(arr.filter(x => x !== value));
@@ -398,24 +508,35 @@ export default function CampaignList() {
   }
 
   return (
-    <Tabs defaultValue="all" className="full p-3">
-      <TabsList className="md:min-w-xs h-10">
-        <TabsTrigger value="all">All Campaigns</TabsTrigger>
-        <TabsTrigger value="recommended">Recommended</TabsTrigger>
+    <Tabs defaultValue="all" className="w-full min-w-0 space-y-3">
+      <TabsList className={DASHBOARD_TABS_LIST_TWO_UP_CLASS}>
+        <TabsTrigger value="all" className="text-xs sm:text-sm">
+          All Campaigns
+        </TabsTrigger>
+        <TabsTrigger value="recommended" className="text-xs sm:text-sm">
+          Recommended
+        </TabsTrigger>
       </TabsList>
 
       {/* Header with search & filters */}
-      <div className="bg-background border sticky top-0 z-10 shadow-sm mt-3">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold">Campaigns</h1>
-              <p className="text-muted-foreground mt-1">{filteredAndSortedCampaigns.length} campaigns</p>
+      <div className="sticky top-0 z-10 mt-1 border-b border-border/80 bg-background/95 py-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/90 sm:mt-3">
+        <div className="w-full max-w-full px-0 py-0 sm:px-0">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Campaigns</h1>
+              <p className="mt-1 text-muted-foreground">{filteredAndSortedCampaigns.length} campaigns</p>
             </div>
-            <Button onClick={() => router.push('/campaigns/create')}>
-              <RiAddLine className='h-5 w-5' />
-              Create Campaign
-            </Button>
+            <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+              {usePrimaryCreateJob && (
+                <Button variant="outline" onClick={() => router.push("/jobs?createJob=1")}>
+                  Create Job
+                </Button>
+              )}
+              <Button onClick={() => (onOpenCreateCampaign ? onOpenCreateCampaign() : router.push('/campaigns/new'))}>
+                <RiAddLine className='h-5 w-5' />
+                Create Campaign
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row gap-4">
@@ -453,7 +574,7 @@ export default function CampaignList() {
                 </Button>
               </SheetTrigger>
               <SheetContent className="w-full max-w-md p-6 overflow-y-auto">
-                <SheetHeader className="mb-6 !px-0">
+                <SheetHeader className="mb-6 px-0!">
                   <SheetTitle className="text-2xl font-bold">Filter Campaigns</SheetTitle>
                 </SheetHeader>
 
@@ -606,9 +727,11 @@ export default function CampaignList() {
                 <CampaignCard
                   key={c.id}
                   campaign={c}
-                  onEdit={(id) => router.push(`/campaigns/${id}/edit`)}
-                  onDelete={handleDelete}
+                  onEdit={canManageCampaign(c) ? (id) => setEditingCampaignId(id) : undefined}
+                  onDelete={canManageCampaign(c) ? handleDelete : undefined}
                   onOpen={(id) => router.push(`/campaigns/${id}`)}
+                  onAddProject={canManageCampaign(c) ? handleCampaignPrimaryCta : undefined}
+                  primaryCtaLabel={usePrimaryCreateJob ? "Create a job" : "Create Project"}
                 />
               ))}
             </div>
@@ -628,15 +751,31 @@ export default function CampaignList() {
                 <CampaignCard
                   key={c.id}
                   campaign={c}
-                  onEdit={(id) => router.push(`/campaigns/${id}/edit`)}
-                  onDelete={handleDelete}
+                  onEdit={canManageCampaign(c) ? (id) => setEditingCampaignId(id) : undefined}
+                  onDelete={canManageCampaign(c) ? handleDelete : undefined}
                   onOpen={(id) => router.push(`/campaigns/${id}`)}
+                  onAddProject={canManageCampaign(c) ? handleCampaignPrimaryCta : undefined}
+                  primaryCtaLabel={usePrimaryCreateJob ? "Create a job" : "Create Project"}
                 />
               ))}
             </div>
           )}
         </div>
       </TabsContent>
+      {/* Project creation modal scoped to campaign list */}
+      {projectWizardCampaignId !== null && (
+        <CreateProjectForm
+          initialCampaignId={projectWizardCampaignId}
+          mode="embedded"
+          onClose={() => setProjectWizardCampaignId(null)}
+        />
+      )}
+      {/* Edit campaign modal */}
+      <EditCampaignModal
+        open={editingCampaignId !== null}
+        onOpenChange={(open) => !open && setEditingCampaignId(null)}
+        campaignId={editingCampaignId}
+      />
     </Tabs>
   );
 }

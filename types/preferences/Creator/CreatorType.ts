@@ -1,5 +1,11 @@
 
 export type Creator = {
+    firstName: string;
+    lastName: string;
+    gender: string;
+    dateOfBirth: string;
+    country: string;
+    stateRegion: string;
     creatorname: string;
     about: string;
     experience: string;
@@ -25,9 +31,14 @@ export type Creator = {
     type: "Creator";
 };
 
+export type PersonalInfoStep = Pick<
+    Creator,
+    "firstName" | "lastName" | "gender" | "dateOfBirth" | "country" | "stateRegion"
+>;
+
 export type BasicInfoStep = Pick<
     Creator,
-    "creatorname" | "about" | "main"
+    "creatorname" | "about"
 >;
 
 export type SocialMediaStep = Pick<
@@ -38,6 +49,21 @@ export type SocialMediaStep = Pick<
 export type ExperienceStep = Pick<
     Creator,
     "experience" | "milestones" | "collabs"
+>;
+
+export type SocialCareerStep = Pick<
+    Creator,
+    | "instagram"
+    | "tiktok"
+    | "twitter"
+    | "youtube"
+    | "linkedin"
+    | "facebook"
+    | "followers"
+    | "social"
+    | "experience"
+    | "milestones"
+    | "collabs"
 >;
 
 export type CategoriesValuesStep = Pick<
@@ -56,14 +82,22 @@ export interface StepProps<T> {
     onUpdate: (data: Partial<T>) => void;
 }
 
+export type PersonalInfoStepProps = StepProps<PersonalInfoStep>;
 export type BasicInfoStepProps = StepProps<BasicInfoStep>;
 export type SocialMediaStepProps = StepProps<SocialMediaStep>;
 export type ExperienceStepProps = StepProps<ExperienceStep>;
+export type SocialCareerStepProps = StepProps<SocialCareerStep>;
 export type CategoriesValuesStepProps = StepProps<CategoriesValuesStep>;
 export type ProfileMediaStepProps = StepProps<ProfileMediaStep>;
 
 // Initial creator data
 export const initialCreatorData: Creator = {
+    firstName: "",
+    lastName: "",
+    gender: "",
+    dateOfBirth: "",
+    country: "",
+    stateRegion: "",
     creatorname: "",
     about: "",
     experience: "",

@@ -396,7 +396,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/store/auth/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -406,12 +407,29 @@ import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
 import JobCard from '../JobCard';
+import EditJobModal from '../EditJobModal';
 import { jobsApi } from '@/lib/data/jobs';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import toast from 'react-hot-toast';
 import { RiAddLine, RiCloseLine, RiFilterLine, RiSearchLine } from '@remixicon/react';
 import { Loader2 } from 'lucide-react';
 
-const MyJobBoard = () => {
+interface MyJobBoardProps {
+    onOpenCreateJob?: () => void;
+}
+
+const MyJobBoard = ({ onOpenCreateJob }: MyJobBoardProps) => {
     const router = useRouter();
+    const queryClient = useQueryClient();
+    const { user } = useAuth();
+    const [editJobId, setEditJobId] = useState<number | null>(null);
+    const [deleteJobId, setDeleteJobId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('recent');
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -421,35 +439,52 @@ const MyJobBoard = () => {
     const [paymentRange, setPaymentRange] = useState<number[]>([0, 100000]);
 
     const { data: jobsResponse, isLoading, isError } = useQuery({
-        queryKey: ['jobs'],
+        queryKey: ['jobs', 'owner', user?.id],
         queryFn: async () => {
-            const response = await jobsApi.getAll(); // Changed from getAllJobs() to getAll()
-            return response; // Returns { data: Job[], pagination: {...} }
+            if (!user?.id) return [];
+            return await jobsApi.getByOwner(Number(user.id));
+        },
+        enabled: !!user?.id,
+    });
+
+    const deleteJobMutation = useMutation({
+        mutationFn: (id: number) => jobsApi.delete(id),
+        onSuccess: () => {
+            toast.success('Job removed from the board');
+            queryClient.invalidateQueries({ queryKey: ['jobs', 'owner', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['jobs'] });
+            queryClient.invalidateQueries({ queryKey: ['user-jobs', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['all-user-jobs-stats', user?.id] });
+            setDeleteJobId(null);
+        },
+        onError: (err: unknown) => {
+            const res = err as { response?: { data?: { message?: string } } };
+            toast.error(res.response?.data?.message ?? 'Failed to delete job');
         },
     });
 
     const mockJobs = useMemo(() => {
-        if (!jobsResponse?.data) return [];
+        if (!Array.isArray(jobsResponse)) return [];
         
         // Backend already returns flat structure, just add _id for compatibility
-        return jobsResponse.data.map(job => ({
+        return jobsResponse.map((job: any) => ({
             ...job,
-            _id: job.id.toString(), // Keep for backward compatibility with JobCard
+            _id: String(job.id ?? job._id ?? ""), // Keep for backward compatibility with JobCard
             values: {
-                title: job.title,
-                description: job.description,
-                category: job.category,
-                experience: job.experience,
-                priority: job.priority,
-                location: job.location,
-                payment: job.payment,
-                age: job.age,
-                availability: job.availability,
-                gender: job.gender,
-                visibility: job.visibility,
-                paymentdesc: job.paymentdesc,
-                link: job.link,
-                years: job.years,
+                title: job.values?.title ?? job.title,
+                description: job.values?.description ?? job.description,
+                category: job.values?.category ?? job.category,
+                experience: job.values?.experience ?? job.experience,
+                priority: job.values?.priority ?? job.priority,
+                location: job.values?.location ?? job.location,
+                payment: job.values?.payment ?? job.payment,
+                age: job.values?.age ?? job.age,
+                availability: job.values?.availability ?? job.availability,
+                gender: job.values?.gender ?? job.gender,
+                visibility: job.values?.visibility ?? job.visibility,
+                paymentdesc: job.values?.paymentdesc ?? job.paymentdesc,
+                link: job.values?.link ?? job.link,
+                years: job.values?.years ?? job.years,
             }
         }));
     }, [jobsResponse]);
@@ -464,7 +499,7 @@ const MyJobBoard = () => {
             const matchesSearch = !searchTerm ||
                 job.values.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 job.values.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                job.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+                job.skills?.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
 
             const matchesCategory = selectedCategories.length === 0 ||
                 selectedCategories.includes(job?.values?.category);
@@ -496,7 +531,9 @@ const MyJobBoard = () => {
                 return (b.proposals?.length || 0) - (a.proposals?.length || 0);
             }
             if (sortBy === 'recent') {
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                return bTime - aTime;
             }
             return 0;
         });
@@ -557,7 +594,7 @@ const MyJobBoard = () => {
                                 {filteredAndSortedJobs.length} jobs available
                             </p>
                         </div>
-                        <Button onClick={() => router.push('/jobs/create')}>
+                        <Button onClick={() => (onOpenCreateJob ? onOpenCreateJob() : router.push('/jobs/create'))}>
                             <RiAddLine className='h-5 w-5' />
                             Create Job
                         </Button>
@@ -818,13 +855,28 @@ const MyJobBoard = () => {
             <div className="container mx-auto py-8">
                 {filteredAndSortedJobs.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredAndSortedJobs.map(job => (
+                        {filteredAndSortedJobs.map(job => {
+                            const numericId = Number(job.id ?? job._id);
+                            return (
                             <JobCard
                                 key={job._id}
                                 {...job}
+                                canViewProposals={true}
+                                isOwner
                                 onClick={() => router.push(`/jobs/${job._id}`)}
+                                onEdit={
+                                    Number.isFinite(numericId)
+                                        ? () => setEditJobId(numericId)
+                                        : undefined
+                                }
+                                onDelete={
+                                    Number.isFinite(numericId)
+                                        ? () => setDeleteJobId(numericId)
+                                        : undefined
+                                }
                             />
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="text-center py-16 items-center flex flex-col">
@@ -843,6 +895,52 @@ const MyJobBoard = () => {
                     </div>
                 )}
             </div>
+
+            <EditJobModal
+                jobId={editJobId}
+                open={editJobId != null}
+                onOpenChange={(open) => {
+                    if (!open) setEditJobId(null);
+                }}
+            />
+
+            <Dialog open={deleteJobId != null} onOpenChange={(open) => !open && setDeleteJobId(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Delete this job?</DialogTitle>
+                        <DialogDescription>
+                            This will remove the job from the board. You can post a new job anytime.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setDeleteJobId(null)}
+                            disabled={deleteJobMutation.isPending}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={deleteJobMutation.isPending}
+                            onClick={() => {
+                                if (deleteJobId != null) deleteJobMutation.mutate(deleteJobId);
+                            }}
+                        >
+                            {deleteJobMutation.isPending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting…
+                                </>
+                            ) : (
+                                'Delete job'
+                            )}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
