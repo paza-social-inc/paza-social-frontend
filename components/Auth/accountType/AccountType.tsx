@@ -22,7 +22,7 @@ export function AccountType({ className, ...props }: React.ComponentProps<"div">
                 <CardHeader className="text-center py-4">
                     <CardTitle className="text-4xl font-bold dark:text-foreground text-black">Welcome to Paza!</CardTitle>
                     <CardDescription className="dark:text-foreground text-black">
-                        Let's get you started. First, tell us what type of account you need.
+                        Let&apos;s get you started. First, tell us what type of account you need.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -30,7 +30,7 @@ export function AccountType({ className, ...props }: React.ComponentProps<"div">
                         <Card className={`cursor-pointer hover:border-primary/20 border-2 transition-all ${selectedType === 'brand' ? 'border-primary' : ''}`}>
                             <CardContent className="p-6 text-center" onClick={() => handleAccountTypeSelect('brand')}>
                                 <RiBriefcaseLine className="w-12 h-12 mx-auto mb-4 text-primary" />
-                                <h3 className="text-lg font-semibold mb-2">I'm a Brand</h3>
+                                <h3 className="text-lg font-semibold mb-2">I&apos;m a Brand</h3>
                                 <p className="text-sm text-muted-foreground">
                                     Companies & Groups looking to collaborate with creators
                                 </p>
@@ -40,7 +40,7 @@ export function AccountType({ className, ...props }: React.ComponentProps<"div">
                         <Card className={`cursor-pointer border-2 hover:border-primary/20 transition-all ${selectedType === 'creator' ? 'border-primary' : ''}`}>
                             <CardContent className="p-6 text-center" onClick={() => handleAccountTypeSelect('creator')}>
                                 <RiUserLine className="w-12 h-12 mx-auto mb-4 text-primary" />
-                                <h3 className="text-lg font-semibold mb-2">I'm a Creator</h3>
+                                <h3 className="text-lg font-semibold mb-2">I&apos;m a Creator</h3>
                                 <p className="text-sm text-muted-foreground">
                                     Individuals & Collectives creating content
                                 </p>

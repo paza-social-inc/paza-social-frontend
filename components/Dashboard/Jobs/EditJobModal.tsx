@@ -165,7 +165,7 @@ function getLinkedCampaign(job: ApiJob): { id: number; title: string } | null {
     (job.sourceCampaignId != null && String(job.sourceCampaignId).trim() !== ""
       ? Number(job.sourceCampaignId)
       : undefined);
-  if (rawId == null || rawId === "") return null;
+  if (rawId == null) return null;
   const id = Number(rawId);
   if (!Number.isFinite(id) || id <= 0) return null;
   const title =

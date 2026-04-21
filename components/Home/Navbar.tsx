@@ -27,7 +27,7 @@ const NAV_CONTAINER = {
 
 const NAV_ITEM = {
   hidden: { opacity: 0, y: -8 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 /** Build wa.me link from env; set NEXT_PUBLIC_WHATSAPP_URL or NEXT_PUBLIC_WHATSAPP_NUMBER in .env.local */

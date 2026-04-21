@@ -90,6 +90,8 @@ export interface Job {
     platforms?: string[];
     proposals?: JobProposal[];
     createdAt?: string;
+    /** When returned by owner listing APIs */
+    isActive?: boolean;
     /** Teammates who can manage proposals with the job owner */
     collaboratorIds?: number[] | null;
     collaborators?: Array<{

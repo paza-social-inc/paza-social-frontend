@@ -151,7 +151,11 @@
 
 // lib/api/campaigns.ts
 import { pazaApi } from "@/lib/axiosClients";
-import { Campaign, CreateCampaignDto } from "@/types/campaigns/campaignTypes";
+import {
+  Campaign,
+  CampaignFeedback,
+  CreateCampaignDto,
+} from "@/types/campaigns/campaignTypes";
 
 export interface CampaignFilters {
   search?: string;
@@ -267,7 +271,7 @@ export function normalizeCampaign(raw: unknown): Campaign {
   o.goalDetails = normalizedGoalDetails.length > 0 ? normalizedGoalDetails : fallbackGoalDetails;
   o.goals = (o.goalDetails as Array<{ goal: string }>).map((g) => g.goal);
 
-  return o as Campaign;
+  return o as unknown as Campaign;
 }
 
 function normalizeCampaignList(rows: unknown): Campaign[] {
@@ -323,7 +327,7 @@ export const campaignApi = {
   },
 
   // Add milestone
-  addMilestone: async (campaignId: number, milestone: any) => {
+  addMilestone: async (campaignId: number, milestone: Record<string, unknown>) => {
     const response = await pazaApi.post<ApiResponse<Campaign>>(
       `/api/campaigns/${campaignId}/milestone`,
       milestone
@@ -332,7 +336,7 @@ export const campaignApi = {
   },
 
   // Update milestone
-  updateMilestone: async (campaignId: number, milestoneId: number, milestone: any) => {
+  updateMilestone: async (campaignId: number, milestoneId: number, milestone: Record<string, unknown>) => {
     const response = await pazaApi.put<ApiResponse<Campaign>>(
       `/api/campaigns/${campaignId}/milestone/${milestoneId}`,
       milestone
@@ -349,7 +353,7 @@ export const campaignApi = {
   },
 
   // Add team
-  addTeam: async (campaignId: number, team: any) => {
+  addTeam: async (campaignId: number, team: Record<string, unknown>) => {
     const response = await pazaApi.post<ApiResponse<Campaign>>(
       `/api/campaigns/${campaignId}/teams`,
       team
@@ -395,7 +399,7 @@ export const campaignApi = {
   },
 
   // Add feedback
-  addFeedback: async (campaignId: number, feedback: any) => {
+  addFeedback: async (campaignId: number, feedback: Record<string, unknown>) => {
     const response = await pazaApi.post<ApiResponse<Campaign>>(
       `/api/campaigns/${campaignId}/feedback`,
       feedback
@@ -405,7 +409,7 @@ export const campaignApi = {
 
   // Get campaign feedback
   getFeedback: async (campaignId: number) => {
-    const response = await pazaApi.get<ApiResponse<any[]>>(
+    const response = await pazaApi.get<ApiResponse<CampaignFeedback[]>>(
       `/api/campaigns/${campaignId}/feedback`
     );
     return response.data.data;

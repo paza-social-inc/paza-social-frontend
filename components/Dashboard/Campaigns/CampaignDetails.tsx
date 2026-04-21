@@ -421,14 +421,18 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
     const details = campaign?.goalDetails ?? [];
     if (details.length > 0) {
       return details
-        .map((g) => ({
-          goal: String(g?.goal ?? "").trim(),
-          targetNumber:
-            g?.targetNumber == null || g.targetNumber === ""
+        .map((g) => {
+          const rawTarget: unknown = g?.targetNumber;
+          const targetNumber =
+            rawTarget == null ||
+            (typeof rawTarget === "string" && rawTarget.trim() === "")
               ? null
-              : Number.isFinite(Number(g.targetNumber))
-                ? Math.trunc(Number(g.targetNumber))
-                : null,
+              : Number.isFinite(Number(rawTarget))
+                ? Math.trunc(Number(rawTarget))
+                : null;
+          return {
+          goal: String(g?.goal ?? "").trim(),
+          targetNumber,
           deadline:
             g?.deadline == null || String(g.deadline).trim() === ""
               ? null
@@ -437,7 +441,8 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
             g?.targetDescription == null || String(g.targetDescription).trim() === ""
               ? null
               : String(g.targetDescription).trim(),
-        }))
+          };
+        })
         .filter((g) => g.goal.length > 0);
     }
     return (campaign?.goals ?? [])
@@ -781,8 +786,9 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
       queryClient.invalidateQueries({ queryKey: ['campaign', campaignId] });
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to update status");
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      toast.error(err.response?.data?.message || "Failed to update status");
     }
   });
 
@@ -866,8 +872,9 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       queryClient.invalidateQueries({ queryKey: ["campaign-available-team-members", campaignId] });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || error?.message || "Failed to create team");
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      toast.error(err?.response?.data?.message || err?.message || "Failed to create team");
     },
   });
 
@@ -879,8 +886,10 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
       }),
     onSuccess: () => {
       toast.success("Goal updated");
-      setEditingGoalIndex(null);
-      setEditingGoalValue("");
+      setEditingGoalDetailIndex(null);
+      setEditingGoalTargetValue("");
+      setEditingGoalDeadlineValue("");
+      setEditingGoalDescriptionValue("");
       queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },

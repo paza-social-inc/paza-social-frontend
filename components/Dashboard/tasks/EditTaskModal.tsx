@@ -33,7 +33,7 @@ const schema = z
     status: z.enum(["Not Started", "In Progress", "Review", "Done"]),
     startDate: z.string().min(1, "Start date is required"),
     dueDate: z.string().min(1, "Due date is required"),
-    recurTask: z.boolean().default(false),
+    recurTask: z.boolean(),
     repeat: z.enum(["Daily", "Weekly", "Monthly", "Yearly"]).optional(),
     description: z.string().min(1, "Task description is required").max(4000, "Description too long"),
   })

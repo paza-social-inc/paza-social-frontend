@@ -102,7 +102,7 @@ export function NotificationsSection() {
                                     <Label htmlFor="nothing" className="font-medium">
                                         Nothing
                                     </Label>
-                                    <p className="text-muted-foreground text-sm">Don't notify me anything</p>
+                                    <p className="text-muted-foreground text-sm">Don&apos;t notify me anything</p>
                                 </div>
                             </div>
                         </RadioGroup>

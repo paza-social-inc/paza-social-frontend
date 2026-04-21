@@ -73,15 +73,18 @@ export default function OverviewPage() {
 
   // Around line 85, replace the campaigns definition:
 const campaigns = (jobsResponse?.data && jobsResponse.data.length > 0)
-    ? jobsResponse.data.slice(0, 1).map(job => ({
-        id: job.id.toString(),
+    ? jobsResponse.data.slice(0, 1).map(job => {
+        const proposals = job.proposals ?? [];
+        return {
+        id: String(job.id ?? job._id ?? ""),
         name: job.title,
-        tasks: job.proposals?.length || 0,
-        percent: job.proposals?.length > 0 
-            ? Math.round((job.proposals.filter(p => p.status === 'completed').length / job.proposals.length) * 100)
+        tasks: proposals.length,
+        percent: proposals.length > 0
+            ? Math.round((proposals.filter(p => p.status === "completed").length / proposals.length) * 100)
             : 0,
         fill: "var(--color-primary)"
-    }))
+    };
+    })
     : [
         { id: "default", name: "No active campaigns", tasks: 0, percent: 0, fill: "var(--color-primary)" },
     ];
@@ -202,7 +205,7 @@ const campaigns = (jobsResponse?.data && jobsResponse.data.length > 0)
                                         {stats.totalJobs}
                                     </p>
                                     <p className="text-xs dark:text-neutral-500 text-foreground mt-1">
-                                        Jobs you've posted
+                                        Jobs you&apos;ve posted
                                     </p>
                                 </div>
                                 <ArrowUpRight className="w-8 h-8 text-emerald-400" />

@@ -168,7 +168,7 @@ export default function ProfilePage() {
                                     <h2 className="text-xl font-semibold mb-3">About</h2>
                                     <p className="text-muted-foreground mb-4">
                                         Creative professional passionate about design and user experience.
-                                        I love creating beautiful, functional interfaces that make a difference in people's lives.
+                                        I love creating beautiful, functional interfaces that make a difference in people&apos;s lives.
                                     </p>
                                     <div className="flex flex-wrap gap-2">
                                         <Badge variant="outline">🎨 UI/UX Designer</Badge>

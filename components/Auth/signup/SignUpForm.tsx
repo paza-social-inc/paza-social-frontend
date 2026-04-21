@@ -14,7 +14,6 @@ import {
     FieldLabel,
 } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import Link from "next/link"
 import { TermsModal } from "@/components/Legal/TermsModal"
 import {
     InputGroup,
@@ -31,7 +30,7 @@ import { AxiosResponse } from "axios"
 import { Loader2 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, type Resolver } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z, infer as zInfer } from "zod"
 import type { Creator } from "@/types/preferences/Creator/CreatorType"
@@ -56,7 +55,7 @@ const signupSharedFields = {
 } as const;
 
 const passwordMatchRefine = {
-    path: ["confirmPassword"] as const,
+    path: ["confirmPassword"] satisfies PropertyKey[],
     message: "Passwords do not match.",
 };
 
@@ -81,6 +80,17 @@ function buildSignupSchema(accountType: "brand" | "creator") {
 
 type FormData = zInfer<ReturnType<typeof buildSignupSchema>>;
 
+/** Single shape for RHF so creator-only fields (e.g. birthday) are valid field paths. */
+type SignupFormValues = {
+    firstname: string;
+    lastname: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    agreeToTerms: boolean;
+    birthday?: string;
+};
+
 interface SignUpFormProps extends React.ComponentProps<'div'> {
     accountType: "brand" | "creator"
 }
@@ -93,8 +103,8 @@ export function SignupForm({
 }: SignUpFormProps) {
     const searchParams = useSearchParams();
     const schema = useMemo(() => buildSignupSchema(accountType), [accountType]);
-    const { handleSubmit, register, setValue, control, formState: { errors } } = useForm<FormData>({
-        resolver: zodResolver(schema),
+    const { handleSubmit, register, setValue, control, formState: { errors } } = useForm<SignupFormValues>({
+        resolver: zodResolver(schema) as Resolver<SignupFormValues>,
         defaultValues:
             accountType === "creator"
                 ? { agreeToTerms: false, birthday: "" }
@@ -118,9 +128,9 @@ export function SignupForm({
         }
     }, [searchParams, setValue]);
 
-    const onSubmit = (data: FormData) => {
-        console.log(data);
-        signUpMutation.mutate(data);
+    const onSubmit = (data: SignupFormValues) => {
+        const parsed = schema.parse(data);
+        signUpMutation.mutate(parsed);
     };
 
     const signUpMutation = useMutation({
@@ -133,7 +143,8 @@ export function SignupForm({
                 accountType: accountType === "brand" ? "Business" : "Creator",
             };
             if (accountType === "creator") {
-                const b = "birthday" in data ? data.birthday?.trim() : "";
+                const birthday = (data as { birthday?: string }).birthday;
+                const b = typeof birthday === "string" ? birthday.trim() : "";
                 if (b) payload.birthday = b;
             }
             return pazaApi.post("/api/auth/register", payload);
@@ -168,7 +179,11 @@ export function SignupForm({
                 setCreatorPrefill({
                     firstName: variables.firstname,
                     lastName: variables.lastname,
-                    dateOfBirth: variables.birthday,
+                    dateOfBirth:
+                        "birthday" in variables &&
+                        typeof (variables as { birthday?: unknown }).birthday === "string"
+                            ? (variables as { birthday: string }).birthday
+                            : undefined,
                 });
                 toast.success("Account created — complete your creator profile");
             } else if (accountType === "brand") {
@@ -397,7 +412,7 @@ export function SignupForm({
                                 {errors.email.message}
                             </FieldError> :
                             <FieldDescription>
-                                We'll use this to contact you and verify your account
+                                We&apos;ll use this to contact you and verify your account
                             </FieldDescription>
                         }
                     </Field>

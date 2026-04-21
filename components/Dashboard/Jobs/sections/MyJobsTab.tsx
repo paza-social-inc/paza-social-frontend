@@ -417,6 +417,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
+import type { Job, JobValues } from '@/types';
 import { RiAddLine, RiCloseLine, RiFilterLine, RiSearchLine } from '@remixicon/react';
 import { Loader2 } from 'lucide-react';
 
@@ -467,53 +468,80 @@ const MyJobBoard = ({ onOpenCreateJob }: MyJobBoardProps) => {
         if (!Array.isArray(jobsResponse)) return [];
         
         // Backend already returns flat structure, just add _id for compatibility
-        return jobsResponse.map((job: any) => ({
+        return jobsResponse.map((job: Job) => {
+            const row = job as Job & Partial<JobValues>;
+            const v = row.values;
+            return {
             ...job,
             _id: String(job.id ?? job._id ?? ""), // Keep for backward compatibility with JobCard
             values: {
-                title: job.values?.title ?? job.title,
-                description: job.values?.description ?? job.description,
-                category: job.values?.category ?? job.category,
-                experience: job.values?.experience ?? job.experience,
-                priority: job.values?.priority ?? job.priority,
-                location: job.values?.location ?? job.location,
-                payment: job.values?.payment ?? job.payment,
-                age: job.values?.age ?? job.age,
-                availability: job.values?.availability ?? job.availability,
-                gender: job.values?.gender ?? job.gender,
-                visibility: job.values?.visibility ?? job.visibility,
-                paymentdesc: job.values?.paymentdesc ?? job.paymentdesc,
-                link: job.values?.link ?? job.link,
-                years: job.values?.years ?? job.years,
+                title: v?.title ?? row.title ?? "",
+                description: v?.description ?? row.description,
+                category: v?.category ?? row.category,
+                experience: v?.experience ?? row.experience,
+                priority: v?.priority ?? row.priority,
+                location: v?.location ?? row.location,
+                payment: v?.payment ?? row.payment,
+                age: v?.age ?? row.age,
+                availability: v?.availability ?? row.availability,
+                gender: v?.gender ?? row.gender,
+                visibility: v?.visibility ?? row.visibility,
+                paymentdesc: v?.paymentdesc ?? row.paymentdesc,
+                link: v?.link ?? row.link,
+                years: v?.years ?? row.years,
             }
-        }));
+            };
+        });
     }, [jobsResponse]);
 
-    const categories = [...new Set(mockJobs.map(job => job.values.category).filter(Boolean))];
-    const experiences = [...new Set(mockJobs.map(job => job.values.experience).filter(Boolean))];
-    const priorities = ['high', 'medium', 'low'];
-    const locations = [...new Set(mockJobs.map(job => job.values.location).filter(Boolean))];
+    const categories = [
+        ...new Set(
+            mockJobs
+                .map((job) => job.values.category)
+                .filter((c): c is string => typeof c === "string" && c.length > 0)
+        ),
+    ];
+    const experiences = [
+        ...new Set(
+            mockJobs
+                .map((job) => job.values.experience)
+                .filter((e): e is string => typeof e === "string" && e.length > 0)
+        ),
+    ];
+    const priorities = ["high", "medium", "low"];
+    const locations = [
+        ...new Set(
+            mockJobs
+                .map((job) => job.values.location)
+                .filter((loc): loc is string => typeof loc === "string" && loc.length > 0)
+        ),
+    ];
 
     const filteredAndSortedJobs = useMemo(() => {
-        let filtered = mockJobs.filter(job => {
+        const filtered = mockJobs.filter(job => {
             const matchesSearch = !searchTerm ||
                 job.values.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 job.values.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 job.skills?.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
 
-            const matchesCategory = selectedCategories.length === 0 ||
-                selectedCategories.includes(job?.values?.category);
+            const matchesCategory =
+                selectedCategories.length === 0 ||
+                (job.values.category != null && selectedCategories.includes(job.values.category));
 
-            const matchesExperience = selectedExperience.length === 0 ||
-                selectedExperience.includes(job.values.experience);
+            const matchesExperience =
+                selectedExperience.length === 0 ||
+                (job.values.experience != null &&
+                    selectedExperience.includes(job.values.experience));
 
-            const matchesPriority = selectedPriority.length === 0 ||
-                selectedPriority.includes(job.values.priority?.toLowerCase()); 
+            const pr = job.values.priority?.toLowerCase();
+            const matchesPriority =
+                selectedPriority.length === 0 || (pr != null && selectedPriority.includes(pr));
 
-            const matchesLocation = selectedLocations.length === 0 ||
-                selectedLocations.includes(job.values.location);
+            const matchesLocation =
+                selectedLocations.length === 0 ||
+                (job.values.location != null && selectedLocations.includes(job.values.location));
 
-            const payment = parseFloat(job.values.payment) || 0;
+            const payment = parseFloat(String(job.values.payment ?? "")) || 0;
             const matchesPayment = payment >= paymentRange[0] && payment <= paymentRange[1];
 
             return matchesSearch && matchesCategory && matchesExperience &&
@@ -522,10 +550,16 @@ const MyJobBoard = ({ onOpenCreateJob }: MyJobBoardProps) => {
 
         filtered.sort((a, b) => {
             if (sortBy === 'payment-high') {
-                return (parseFloat(b.values.payment) || 0) - (parseFloat(a.values.payment) || 0);
+                return (
+                    (parseFloat(String(b.values.payment ?? "")) || 0) -
+                    (parseFloat(String(a.values.payment ?? "")) || 0)
+                );
             }
             if (sortBy === 'payment-low') {
-                return (parseFloat(a.values.payment) || 0) - (parseFloat(b.values.payment) || 0);
+                return (
+                    (parseFloat(String(a.values.payment ?? "")) || 0) -
+                    (parseFloat(String(b.values.payment ?? "")) || 0)
+                );
             }
             if (sortBy === 'proposals') {
                 return (b.proposals?.length || 0) - (a.proposals?.length || 0);

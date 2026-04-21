@@ -41,7 +41,7 @@ interface KanbanContextProps<T> {
   isColumn: (id: UniqueIdentifier) => boolean;
 }
 
-const KanbanContext = React.createContext<KanbanContextProps<any>>({
+const KanbanContext = React.createContext<KanbanContextProps<unknown>>({
   columns: {},
   setColumns: () => {},
   getItemId: () => '',
@@ -256,7 +256,7 @@ function Kanban<T>({ value, onValueChange, getItemValue, children, className, on
   );
 
   return (
-    <KanbanContext.Provider value={contextValue}>
+    <KanbanContext.Provider value={contextValue as KanbanContextProps<unknown>}>
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
         <div data-slot="kanban" data-dragging={activeId !== null} className={cn(className)}>
           {children}

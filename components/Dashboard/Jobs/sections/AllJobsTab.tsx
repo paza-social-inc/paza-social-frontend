@@ -19,6 +19,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
+import type { Job, JobValues } from "@/types";
 
 interface AllJobsProps {
     initialJobId?: string;
@@ -43,26 +44,30 @@ export default function AllJobs({ onOpenCreateJob }: AllJobsProps) {
 
     const jobs = useMemo(() => {
         if (!jobsResponse?.data) return [];
-        return jobsResponse.data.map((job) => ({
-            ...job,
-            _id: job.id.toString(),
-            values: {
-                title: job.title,
-                description: job.description,
-                category: job.category,
-                experience: job.experience,
-                priority: job.priority,
-                location: job.location,
-                payment: job.payment,
-                age: job.age,
-                availability: job.availability,
-                gender: job.gender,
-                visibility: job.visibility,
-                paymentdesc: job.paymentdesc,
-                link: job.link,
-                years: job.years,
-            },
-        }));
+        return jobsResponse.data.map((job: Job) => {
+            const row = job as Job & Partial<JobValues>;
+            const v = row.values;
+            return {
+                ...job,
+                _id: String(job.id ?? job._id ?? ""),
+                values: {
+                    title: v?.title ?? row.title ?? "",
+                    description: v?.description ?? row.description,
+                    category: v?.category ?? row.category,
+                    experience: v?.experience ?? row.experience,
+                    priority: v?.priority ?? row.priority,
+                    location: v?.location ?? row.location,
+                    payment: v?.payment ?? row.payment,
+                    age: v?.age ?? row.age,
+                    availability: v?.availability ?? row.availability,
+                    gender: v?.gender ?? row.gender,
+                    visibility: v?.visibility ?? row.visibility,
+                    paymentdesc: v?.paymentdesc ?? row.paymentdesc,
+                    link: v?.link ?? row.link,
+                    years: v?.years ?? row.years,
+                },
+            };
+        });
     }, [jobsResponse]);
 
     const deleteJobMutation = useMutation({

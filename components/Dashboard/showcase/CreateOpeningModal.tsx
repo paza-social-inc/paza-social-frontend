@@ -42,10 +42,10 @@ const schema = z.object({
     .min(2, "Title must be at least 2 characters")
     .max(200, "Title must be 200 characters or less"),
   roleType: z.enum(OPENING_ROLE_TYPES as unknown as [string, ...string[]], {
-    required_error: "Select a role type",
+    message: "Select a role type",
   }),
   compensation: z.enum(OPENING_COMPENSATION_TYPES as unknown as [string, ...string[]], {
-    required_error: "Select a compensation type",
+    message: "Select a compensation type",
   }),
   description: z.string().max(2000, "Description must be 2000 characters or less").optional().or(z.literal("")),
 });

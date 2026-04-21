@@ -21,7 +21,7 @@ export default function OnboardingPage() {
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl">Welcome to Paza!</CardTitle>
                     <CardDescription>
-                        Let's set up your account. First, tell us what type of account you need.
+                        Let&apos;s set up your account. First, tell us what type of account you need.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -29,7 +29,7 @@ export default function OnboardingPage() {
                         <Card className={`cursor-pointer transition-all ${selectedType === 'brand' ? 'ring-2 ring-primary' : ''}`}>
                             <CardContent className="p-6 text-center" onClick={() => handleAccountTypeSelect('brand')}>
                                 <Briefcase className="w-12 h-12 mx-auto mb-4 text-primary" />
-                                <h3 className="text-lg font-semibold mb-2">I'm a Brand</h3>
+                                <h3 className="text-lg font-semibold mb-2">I&apos;m a Brand</h3>
                                 <p className="text-sm text-muted-foreground">
                                     Companies & Groups looking to collaborate with creators
                                 </p>
@@ -39,7 +39,7 @@ export default function OnboardingPage() {
                         <Card className={`cursor-pointer transition-all ${selectedType === 'creator' ? 'ring-2 ring-primary' : ''}`}>
                             <CardContent className="p-6 text-center" onClick={() => handleAccountTypeSelect('creator')}>
                                 <User className="w-12 h-12 mx-auto mb-4 text-primary" />
-                                <h3 className="text-lg font-semibold mb-2">I'm a Creator</h3>
+                                <h3 className="text-lg font-semibold mb-2">I&apos;m a Creator</h3>
                                 <p className="text-sm text-muted-foreground">
                                     Individuals & Collectives creating content
                                 </p>

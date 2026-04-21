@@ -281,21 +281,22 @@ export function CampaignTasksBoard({
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       milestoneId,
       status,
     }: {
       milestoneId: number;
       status: CampaignMilestoneStatus;
-    }) => {
+    }): Promise<void> => {
       const item = filteredMilestones.find((m) => m.id === milestoneId);
       if (!item) throw new Error("Task not found");
       if (item.source === "task") {
         const taskStatus: "Not Started" | "In Progress" | "Done" =
           status === "Completed" ? "Done" : status === "In Progress" ? "In Progress" : "Not Started";
-        return tasksApi.update(milestoneId, { status: taskStatus });
+        await tasksApi.update(milestoneId, { status: taskStatus });
+        return;
       }
-      return campaignApi.updateMilestone(campaignId, milestoneId, { status });
+      await campaignApi.updateMilestone(campaignId, milestoneId, { status });
     },
     onSuccess: () => {
       toast.success("Task updated");
@@ -305,11 +306,14 @@ export function CampaignTasksBoard({
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (milestoneId: number) => {
+    mutationFn: async (milestoneId: number): Promise<void> => {
       const item = filteredMilestones.find((m) => m.id === milestoneId);
       if (!item) throw new Error("Task not found");
-      if (item.source === "task") return tasksApi.delete(milestoneId);
-      return campaignApi.deleteMilestone(campaignId, milestoneId);
+      if (item.source === "task") {
+        await tasksApi.delete(milestoneId);
+        return;
+      }
+      await campaignApi.deleteMilestone(campaignId, milestoneId);
     },
     onSuccess: () => {
       toast.success("Task removed");
@@ -473,7 +477,7 @@ export function CampaignTasksBoard({
                         ? milestoneProgressPercent({
                             id: m.id,
                             title: m.title,
-                            description: m.description ?? undefined,
+                            description: m.description ?? "",
                             start: m.start ?? undefined,
                             end: m.end ?? undefined,
                             status: (m.status as CampaignMilestoneStatus) ?? "To-Do",

@@ -68,14 +68,18 @@ export function CampaignGoalTargetModal({
     if (!open) return;
     const normalizedFromDetails = Array.isArray(goalDetails)
       ? goalDetails
-          .map((g) => ({
-            goal: String(g?.goal ?? "").trim(),
-            targetNumber:
-              g?.targetNumber == null || g.targetNumber === ""
+          .map((g) => {
+            const rawTarget: unknown = g?.targetNumber;
+            const targetNumber =
+              rawTarget == null ||
+              (typeof rawTarget === "string" && rawTarget.trim() === "")
                 ? null
-                : Number.isFinite(Number(g.targetNumber))
-                  ? Math.trunc(Number(g.targetNumber))
-                  : null,
+                : Number.isFinite(Number(rawTarget))
+                  ? Math.trunc(Number(rawTarget))
+                  : null;
+            return {
+            goal: String(g?.goal ?? "").trim(),
+            targetNumber,
             deadline:
               g?.deadline == null || String(g.deadline).trim() === ""
                 ? null
@@ -84,7 +88,8 @@ export function CampaignGoalTargetModal({
               g?.targetDescription == null || String(g.targetDescription).trim() === ""
                 ? null
                 : String(g.targetDescription).trim(),
-          }))
+            };
+          })
           .filter((g) => g.goal.length > 0)
       : [];
     setGoals(

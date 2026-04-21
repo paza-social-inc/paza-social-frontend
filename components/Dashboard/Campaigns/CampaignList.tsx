@@ -378,7 +378,6 @@ export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps
   // force a fresh fetch so edit/delete buttons are consistent.
   useEffect(() => {
     void refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refetch, campaignActor.userId, campaignActor.emailLower]);
 
   // Delete mutation
@@ -388,8 +387,9 @@ export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps
       toast.success("Campaign deleted successfully");
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete campaign");
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to delete campaign");
     }
   });
 
@@ -404,7 +404,7 @@ export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps
 
   // Filter and sort campaigns (client-side)
   const filteredAndSortedCampaigns = useMemo(() => {
-    let filtered = campaigns.filter(c => {
+    const filtered = campaigns.filter(c => {
       /**
        * Owner/creator OR anyone on a campaign team (linked after invite/proposal accept).
        * Without this, high-budget campaigns disappear for collaborators when the default

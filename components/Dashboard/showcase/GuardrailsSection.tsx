@@ -36,7 +36,7 @@ export function GuardrailsSection({ guardrails }: { guardrails: GuardrailsData }
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {HARD_NO_OPTIONS.map((opt) => (
               <label key={opt} className="flex items-center gap-2 cursor-pointer">
-                <Checkbox checked={hardNo.includes(opt)} readOnly className="pointer-events-none" />
+                <Checkbox checked={hardNo.includes(opt)} disabled className="pointer-events-none opacity-100" />
                 <span className="text-sm">{opt}</span>
               </label>
             ))}

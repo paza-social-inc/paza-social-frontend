@@ -43,8 +43,9 @@ export default function FeedBackTab({ campaignId }: FeedBackTabProps) {
       queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
       queryClient.invalidateQueries({ queryKey: ["campaign-feedback", campaignId] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to submit feedback");
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to submit feedback");
     },
   });
 

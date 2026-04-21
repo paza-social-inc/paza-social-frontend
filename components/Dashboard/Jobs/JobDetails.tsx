@@ -18,6 +18,12 @@ import {
 import { Loader2, Users } from "lucide-react";
 import { SendProposalModal } from "./SendProposalModal";
 import { useAuth } from "@/hooks/store/auth/useAuth";
+import type { Job, JobValues } from "@/types";
+
+/** API may return extra top-level fields not on the base `Job` type. */
+type JobDetailRecord = Job & {
+    business?: { logoUrl?: string; name?: string; industry?: string };
+};
 
 interface JobDetailsProps {
     jobId: string;
@@ -96,31 +102,29 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
     //     createdAt,
     // } = job;
 
-  // Extract data from flat structure
-const {
-    title,
-    description,
-    payment,
-    paymentdesc,
-    location,
-    experience,
-    years,
-    age,
-    gender,
-    category,
-    priority,
-    availability,
-    visibility,
-    link,
-    skills = [],
-    contents = [],
-    platforms = [],
-    goals = [],
-    owner,
-    business,
-    createdAt,
-    updatedAt,
-} = job;
+  // Extract data — API may mirror fields on the job or under `values`
+  const jb = job as JobDetailRecord;
+  const v: JobValues = Object.assign({ title: "" }, jb.values ?? {});
+  const title = jb.title ?? v.title ?? "";
+  const description = jb.description ?? v.description ?? "";
+  const payment = v.payment;
+  const location = v.location;
+  const experience = v.experience;
+  const years = v.years;
+  const age = v.age;
+  const gender = v.gender;
+  const category = v.category;
+  const priority = v.priority;
+  const availability = v.availability;
+  const visibility = v.visibility;
+  const link = v.link;
+  const skills = jb.skills ?? [];
+  const contents = jb.contents ?? [];
+  const platforms = jb.platforms ?? [];
+  const goals = jb.goals ?? [];
+  const owner = jb.owner;
+  const business = jb.business;
+  const createdAt = jb.createdAt;
 
     const collaborators =
         (job as { collaborators?: Array<{ id?: number; firstName?: string; lastName?: string; email?: string }> })
@@ -457,11 +461,14 @@ const {
 
                             {/* Posted Date */}
                             <p className="text-xs text-muted-foreground pt-2 border-t">
-                                Posted {new Date(createdAt).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                })}
+                                Posted{" "}
+                                {createdAt
+                                    ? new Date(createdAt).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                          year: "numeric",
+                                      })
+                                    : "—"}
                             </p>
                         </CardContent>
                     </Card>

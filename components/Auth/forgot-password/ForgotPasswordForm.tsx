@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { pazaApi } from "@/lib/axiosClients"
+import axios from "axios"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
@@ -35,12 +36,15 @@ export function ForgotPasswordForm({
     const router = useRouter()
     const forgotPasswordMutation = useMutation({
         mutationFn: (data: FormData) => pazaApi.post("/auth/forgot-password", data),
-        onSuccess: (res) => {
+        onSuccess: () => {
             toast.success("Password reset email sent! Please check your inbox.")
             setTimeout(() => router.push("/login"), 2000)
         },
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to send reset email. Please try again.")
+        onError: (error: unknown) => {
+            const msg = axios.isAxiosError(error)
+                ? String(error.response?.data?.message ?? "")
+                : ""
+            toast.error(msg || "Failed to send reset email. Please try again.")
         }
     })
 
@@ -53,7 +57,7 @@ export function ForgotPasswordForm({
             <div className="flex flex-col items-center gap-1 text-center">
                 <h1 className="text-2xl font-bold">Forgot your password?</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                    Enter your email address and we'll send you a link to reset your password
+                    Enter your email address and we&apos;ll send you a link to reset your password
                 </p>
             </div>
 

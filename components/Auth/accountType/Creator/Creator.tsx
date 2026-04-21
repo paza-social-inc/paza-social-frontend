@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { saveCreatorProfileFull } from "@/lib/data/creatorOnboarding";
@@ -20,7 +20,7 @@ type CreatorJourneyMode = "full" | "signup-lite";
 type CreatorJourneyStep = {
     title: string;
     short: string;
-    render: (data: Creator, onUpdate: (data: Partial<Creator>) => void) => JSX.Element;
+    render: (data: Creator, onUpdate: (data: Partial<Creator>) => void) => ReactElement;
 };
 
 const FULL_STEPS: CreatorJourneyStep[] = [

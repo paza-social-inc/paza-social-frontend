@@ -22,20 +22,15 @@ type RadialProgressProps = BaseProps &
 type ProgressProps = LinearProgressProps | RadialProgressProps
 
 export function Progress(props: ProgressProps) {
-    const {
-        variant = "linear",
-        value = 0,
-        className,
-        ...rest
-    } = props as any
-
-    if (variant === "radial") {
+    if (props.variant === "radial") {
         const {
+            value = 0,
             size = 64,
             strokeWidth = 6,
             label = "Progress",
+            className,
             ...svgProps
-        } = rest as RadialProgressProps
+        } = props as RadialProgressProps
 
         const radius = (size - strokeWidth) / 2
         const circumference = 2 * Math.PI * radius
@@ -101,8 +96,8 @@ export function Progress(props: ProgressProps) {
         )
     }
 
-    // Linear Progress
-    const linearProps = rest as LinearProgressProps
+    const { value = 0, className, variant, ...linearProps } = props as LinearProgressProps
+    void variant
 
     return (
         <ProgressPrimitive.Root

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -98,7 +99,14 @@ const JobCard = ({
         return 'default';
     };
 
-    const InfoItem = ({ icon, label, value, bgColor }: any) => (
+    type InfoItemProps = {
+        icon: ReactNode;
+        label: string;
+        value?: string | number | null;
+        bgColor: string;
+    };
+
+    const InfoItem = ({ icon, label, value, bgColor }: InfoItemProps) => (
         <div className="flex items-center gap-3">
             <div className={`flex h-9 w-9 items-center justify-center rounded-full ${bgColor}`}>
                 {icon}

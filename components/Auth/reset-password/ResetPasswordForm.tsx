@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { pazaApi } from "@/lib/axiosClients"
+import axios from "axios"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
@@ -41,12 +42,15 @@ export function ResetPasswordForm({
 
     const resetPasswordMutation = useMutation({
         mutationFn: (data: FormData) => pazaApi.post("/auth/reset-password", { token, password: data.password }),
-        onSuccess: (res) => {
+        onSuccess: () => {
             toast.success("Password reset successfully! You can now log in with your new password.")
             router.push("/login")
         },
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to reset password. Please try again.")
+        onError: (error: unknown) => {
+            const msg = axios.isAxiosError(error)
+                ? String(error.response?.data?.message ?? "")
+                : ""
+            toast.error(msg || "Failed to reset password. Please try again.")
         }
     })
 
