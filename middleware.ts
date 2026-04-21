@@ -7,17 +7,22 @@ const SECRET = process.env.JWT_SECRET!;
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Define public routes that don't require authentication
-  const isPublicRoute = 
-    pathname === "/" ||
-    pathname.startsWith("/login") || 
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/google") ||
-    pathname.startsWith("/api");
+  // Define routes that REQUIRE authentication
+  const isProtectedRoute = 
+    pathname.startsWith("/overview") ||
+    pathname.startsWith("/campaigns") ||
+    pathname.startsWith("/tasks") ||
+    pathname.startsWith("/inbox") ||
+    pathname.startsWith("/jobs") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/payments") ||
+    pathname.startsWith("/accounts") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/showcase") ||
+    pathname.startsWith("/proposals") ||
+    pathname.startsWith("/onboarding");
 
-  if (isPublicRoute) {
+  if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
