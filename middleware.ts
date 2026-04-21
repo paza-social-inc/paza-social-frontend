@@ -1,8 +1,9 @@
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 const SECRET = process.env.JWT_SECRET!;
+const encodedSecret = new TextEncoder().encode(SECRET);
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -34,15 +35,22 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // verify jwt
-    const decoded = jwt.verify(token, SECRET);
+    // Check if secret is still the placeholder
+    if (SECRET === "your-jwt-secret-here") {
+      console.warn("Middleware using placeholder JWT_SECRET. Verification will likely fail for production tokens.");
+    }
+
+    // verify jwt using jose (Edge compatible)
+    const { payload } = await jwtVerify(token, encodedSecret);
 
     // attach user info
     const response = NextResponse.next();
-    response.headers.set("x-user", JSON.stringify(decoded));
+    response.headers.set("x-user", JSON.stringify(payload));
     return response;
   } catch (err) {
-    console.log("JWT verification failed:", err);
+    console.error("JWT verification failed:", err instanceof Error ? err.message : err);
+    
+    // Redirect to login if verification fails
     return NextResponse.redirect(new URL("/login", req.url));
   }
 }
