@@ -226,6 +226,8 @@ import toast from "react-hot-toast";
 import FeedBackTab from "./feedBack";
 import CreateProjectForm from "@/components/Dashboard/showcase/CreateProjectForm";
 import { CampaignTasksBoard } from "./CampaignTasksBoard";
+import CampaignMilestoneBoard from "./CampaignMilestoneBoard";
+import { EditCampaignModal } from "./EditCampaignModal";
 import {
   CampaignTargetDeadlineModal,
   formatCampaignDeadlineDisplay,
@@ -326,6 +328,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
   const [goalTargetModalOpen, setGoalTargetModalOpen] = useState(false);
   const budgetSectionRef = useRef<HTMLDivElement>(null);
   const [budgetBreakdownOpen, setBudgetBreakdownOpen] = useState(false);
+  const [editCampaignOpen, setEditCampaignOpen] = useState(false);
   const [addMemberQuery, setAddMemberQuery] = useState("");
   const [addInviteName, setAddInviteName] = useState("");
   const [addInviteEmail, setAddInviteEmail] = useState("");
@@ -769,11 +772,21 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
       const raw = String(t.budgetKsh ?? "").replace(/,/g, "").trim();
       const n = parseFloat(raw);
       const amount = Number.isFinite(n) ? n : 0;
+
+      // Extract assignee name
+      const a = t.assignee;
+      const firstName = a?.firstName ?? a?.firstname ?? "";
+      const lastName = a?.lastName ?? a?.lastname ?? "";
+      const name = [firstName, lastName].filter(Boolean).join(" ").trim() || a?.email || "Unassigned";
+
       return {
         id: t.id,
         title: (t.title ?? "").trim() || "Untitled task",
         status: String(t.status ?? "—"),
         amount,
+        assigneeName: name,
+        assigneeEmail: a?.email,
+        assigneeAvatar: a?.avatar,
       };
     });
   }, [campaignTasks]);
@@ -1127,9 +1140,22 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="min-w-0 flex-1 space-y-3">
-              <h1 className="text-2xl font-bold leading-tight text-white md:text-3xl lg:text-4xl">
-                {campaign.title}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold leading-tight text-white md:text-3xl lg:text-4xl">
+                  {campaign.title}
+                </h1>
+                {viewerOwnsCampaign && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-white/70 hover:bg-white/10 hover:text-white"
+                    onClick={() => setEditCampaignOpen(true)}
+                    title="Edit campaign"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <Badge
                   className={`cursor-pointer border-0 ${
@@ -1171,6 +1197,9 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
             <TabsList className="mb-2 flex h-12 w-full gap-1 rounded-lg border border-border bg-muted/50 p-1">
               <TabsTrigger value="overview" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
                 Overview
+              </TabsTrigger>
+              <TabsTrigger value="milestones" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
+                Milestones ({campaign.milestones?.length ?? 0})
               </TabsTrigger>
               <TabsTrigger value="tasks" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
                 Tasks ({campaignTasks.length})
@@ -1410,6 +1439,14 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                 )}
               </section>
 
+              <TabsContent value="milestones" className="mt-4">
+                <CampaignMilestoneBoard
+                  campaignId={campaign.id}
+                  milestones={campaign.milestones || []}
+                  viewerOwnsCampaign={viewerOwnsCampaign}
+                />
+              </TabsContent>
+
               {/* Jobs linked to this campaign (brand / business owners only — creators use projects, not job posts) */}
               {viewerOwnsCampaign && !isCreatorAccount && (
                 <div className="mt-6 space-y-4">
@@ -1591,7 +1628,20 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                                 <p className="font-medium leading-snug text-foreground line-clamp-2">
                                   {row.title}
                                 </p>
-                                <p className="mt-0.5 text-xs text-muted-foreground">{row.status}</p>
+                                <div className="mt-1.5 flex items-center gap-2">
+                                  <div className="h-5 w-5 rounded-full bg-orange-500/10 flex items-center justify-center overflow-hidden border border-orange-500/20">
+                                    {row.assigneeAvatar ? (
+                                      <img src={row.assigneeAvatar} alt="" className="h-full w-full object-cover" />
+                                    ) : (
+                                      <span className="text-[10px] font-bold text-orange-600">
+                                        {(row.assigneeName || "U")[0].toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {row.assigneeName} • {row.status}
+                                  </p>
+                                </div>
                               </div>
                               <span className="shrink-0 font-medium tabular-nums text-foreground">
                                 {row.amount > 0
@@ -2979,6 +3029,11 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
           </div>
         </DialogContent>
       </Dialog>
+      <EditCampaignModal
+        open={editCampaignOpen}
+        onOpenChange={setEditCampaignOpen}
+        campaignId={campaignId}
+      />
     </div>
   );
 }

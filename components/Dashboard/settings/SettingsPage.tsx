@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, CreditCard, Settings, Shield, User } from "lucide-react";
+import { Bell, CreditCard, Settings, Shield, User, Users } from "lucide-react";
 import { useState } from "react";
 import { DASHBOARD_TABS_LIST_CLASS } from "@/components/layout/DashboardPageShell";
 import { BillingSection } from "./sections/BillingSection";
@@ -9,11 +9,11 @@ import { IntegrationsSection } from "./sections/IntergrationsSection";
 import { NotificationsSection } from "./sections/NotificationsSection";
 import { ProfileSection } from "./sections/ProfileSection";
 import { SecuritySection } from "./sections/SecuritySection";
-
-
+import { TeamSection } from "./sections/TeamSection";
 
 const sidebarItems = [
     { id: "profile", label: "Profile", icon: User },
+    { id: "team", label: "Team", icon: Users },
     { id: "security", label: "Security", icon: Shield },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "billing", label: "Billing", icon: CreditCard },
@@ -39,6 +39,9 @@ export function SettingsPage() {
                 </TabsList>
                 <TabsContent value="profile" className="mt-6 border-0">
                     <ProfileSection />
+                </TabsContent>
+                <TabsContent value="team" className="mt-6 border-0">
+                    <TeamSection />
                 </TabsContent>
                 <TabsContent value="security" className="mt-6 border-0">
                     <SecuritySection />

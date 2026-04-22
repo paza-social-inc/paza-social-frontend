@@ -17,6 +17,7 @@ import {
 } from "@remixicon/react";
 import { Loader2, Users } from "lucide-react";
 import { SendProposalModal } from "./SendProposalModal";
+import JobProposalsList from "./JobProposalsList";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import type { Job, JobValues } from "@/types";
 
@@ -382,27 +383,11 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                         </div>
                     )}
 
-                    {/* Additional Info */}
-                    {(age || gender) && (
-                        <Card>
-                            <CardContent className="p-6">
-                                <h3 className="text-lg font-semibold mb-3">Requirements</h3>
-                                <div className="space-y-2 text-sm">
-                                    {age && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-muted-foreground">Age range:</span>
-                                            <span className="font-medium">{age}</span>
-                                        </div>
-                                    )}
-                                    {gender && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-muted-foreground">Gender:</span>
-                                            <span className="font-medium capitalize">{gender}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
+                    {/* Proposal List for Owners */}
+                    {isJobOwner && (
+                        <div className="mt-8 border-t border-border pt-8">
+                            <JobProposalsList jobId={parseInt(jobId, 10)} />
+                        </div>
                     )}
                 </div>
 

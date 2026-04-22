@@ -114,252 +114,252 @@ export default function NavBar() {
               : "bg-background border-b border-transparent",
       )}
     >
-    <motion.nav
-      initial={{ opacity: 0, y: -12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        "relative mx-auto flex w-full max-w-[1320px] items-center transition-all duration-500",
-        "h-14 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-[60px]",
-        isDarkMarketing && "mt-0",
-        darkMarketingChrome ? "text-white" : "text-foreground",
-      )}
-    >
-      {/* Left: wordmark */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.05 }}
-        className="flex min-w-0 shrink-0 items-center"
-      >
-        <Link
-          href="/"
-          className={cn(
-            "font-extrabold tracking-tight leading-none transition-colors",
-            "text-[24px] sm:text-[26px] lg:text-[28px]",
-            darkMarketingChrome ? "text-white hover:text-[#FF6B00]" : "text-foreground hover:text-primary"
-          )}
-        >
-          PAZA
-        </Link>
-      </motion.div>
-
-      {/* Center: primary links (final design) */}
-      <motion.div
-        variants={NAV_CONTAINER}
-        initial="hidden"
-        animate="show"
+      <motion.nav
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          "absolute left-1/2 hidden min-w-0 -translate-x-1/2 md:block",
-          minimalMarketingNav ? "" : "",
+          "relative mx-auto flex w-full max-w-[1320px] items-center transition-all duration-500",
+          "h-14 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-[60px]",
+          isDarkMarketing && "mt-0",
+          darkMarketingChrome ? "text-white" : "text-foreground",
         )}
       >
-        <nav aria-label="Primary" className="flex items-center gap-8 lg:gap-[33px]">
-          {navLinks.map((link) => (
-            <motion.div key={link.name} variants={NAV_ITEM} className="flex flex-col items-center gap-1.5">
-              <Link
-                href={link.hash ? `${link.href}${link.hash}` : link.href}
-                onClick={() => setActive(link.name)}
-                className={cn(
-                  "inline-flex shrink-0 items-center px-0 text-base font-semibold tracking-[0.05em] transition-colors touch-manipulation",
-                  isDarkMarketing && active === link.name && "text-[#FF6B00]",
-                  darkMarketingChrome && active !== link.name && "font-normal text-[#d9d9d9] hover:text-white",
-                  isDarkMarketing && !darkMarketingChrome && active !== link.name && "font-normal text-muted-foreground hover:text-foreground",
-                  !isDarkMarketing &&
-                    (active === link.name
-                      ? "text-primary font-semibold"
-                      : "text-muted-foreground hover:text-foreground"),
-                )}
-              >
-                {link.name}
-              </Link>
-              {isDarkMarketing && active === link.name && (
-                <span
-                  className={cn(
-                    "h-px w-12 max-w-full",
-                    darkMarketingChrome ? "bg-[#FF6B00]" : "bg-primary",
-                  )}
-                  aria-hidden
-                />
-              )}
-            </motion.div>
-          ))}
-        </nav>
-      </motion.div>
-
-      {/* Right: Login, WhatsApp, Request a demo */}
-      <motion.div
-        variants={NAV_CONTAINER}
-        initial="hidden"
-        animate="show"
-        className={cn(
-          "ml-auto flex min-w-0 shrink-0 items-center justify-end gap-1 md:gap-2",
-        )}
-      >
-        <Button
-          asChild
-          variant="outline"
-          className={cn(
-            "hidden h-8 rounded px-2.5 text-[10px] font-semibold uppercase tracking-wider sm:h-9 sm:inline-flex sm:rounded-md sm:px-3 sm:text-[11px] md:text-xs",
-            darkMarketingChrome &&
-              "border-white/45 bg-transparent text-white hover:border-white hover:bg-white/10 hover:text-white",
-          )}
-        >
-          <Link href="/login">Login</Link>
-        </Button>
-        <Button
-          asChild
-          className={cn(
-            "hidden h-8 gap-1 rounded px-2.5 text-[10px] font-semibold uppercase tracking-wider shadow-none sm:h-9 sm:inline-flex sm:gap-1.5 sm:rounded-md sm:px-3 sm:text-[11px] md:text-xs md:px-3.5",
-            darkMarketingChrome
-              ? "border border-white/45 bg-transparent text-white hover:bg-white/10"
-              : "bg-primary text-primary-foreground hover:bg-primary/90",
-          )}
-        >
-          <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
-            <WhatsAppGlyph className="size-3.5 shrink-0 sm:size-4" />
-            <span>WhatsApp</span>
-          </a>
-        </Button>
+        {/* Left: wordmark */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="hidden md:block"
+          transition={{ duration: 0.5, delay: 0.05 }}
+          className="flex min-w-0 shrink-0 items-center"
+        >
+          <Link
+            href="/"
+            className={cn(
+              "font-extrabold tracking-tight leading-none transition-colors",
+              "text-[24px] sm:text-[26px] lg:text-[28px]",
+              darkMarketingChrome ? "text-white hover:text-[#FF6B00]" : "text-foreground hover:text-primary"
+            )}
+          >
+            PAZA
+          </Link>
+        </motion.div>
+
+        {/* Center: primary links (final design) */}
+        <motion.div
+          variants={NAV_CONTAINER}
+          initial="hidden"
+          animate="show"
+          className={cn(
+            "absolute left-1/2 hidden min-w-0 -translate-x-1/2 md:block",
+            minimalMarketingNav ? "" : "",
+          )}
+        >
+          <nav aria-label="Primary" className="flex items-center gap-8 lg:gap-[33px]">
+            {navLinks.map((link) => (
+              <motion.div key={link.name} variants={NAV_ITEM} className="flex flex-col items-center gap-1.5">
+                <Link
+                  href={link.hash ? `${link.href}${link.hash}` : link.href}
+                  onClick={() => setActive(link.name)}
+                  className={cn(
+                    "inline-flex shrink-0 items-center px-0 text-base font-semibold tracking-[0.05em] transition-colors touch-manipulation",
+                    isDarkMarketing && active === link.name && "text-[#FF6B00]",
+                    darkMarketingChrome && active !== link.name && "font-normal text-[#d9d9d9] hover:text-white",
+                    isDarkMarketing && !darkMarketingChrome && active !== link.name && "font-normal text-muted-foreground hover:text-foreground",
+                    !isDarkMarketing &&
+                    (active === link.name
+                      ? "text-primary font-semibold"
+                      : "text-muted-foreground hover:text-foreground"),
+                  )}
+                >
+                  {link.name}
+                </Link>
+                {isDarkMarketing && active === link.name && (
+                  <span
+                    className={cn(
+                      "h-px w-12 max-w-full",
+                      darkMarketingChrome ? "bg-[#FF6B00]" : "bg-primary",
+                    )}
+                    aria-hidden
+                  />
+                )}
+              </motion.div>
+            ))}
+          </nav>
+        </motion.div>
+
+        {/* Right: Login, WhatsApp, Request a demo */}
+        <motion.div
+          variants={NAV_CONTAINER}
+          initial="hidden"
+          animate="show"
+          className={cn(
+            "ml-auto flex min-w-0 shrink-0 items-center justify-end gap-1 md:gap-2",
+          )}
         >
           <Button
             asChild
+            variant="outline"
             className={cn(
-              "h-10 min-w-[140px] rounded-none px-4 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-none sm:h-10 sm:min-w-[175px] sm:px-5 sm:text-[12.5px]",
-              minimalMarketingNav
-                ? "border-0 bg-white text-neutral-900 hover:bg-zinc-100"
+              "hidden h-8 rounded px-2.5 text-[10px] font-semibold uppercase tracking-wider sm:h-9 sm:inline-flex sm:rounded-md sm:px-3 sm:text-[11px] md:text-xs",
+              darkMarketingChrome &&
+              "border-white/45 bg-transparent text-white hover:border-white hover:bg-white/10 hover:text-white",
+            )}
+          >
+            <Link href="/login">Login</Link>
+          </Button>
+          <Button
+            asChild
+            className={cn(
+              "hidden h-8 gap-1 rounded px-2.5 text-[10px] font-semibold uppercase tracking-wider shadow-none sm:h-9 sm:inline-flex sm:gap-1.5 sm:rounded-md sm:px-3 sm:text-[11px] md:text-xs md:px-3.5",
+              darkMarketingChrome
+                ? "border border-white/45 bg-transparent text-white hover:bg-white/10"
                 : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >
-            <Link href="/#contact" className="whitespace-nowrap">
-              Request a demo
-            </Link>
+            <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+              <WhatsAppGlyph className="size-3.5 shrink-0 sm:size-4" />
+              <span>WhatsApp</span>
+            </a>
           </Button>
-        </motion.div>
-        {darkMarketingChrome ? (
-          <AnimatedThemeToggler className="inline-flex h-8 w-8 shrink-0 touch-manipulation rounded-full border border-white/35 bg-white/10 text-white hover:bg-white/15 [&_svg]:text-white sm:h-9 sm:w-9" />
-        ) : (
-          <>
-            <AnimatedThemeToggler className="hidden h-8 w-8 shrink-0 sm:h-9 sm:w-9 md:inline-flex" />
-            <AnimatedThemeToggler className="h-8 w-8 shrink-0 sm:h-9 sm:w-9 md:hidden" />
-          </>
-        )}
-
-        <div className="flex md:hidden">
-          {!mobileSheetReady ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="hidden md:block"
+          >
             <Button
-              variant="ghost"
-              size="icon"
-              type="button"
+              asChild
               className={cn(
-                "min-h-[44px] min-w-[44px] touch-manipulation rounded-xl",
-                darkMarketingChrome && "text-white hover:bg-white/10 hover:text-white",
+                "h-10 min-w-[140px] rounded-none px-4 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-none sm:h-10 sm:min-w-[175px] sm:px-5 sm:text-[12.5px]",
+                minimalMarketingNav
+                  ? "border-0 bg-white text-neutral-900 hover:bg-zinc-100"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90",
               )}
-              aria-hidden
-              tabIndex={-1}
-              disabled
             >
-              <Menu className="h-6 w-6" />
+              <Link href="/#contact" className="whitespace-nowrap">
+                Request a demo
+              </Link>
             </Button>
+          </motion.div>
+          {darkMarketingChrome ? (
+            <AnimatedThemeToggler className="inline-flex h-8 w-8 shrink-0 touch-manipulation rounded-full border border-white/35 bg-white/10 text-white hover:bg-white/15 [&_svg]:text-white sm:h-9 sm:w-9" />
           ) : (
-          <Sheet>
-            <SheetTrigger asChild>
+            <>
+              <AnimatedThemeToggler className="hidden h-8 w-8 shrink-0 sm:h-9 sm:w-9 md:inline-flex" />
+              <AnimatedThemeToggler className="h-8 w-8 shrink-0 sm:h-9 sm:w-9 md:hidden" />
+            </>
+          )}
+
+          <div className="flex md:hidden">
+            {!mobileSheetReady ? (
               <Button
                 variant="ghost"
                 size="icon"
+                type="button"
                 className={cn(
                   "min-h-[44px] min-w-[44px] touch-manipulation rounded-xl",
-                  darkMarketingChrome && "text-white hover:bg-white/10 hover:text-white"
+                  darkMarketingChrome && "text-white hover:bg-white/10 hover:text-white",
                 )}
-                aria-label="Open menu"
+                aria-hidden
+                tabIndex={-1}
+                disabled
               >
                 <Menu className="h-6 w-6" />
               </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="right"
-              className={cn(
-                "w-[280px] rounded-l-2xl",
-                darkMarketingChrome && "border-white/10 bg-zinc-950 text-white",
-              )}
-            >
-              <SheetHeader>
-                <SheetTitle
-                  className={cn("text-left text-lg font-bold", darkMarketingChrome && "text-white")}
+            ) : (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "min-h-[44px] min-w-[44px] touch-manipulation rounded-xl",
+                      darkMarketingChrome && "text-white hover:bg-white/10 hover:text-white"
+                    )}
+                    aria-label="Open menu"
+                  >
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className={cn(
+                    "w-[280px] rounded-l-2xl",
+                    darkMarketingChrome && "border-white/10 bg-zinc-950 text-white",
+                  )}
                 >
-                  Menu
-                </SheetTitle>
-              </SheetHeader>
-              <div className="mt-8 flex flex-col gap-1">
-                {navLinks.map((link) => (
-                  <SheetClose key={link.name} asChild>
-                    <Link
-                      href={link.hash ? `${link.href}${link.hash}` : link.href}
-                      onClick={() => setActive(link.name)}
-                      className={cn(
-                        "flex min-h-[48px] items-center rounded-xl px-4 py-3 text-base font-semibold uppercase tracking-wide",
-                        darkMarketingChrome
-                          ? active === link.name
-                            ? "bg-white/10 text-[#FF6B00]"
-                            : "text-zinc-300 hover:bg-white/5 hover:text-white"
-                          : active === link.name
-                            ? "bg-primary/10 text-primary"
-                            : "text-foreground",
-                      )}
+                  <SheetHeader>
+                    <SheetTitle
+                      className={cn("text-left text-lg font-bold", darkMarketingChrome && "text-white")}
                     >
-                      {link.name}
-                    </Link>
-                  </SheetClose>
-                ))}
-                <SheetClose asChild>
-                  <a
-                    href={WHATSAPP_HREF}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-base font-semibold text-white"
-                  >
-                    <WhatsAppGlyph className="size-5 shrink-0" />
-                    WhatsApp
-                  </a>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/login"
-                    className={cn(
-                      "mt-2 flex min-h-[48px] items-center justify-center rounded-xl border px-4 text-base font-semibold",
-                      darkMarketingChrome
-                        ? "border-white/20 bg-zinc-900 text-white hover:bg-zinc-800"
-                        : "border-border bg-background text-foreground",
-                    )}
-                  >
-                    Login
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/#contact"
-                    className={cn(
-                      "mt-4 flex min-h-[48px] items-center justify-center rounded-xl text-sm font-semibold uppercase tracking-wide",
-                      darkMarketingChrome
-                        ? "bg-white text-neutral-900 hover:bg-zinc-100"
-                        : "bg-primary text-primary-foreground hover:bg-primary/90",
-                    )}
-                  >
-                    Request a demo
-                  </Link>
-                </SheetClose>
-              </div>
-            </SheetContent>
-          </Sheet>
-          )}
-        </div>
-      </motion.div>
-    </motion.nav>
+                      Menu
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-8 flex flex-col gap-1">
+                    {navLinks.map((link) => (
+                      <SheetClose key={link.name} asChild>
+                        <Link
+                          href={link.hash ? `${link.href}${link.hash}` : link.href}
+                          onClick={() => setActive(link.name)}
+                          className={cn(
+                            "flex min-h-[48px] items-center rounded-xl px-4 py-3 text-base font-semibold uppercase tracking-wide",
+                            darkMarketingChrome
+                              ? active === link.name
+                                ? "bg-white/10 text-[#FF6B00]"
+                                : "text-zinc-300 hover:bg-white/5 hover:text-white"
+                              : active === link.name
+                                ? "bg-primary/10 text-primary"
+                                : "text-foreground",
+                          )}
+                        >
+                          {link.name}
+                        </Link>
+                      </SheetClose>
+                    ))}
+                    <SheetClose asChild>
+                      <a
+                        href={WHATSAPP_HREF}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-base font-semibold text-white"
+                      >
+                        <WhatsAppGlyph className="size-5 shrink-0" />
+                        WhatsApp
+                      </a>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/login"
+                        className={cn(
+                          "mt-2 flex min-h-[48px] items-center justify-center rounded-xl border px-4 text-base font-semibold",
+                          darkMarketingChrome
+                            ? "border-white/20 bg-zinc-900 text-white hover:bg-zinc-800"
+                            : "border-border bg-background text-foreground",
+                        )}
+                      >
+                        Login
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/#contact"
+                        className={cn(
+                          "mt-4 flex min-h-[48px] items-center justify-center rounded-xl text-sm font-semibold uppercase tracking-wide",
+                          darkMarketingChrome
+                            ? "bg-white text-neutral-900 hover:bg-zinc-100"
+                            : "bg-primary text-primary-foreground hover:bg-primary/90",
+                        )}
+                      >
+                        Request a demo
+                      </Link>
+                    </SheetClose>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}Chrome
+          </div>
+        </motion.div>
+      </motion.nav>
     </div>
   );
 }

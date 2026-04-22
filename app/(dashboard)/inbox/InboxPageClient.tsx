@@ -29,6 +29,7 @@ function mapApiConversationToUI(api: ApiConversation, currentUserId: string): Co
         avatar: other.avatar ?? AVATAR_FALLBACK(other.id),
         lastMessage: api.lastMessage ?? "No messages yet",
         timestamp: api.lastMessageAt ? new Date(api.lastMessageAt) : new Date(),
+        unreadCount: api.unreadCount ?? 0,
     };
 }
 
