@@ -16,13 +16,13 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, MapPin, User, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { fetchAuthMe } from "@/lib/data/auth";
-import { getCreatorProfile, updateFullCreatorProfile, uploadCreatorAvatar } from "@/lib/data/creator";
-import { getBrandProfile, updateBrandIdentity, uploadBrandLogo } from "@/lib/data/brands";
+import { getCreatorProfile, updateFullCreatorProfile, uploadCreatorAvatar, CreatorProfile } from "@/lib/data/creator";
+import { getBrandProfile, updateBrandIdentity, uploadBrandLogo, ApiResponse, BrandProfile } from "@/lib/data/brands";
 import toast from "react-hot-toast";
 
 export function ProfileSection() {
     const queryClient = useQueryClient();
-    const { user } = useAuth();
+    const { } = useAuth();
     
     // Fetch user and profile data
     const { data: authMe, isLoading: authLoading } = useQuery({
@@ -95,10 +95,10 @@ export function ProfileSection() {
     }, [authMe, creatorProfile, brandProfile]);
 
     // Mutations
-    const updateProfileMutation = useMutation({
-        mutationFn: (data: Record<string, unknown>) => {
-            if (isCreator) return updateFullCreatorProfile(data);
-            if (isBrand && businessId) return updateBrandIdentity(businessId, data);
+    const updateProfileMutation = useMutation<ApiResponse<BrandProfile | CreatorProfile>, Error, Record<string, unknown>>({
+        mutationFn: async (data: Record<string, unknown>) => {
+            if (isCreator) return updateFullCreatorProfile(data) as Promise<ApiResponse<BrandProfile | CreatorProfile>>;
+            if (isBrand && businessId) return updateBrandIdentity(businessId, data) as Promise<ApiResponse<BrandProfile | CreatorProfile>>;
             throw new Error("Invalid account type");
         },
         onSuccess: () => {
@@ -112,10 +112,10 @@ export function ProfileSection() {
         }
     });
 
-    const uploadAvatarMutation = useMutation({
-        mutationFn: (file: File) => {
-            if (isCreator) return uploadCreatorAvatar(file);
-            if (isBrand && businessId) return uploadBrandLogo(businessId, file);
+    const uploadAvatarMutation = useMutation<ApiResponse<{ avatar?: string; logo?: string }>, Error, File>({
+        mutationFn: async (file: File) => {
+            if (isCreator) return uploadCreatorAvatar(file) as Promise<ApiResponse<{ avatar?: string; logo?: string }>>;
+            if (isBrand && businessId) return uploadBrandLogo(businessId, file) as Promise<ApiResponse<{ avatar?: string; logo?: string }>>;
             throw new Error("Invalid account type");
         },
         onSuccess: () => {

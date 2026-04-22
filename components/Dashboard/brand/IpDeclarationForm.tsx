@@ -42,7 +42,7 @@ export default function IpDeclarationForm({ businessId, isAlreadyEnabled, onSucc
                 toast.success("IP Declaration submitted. Publisher features unlocked!");
                 if (onSuccess) onSuccess();
             }
-        } catch (err) {
+        } catch {
             toast.error("Submission failed");
         } finally {
             setIsSubmitting(false);
@@ -89,7 +89,7 @@ export default function IpDeclarationForm({ businessId, isAlreadyEnabled, onSucc
                         <div className="space-y-2">
                             <Label>Ownership Basis</Label>
                             <Select 
-                                onValueChange={(val: any) => setValue("ownershipBasis", val)}
+                                onValueChange={(val: IpDeclarationPayload["ownershipBasis"]) => setValue("ownershipBasis", val)}
                                 defaultValue="we_own_it"
                             >
                                 <SelectTrigger>

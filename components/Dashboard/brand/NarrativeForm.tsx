@@ -44,7 +44,7 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
             } else {
                 toast.error(res.message || "Failed to update narrative");
             }
-        } catch (err) {
+        } catch {
             toast.error("An error occurred");
         } finally {
             setIsSubmitting(false);
@@ -55,14 +55,14 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
         const val = tagInputs[inputKey].trim();
         const current = (watch(field) as string[]) || [];
         if (val && !current.includes(val) && current.length < max) {
-            setValue(field as any, [...current, val]);
+            setValue(field as keyof BrandProfile, [...current, val] as never);
             setTagInputs(prev => ({ ...prev, [inputKey]: "" }));
         }
     };
 
     const removeTag = (field: keyof BrandProfile, val: string) => {
         const current = (watch(field) as string[]) || [];
-        setValue(field as any, current.filter(t => t !== val));
+        setValue(field as keyof BrandProfile, current.filter(t => t !== val) as never);
     };
 
     return (

@@ -5,6 +5,7 @@ import { RiCameraLine } from "@remixicon/react";
 import { cj } from "../creatorJourneyTheme";
 import { StepSection } from "./StepSection";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export default function ProfileMediaStep({ data, onUpdate }: ProfileMediaStepProps) {
     return (
@@ -19,10 +20,13 @@ export default function ProfileMediaStep({ data, onUpdate }: ProfileMediaStepPro
                             )}
                         >
                             {data.avatar ? (
-                                <img
+                                <Image
                                     src={data.avatar}
-                                    alt=""
+                                    alt="Profile"
+                                    width={160}
+                                    height={160}
                                     className="h-full w-full object-cover"
+                                    unoptimized
                                 />
                             ) : (
                                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">
@@ -74,11 +78,15 @@ export default function ProfileMediaStep({ data, onUpdate }: ProfileMediaStepPro
                     </Button>
                     <p className="mt-2 text-[11px] text-zinc-500">Recommended 1200×400</p>
                     {data.preview ? (
-                        <img
-                            src={data.preview}
-                            alt=""
-                            className="mt-4 h-28 w-full rounded-lg object-cover"
-                        />
+                        <div className="relative mt-4 h-28 w-full overflow-hidden rounded-lg">
+                            <Image
+                                src={data.preview}
+                                alt="Banner"
+                                fill
+                                className="object-cover"
+                                unoptimized
+                            />
+                        </div>
                     ) : null}
                 </div>
             </div>

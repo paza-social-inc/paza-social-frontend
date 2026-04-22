@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ShowcaseSearch,
   SHOWCASE_TABS,
@@ -15,9 +15,9 @@ export default function ShowcasePage() {
   const { user } = useAuth();
   const accountType = String(user?.accountType ?? "").toLowerCase();
   const isCreator = accountType === "creator";
-  const tabs: readonly ProjectNavTab[] = isCreator
+  const tabs: readonly ProjectNavTab[] = useMemo(() => isCreator
     ? SHOWCASE_TABS
-    : (["All projects", "Collaborating"] as const);
+    : (["All projects", "Collaborating"] as const), [isCreator]);
 
   const [activeNav, setActiveNav] = useState<ProjectNavTab>(tabs[0]);
   const [searchQuery, setSearchQuery] = useState("");

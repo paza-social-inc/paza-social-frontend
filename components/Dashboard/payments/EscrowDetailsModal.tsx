@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { escrowPaymentsApi, type EscrowListItem } from "@/lib/data/escrowPayments";
+import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
 import {
   Dialog,
   DialogContent,
@@ -11,18 +11,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   RiBankCardLine,
   RiUser3Line,
   RiTimeLine,
   RiCheckDoubleLine,
   RiAlertLine,
-  RiArrowRightLine,
-  RiRefundLine,
   RiPlayFill,
   RiSendPlane2Fill,
 } from "@remixicon/react";
-import { Loader2, ExternalLink } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface EscrowDetailsModalProps {
@@ -53,7 +52,7 @@ export default function EscrowDetailsModal({
       queryClient.invalidateQueries({ queryKey: ["escrow-list-payments"] });
       queryClient.invalidateQueries({ queryKey: ["escrow-stats"] });
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Action failed");
     },
   };

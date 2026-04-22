@@ -15,6 +15,7 @@ import {
     RiMedalLine, 
     RiCheckboxCircleLine,
 } from "@remixicon/react";
+import Image from "next/image";
 import { Loader2, Users } from "lucide-react";
 import { SendProposalModal } from "./SendProposalModal";
 import JobProposalsList from "./JobProposalsList";
@@ -112,8 +113,6 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
   const location = v.location;
   const experience = v.experience;
   const years = v.years;
-  const age = v.age;
-  const gender = v.gender;
   const category = v.category;
   const priority = v.priority;
   const availability = v.availability;
@@ -146,10 +145,12 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
             <div className="relative h-64 w-full overflow-hidden border">
 
                 {business?.logoUrl ? (
-                    <img 
+                    <Image 
                         src={business.logoUrl} 
                         alt={title} 
-                        className="h-full w-full object-cover" 
+                        fill
+                        className="object-cover" 
+                        unoptimized
                     />
                 ) : (
                     <div className="h-full w-full bg-gradient-to-br from-orange-500 via-red-500 to-pink-500" />
@@ -255,10 +256,13 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                 {business ? (
                                     <>
                                         {business.logoUrl && (
-                                            <img 
+                                            <Image 
                                                 src={business.logoUrl} 
-                                                alt={business.name}
-                                                className="h-12 w-12 rounded-full object-cover"
+                                                alt={business.name || ""}
+                                                width={48}
+                                                height={48}
+                                                className="rounded-full object-cover"
+                                                unoptimized
                                             />
                                         )}
                                         <div>

@@ -197,7 +197,7 @@ export default function PaymentsPage() {
 
   const walletKes = walletData?.balanceKes ?? 0;
 
-  const allEscrows = escrowListResult?.escrows ?? [];
+  const allEscrows = useMemo(() => escrowListResult?.escrows ?? [], [escrowListResult?.escrows]);
 
   const statsRows = useMemo(
     () => buildStatsChartRows(allEscrows, period),

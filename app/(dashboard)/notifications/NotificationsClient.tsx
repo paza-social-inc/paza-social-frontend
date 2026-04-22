@@ -1,12 +1,11 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { notificationsApi, type Notification } from "@/lib/data/notifications";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { notificationsApi } from "@/lib/data/notifications";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Bell, CheckCheck, Trash2, Clock, Inbox } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { Loader2, Bell, CheckCheck, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function NotificationsClient() {
@@ -108,7 +107,7 @@ export default function NotificationsClient() {
                         </div>
                         <h3 className="text-lg font-medium">No notifications yet</h3>
                         <p className="text-sm text-muted-foreground max-w-xs mt-2">
-                            When you get activity updates from campaigns, jobs, or payments, they'll appear here.
+                            When you get activity updates from campaigns, jobs, or payments, they&apos;ll appear here.
                         </p>
                     </CardContent>
                 </Card>

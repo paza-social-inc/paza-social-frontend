@@ -12,13 +12,7 @@ import { RiAddLine, RiCloseLine, RiLoader2Line, RiSparklingLine } from "@remixic
 import { CreatorProfile, updateNarrativeIdentity } from "@/lib/data/creator";
 import toast from "react-hot-toast";
 
-interface NarrativeFormProps {
-    creatorId: number;
-    initialData: Partial<CreatorProfile>;
-    onSuccess?: (newData: CreatorProfile) => void;
-}
-
-export default function CreatorNarrativeForm({ creatorId, initialData, onSuccess }: NarrativeFormProps) {
+export default function CreatorNarrativeForm({ initialData, onSuccess }: { initialData: Partial<CreatorProfile>, onSuccess?: (newData: CreatorProfile) => void }) {
     const { register, handleSubmit, setValue, watch } = useForm<Partial<CreatorProfile>>({
         defaultValues: initialData,
     });
@@ -32,12 +26,12 @@ export default function CreatorNarrativeForm({ creatorId, initialData, onSuccess
         try {
             // We'll cast to any for now to allow extra fields (mission, goal, etc) 
             // while matching the identity-related backend update.
-            const res = await updateNarrativeIdentity(data as any);
+            const res = await updateNarrativeIdentity(data as Partial<CreatorProfile>);
             if (res.success) {
                 toast.success("Creator narrative updated");
                 if (onSuccess) onSuccess(res.data);
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to update narrative");
         } finally {
             setIsSubmitting(false);
@@ -53,7 +47,7 @@ export default function CreatorNarrativeForm({ creatorId, initialData, onSuccess
 
     return (
         <Card>
-            <CardHeader shadow="none" border={false}>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <RiSparklingLine className="h-5 w-5 text-primary" />
                     Storytelling & Vibe

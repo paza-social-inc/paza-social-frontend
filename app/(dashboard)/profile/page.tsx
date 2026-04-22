@@ -1,19 +1,13 @@
 "use client";
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     RiClipboardLine,
-    RiMapPinLine,
-    RiCameraLine,
-    RiCalendarLine,
-    RiShareLine,
-    RiMoreLine,
     RiAddLine,
 } from "@remixicon/react";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import CoverArea from "@/components/Dashboard/profile/coverarea";
 import ShareProfile from "@/components/Dashboard/profile/share-profile";
 import { ProfileSidebar } from "@/components/Dashboard/profile/profile-sidebar";
@@ -41,7 +35,7 @@ export default function ProfilePage() {
                 <div className="px-8 py-6 border-b pt-28">
                     <div className="pb-2 mb-4">
                         <div className="flex gap-4 flex-col">
-                            <h1 className="text-2xl font-bold text-foreground">Hi, {user?.firstName || "there"}</h1>
+                            <h1 className="text-2xl font-bold text-foreground">Hi, {user?.firstname || "there"}</h1>
                             <div className="flex gap-2">
                                 <Button variant="outline" className="h-10" size="sm"><RiAddLine /> Invite Members</Button>
                                 <ShareProfile user_id={user?.id || "Avx8HD"} />

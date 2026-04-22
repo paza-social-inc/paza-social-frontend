@@ -233,6 +233,7 @@ import {
   formatCampaignDeadlineDisplay,
 } from "./CampaignTargetDeadlineModal";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 /** Active tab: thin orange outline + inset left bar (readable in dark mode). */
 const CAMPAIGN_TAB_TRIGGER_CLASS =
@@ -793,7 +794,10 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
 
   // Toggle active status mutation
   const toggleActiveMutation = useMutation({
-    mutationFn: (active: boolean) => campaignApi.update(campaignId, { active }),
+    mutationFn: async (active: boolean) => {
+      await campaignApi.update(campaignId, { active });
+      return true;
+    },
     onSuccess: () => {
       toast.success("Campaign status updated");
       queryClient.invalidateQueries({ queryKey: ['campaign', campaignId] });
@@ -1131,10 +1135,12 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
     <div className="space-y-4 pb-3">
       {/* Hero — title, Open / Posted, rate (design: dark campaign header) */}
       <div className="relative min-h-[280px] w-full overflow-hidden border-b border-border md:min-h-[320px]">
-        <img
+        <Image
           src={`https://picsum.photos/seed/${campaign.id}/1200/400`}
-          alt={campaign.title}
-          className="h-full min-h-[280px] w-full object-cover md:min-h-[320px]"
+          alt={campaign.title || "Campaign"}
+          fill
+          className="object-cover"
+          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
         <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
@@ -1631,7 +1637,14 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                                 <div className="mt-1.5 flex items-center gap-2">
                                   <div className="h-5 w-5 rounded-full bg-orange-500/10 flex items-center justify-center overflow-hidden border border-orange-500/20">
                                     {row.assigneeAvatar ? (
-                                      <img src={row.assigneeAvatar} alt="" className="h-full w-full object-cover" />
+                                      <Image 
+                                        src={row.assigneeAvatar} 
+                                        alt={row.assigneeName || "Assignee"} 
+                                        width={20}
+                                        height={20}
+                                        className="h-full w-full object-cover" 
+                                        unoptimized
+                                      />
                                     ) : (
                                       <span className="text-[10px] font-bold text-orange-600">
                                         {(row.assigneeName || "U")[0].toUpperCase()}

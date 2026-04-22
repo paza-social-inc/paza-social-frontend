@@ -12,13 +12,7 @@ import { RiAddLine, RiCloseLine, RiLoader2Line, RiSettings4Line } from "@remixic
 import { CreatorProfile, updateWorkingStyle } from "@/lib/data/creator";
 import toast from "react-hot-toast";
 
-interface WorkingStyleFormProps {
-    creatorId: number;
-    initialData: Partial<CreatorProfile>;
-    onSuccess?: (newData: CreatorProfile) => void;
-}
-
-export default function WorkingStyleForm({ creatorId, initialData, onSuccess }: WorkingStyleFormProps) {
+export default function WorkingStyleForm({ initialData, onSuccess }: { initialData: Partial<CreatorProfile>, onSuccess?: (newData: CreatorProfile) => void }) {
     const { register, handleSubmit, setValue, watch } = useForm<Partial<CreatorProfile>>({
         defaultValues: initialData,
     });
@@ -33,12 +27,12 @@ export default function WorkingStyleForm({ creatorId, initialData, onSuccess }: 
     const onSubmit = async (data: Partial<CreatorProfile>) => {
         setIsSubmitting(true);
         try {
-            const res = await updateWorkingStyle(creatorId, data);
+            const res = await updateWorkingStyle(data);
             if (res.success) {
                 toast.success("Working style updated");
                 if (onSuccess) onSuccess(res.data);
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to update working style");
         } finally {
             setIsSubmitting(false);
@@ -49,19 +43,19 @@ export default function WorkingStyleForm({ creatorId, initialData, onSuccess }: 
         const val = tagInputs[inputKey].trim();
         const current = (watch(field) as string[]) || [];
         if (val && !current.includes(val)) {
-            setValue(field as any, [...current, val]);
+            setValue(field as keyof CreatorProfile, [...current, val] as never);
             setTagInputs(p => ({ ...p, [inputKey]: "" }));
         }
     };
 
     const removeTag = (field: keyof CreatorProfile, val: string) => {
         const current = (watch(field) as string[]) || [];
-        setValue(field as any, current.filter(t => t !== val));
+        setValue(field as keyof CreatorProfile, current.filter(t => t !== val) as never);
     };
 
     return (
         <Card>
-            <CardHeader shadow="none" border={false}>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <RiSettings4Line className="h-5 w-5 text-primary" />
                     Working Style & Availability
@@ -74,7 +68,7 @@ export default function WorkingStyleForm({ creatorId, initialData, onSuccess }: 
                         <div className="space-y-2">
                             <Label>Current Availability</Label>
                             <Select 
-                                onValueChange={(val: any) => setValue("availability", val)}
+                                onValueChange={(val: string) => setValue("availability", val)}
                                 defaultValue={initialData.availability}
                             >
                                 <SelectTrigger>
@@ -90,7 +84,7 @@ export default function WorkingStyleForm({ creatorId, initialData, onSuccess }: 
                         <div className="space-y-2">
                             <Label>Preferred Communication</Label>
                             <Select 
-                                onValueChange={(val: any) => setValue("preferredCommunication", val)}
+                                onValueChange={(val: string) => setValue("preferredCommunication", val)}
                                 defaultValue={initialData.preferredCommunication}
                             >
                                 <SelectTrigger>

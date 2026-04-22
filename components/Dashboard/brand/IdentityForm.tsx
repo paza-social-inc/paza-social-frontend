@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ interface IdentityFormProps {
 }
 
 export default function IdentityForm({ businessId, initialData, onSuccess }: IdentityFormProps) {
-    const { register, handleSubmit, setValue, watch, reset } = useForm<Partial<BrandProfile>>({
+    const { register, handleSubmit, setValue, watch } = useForm<Partial<BrandProfile>>({
         defaultValues: initialData,
     });
 
@@ -39,7 +39,7 @@ export default function IdentityForm({ businessId, initialData, onSuccess }: Ide
             } else {
                 toast.error(res.message || "Failed to update identity");
             }
-        } catch (err) {
+        } catch {
             toast.error("An error occurred while saving");
         } finally {
             setIsSubmitting(false);
@@ -75,7 +75,7 @@ export default function IdentityForm({ businessId, initialData, onSuccess }: Ide
         <Card>
             <CardHeader>
                 <CardTitle>Brand Identity</CardTitle>
-                <CardDescription>Manage your brand's display identity and categories.</CardDescription>
+                <CardDescription>Manage your brand&apos;s display identity and categories.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

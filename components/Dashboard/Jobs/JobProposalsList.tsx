@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { jobsApi } from "@/lib/data/jobs";
 import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
 import { messagesApi } from "@/lib/data/messages";
-import { usersApi } from "@/lib/data/users";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +27,7 @@ interface JobProposalsListProps {
 export default function JobProposalsList({ jobId }: JobProposalsListProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [openingChatId, setOpeningChatId] = useState<number | null>(null);
+  const [openingChatId, setOpeningChatId] = useState<string | null>(null);
 
   const { data: proposals = [], isLoading, isError } = useQuery({
     queryKey: ["job-proposals", jobId],
@@ -37,14 +36,14 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ proposalId, status }: { proposalId: number; status: any }) =>
+    mutationFn: ({ proposalId, status }: { proposalId: number; status: "accepted" | "rejected" | "completed" | "cancelled" }) =>
       jobsApi.updateProposalStatus(jobId, proposalId, status),
     onSuccess: (updated) => {
-      toast.success(`Proposal ${updated.status}`);
+      toast.success(`Proposal ${updated.status || "updated"}`);
       queryClient.invalidateQueries({ queryKey: ["job-proposals", jobId] });
       queryClient.invalidateQueries({ queryKey: ["job-stats", jobId] });
       
-      if (updated.status.toLowerCase() === "accepted") {
+      if (updated.status?.toLowerCase() === "accepted") {
         toast.success("Proposal accepted! You can now fund the escrow to start work.");
       }
     },
@@ -61,13 +60,13 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
         toast.error("Could not get payment URL");
       }
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to initiate payment");
     },
   });
 
   const openChatMutation = useMutation({
-    mutationFn: async (proposerId: number) => {
+    mutationFn: async (proposerId: string) => {
       const conv = await messagesApi.getOrCreateConversation(String(proposerId));
       return conv._id;
     },
@@ -105,8 +104,8 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
     );
   }
 
-  const getStatusBadge = (status: string) => {
-    const s = status.toLowerCase();
+  const getStatusBadge = (status: string | undefined) => {
+    const s = status?.toLowerCase() || "pending";
     switch (s) {
       case "accepted":
         return <Badge className="bg-emerald-500 hover:bg-emerald-600 border-0">Accepted</Badge>;
@@ -131,7 +130,7 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
       <div className="grid grid-cols-1 gap-4">
         {proposals.map((p) => {
           const pid = p.id;
-          const proposerId = p.proposerId;
+          const proposerId = p.proposer?.id;
           const isPending = p.status?.toLowerCase() === "pending";
 
           return (
@@ -143,9 +142,13 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
                     <div className="h-14 w-14 rounded-full bg-orange-500/20 flex items-center justify-center mb-2">
                       <RiUser3Line className="h-7 w-7 text-orange-600" />
                     </div>
-                    <p className="font-bold text-sm truncate w-full">{p.proposerName || "Creator"}</p>
+                    <p className="font-bold text-sm truncate w-full">
+                      {p.proposer?.firstname || p.proposer?.lastname
+                        ? [p.proposer.firstname, p.proposer.lastname].filter(Boolean).join(" ")
+                        : "Creator"}
+                    </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mt-1">
-                      {p.proposerType || "PRO"}
+                      CREATOR
                     </p>
                     <div className="mt-3 flex gap-2">
                        <Button 
@@ -155,8 +158,10 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
                         title="Message Creator"
                         disabled={openingChatId === proposerId}
                         onClick={() => {
-                          setOpeningChatId(proposerId);
-                          openChatMutation.mutate(proposerId);
+                          if (proposerId) {
+                            setOpeningChatId(proposerId);
+                            openChatMutation.mutate(proposerId);
+                          }
                         }}
                       >
                         {openingChatId === proposerId ? (
@@ -199,7 +204,7 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
                           variant="outline"
                           size="sm"
                           className="text-destructive hover:bg-destructive/10 border-destructive/30"
-                          onClick={() => updateStatusMutation.mutate({ proposalId: pid, status: "rejected" })}
+                          onClick={() => pid && updateStatusMutation.mutate({ proposalId: pid, status: "rejected" })}
                           disabled={updateStatusMutation.isPending}
                         >
                           <RiCloseLine className="h-4 w-4 mr-1.5" />
@@ -208,7 +213,7 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
                         <Button
                           size="sm"
                           className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                          onClick={() => updateStatusMutation.mutate({ proposalId: pid, status: "accepted" })}
+                          onClick={() => pid && updateStatusMutation.mutate({ proposalId: pid, status: "accepted" })}
                           disabled={updateStatusMutation.isPending || fundMutation.isPending}
                         >
                           <RiCheckLine className="h-4 w-4 mr-1.5" />
@@ -221,7 +226,7 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
                       <div className="flex justify-end pt-4">
                         <Button
                           className="bg-orange-500 hover:bg-orange-600 text-white"
-                          onClick={() => fundMutation.mutate(pid)}
+                          onClick={() => pid && fundMutation.mutate(pid)}
                           disabled={fundMutation.isPending}
                         >
                           {fundMutation.isPending ? (

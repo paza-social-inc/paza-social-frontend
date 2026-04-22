@@ -20,7 +20,6 @@ interface ProductManagerProps {
 
 export default function ProductManager({ businessId, initialProducts, onUpdate }: ProductManagerProps) {
     const [products, setProducts] = React.useState<BrandProduct[]>(initialProducts);
-    const [isAdding, setIsAdding] = React.useState(false);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [open, setOpen] = React.useState(false);
 
@@ -45,7 +44,7 @@ export default function ProductManager({ businessId, initialProducts, onUpdate }
                 setNewProduct({ productName: "", priceTier: "mid", purchaseCycle: "monthly", channel: [] });
                 if (onUpdate) onUpdate();
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to add product");
         } finally {
             setIsSubmitting(false);
@@ -62,7 +61,7 @@ export default function ProductManager({ businessId, initialProducts, onUpdate }
                 setProducts(products.filter(p => p.id !== id));
                 if (onUpdate) onUpdate();
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to remove product");
         }
     };
@@ -72,7 +71,7 @@ export default function ProductManager({ businessId, initialProducts, onUpdate }
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Products</CardTitle>
-                    <CardDescription>Manage your brand's core product catalog.</CardDescription>
+                    <CardDescription>Manage your brand&apos;s core product catalog.</CardDescription>
                 </div>
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
@@ -98,7 +97,7 @@ export default function ProductManager({ businessId, initialProducts, onUpdate }
                                     <Label>Price Tier</Label>
                                     <Select 
                                         value={newProduct.priceTier}
-                                        onValueChange={(val: any) => setNewProduct(p => ({ ...p, priceTier: val }))}
+                                        onValueChange={(val: string) => setNewProduct(p => ({ ...p, priceTier: val as BrandProduct["priceTier"] }))}
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
@@ -114,7 +113,7 @@ export default function ProductManager({ businessId, initialProducts, onUpdate }
                                     <Label>Purchase Cycle</Label>
                                     <Select 
                                         value={newProduct.purchaseCycle}
-                                        onValueChange={(val: any) => setNewProduct(p => ({ ...p, purchaseCycle: val }))}
+                                        onValueChange={(val: string) => setNewProduct(p => ({ ...p, purchaseCycle: val as BrandProduct["purchaseCycle"] }))}
                                     >
                                         <SelectTrigger>
                                             <SelectValue />

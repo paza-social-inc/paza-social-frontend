@@ -21,6 +21,11 @@ export interface CreatorProfile {
   valueProp?: string[];
   languages?: string[];
   audienceDescription?: string;
+  availability?: string;
+  preferredCommunication?: string;
+  engagementType?: string[];
+  deliverables?: string[];
+  equipmentAndSoftware?: string[];
   // Audience Demographics (Missing in initial interface)
   genderMale?: number;
   genderFemale?: number;
@@ -40,6 +45,7 @@ export interface CreatorProfile {
   category?: string;
   subCategory?: string[];
   topics?: string[];
+  pastProjects?: CreatorPastProject[];
 }
 
 export interface CreatorPastProject {
@@ -53,6 +59,7 @@ export interface CreatorPastProject {
   assetType?: string;
   generatedMoney?: "yes" | "no" | "prefer_not";
   proofFileUrl?: string;
+  spendBand?: string;
 }
 
 // ─── Profile Retrieval ───────────────────────────────────────────────────
@@ -71,12 +78,12 @@ export async function updateFullCreatorProfile(data: Partial<CreatorProfile>): P
 
 // ─── Section Updates ──────────────────────────────────────────────────────
 
-export async function updateNarrativeIdentity(data: { originStory: string; originStoryTags: string[] }): Promise<ApiResponse<CreatorProfile>> {
+export async function updateNarrativeIdentity(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
   const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/narrative", data);
   return response.data;
 }
 
-export async function updateWorkingStyle(data: { availabilityType: CreatorProfile['availabilityType']; personalityTags: string[] }): Promise<ApiResponse<CreatorProfile>> {
+export async function updateWorkingStyle(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
   const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/working-style", data);
   return response.data;
 }
@@ -86,7 +93,7 @@ export async function updateCreativeCapabilities(data: Partial<CreatorProfile>):
   return response.data;
 }
 
-export async function updateAudience(data: { audienceLocale: CreatorProfile['audienceLocale']; languages: string[]; audienceDescription: string }): Promise<ApiResponse<CreatorProfile>> {
+export async function updateAudience(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
   const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/audience", data);
   return response.data;
 }

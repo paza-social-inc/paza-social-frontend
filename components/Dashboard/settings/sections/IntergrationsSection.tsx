@@ -9,7 +9,6 @@ import {
     RiTwitterXLine,
     RiYoutubeLine,
     RiLoader2Line,
-    RiCheckLine,
 } from "@remixicon/react";
 import { getSocialAuthUrl, SocialPlatform } from "@/lib/data/socialVerification";
 import { useAuth } from "@/hooks/store/auth/useAuth";
@@ -55,7 +54,7 @@ const socialPlatforms: { name: string; id: SocialPlatform; icon: React.ReactNode
 ];
 
 export function IntegrationsSection() {
-    const { user } = useAuth();
+    const {} = useAuth();
     const [loadingPlatform, setLoadingPlatform] = React.useState<string | null>(null);
 
     const handleConnect = (platform: SocialPlatform) => {
@@ -64,7 +63,7 @@ export function IntegrationsSection() {
             const url = getSocialAuthUrl(platform);
             // Redirect to backend auth initiator
             window.location.href = url;
-        } catch (err) {
+        } catch {
             toast.error("Could not initiate verification");
             setLoadingPlatform(null);
         }

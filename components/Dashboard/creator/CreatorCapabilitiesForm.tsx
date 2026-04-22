@@ -12,14 +12,8 @@ import { RiAddLine, RiCloseLine, RiLoader2Line, RiCompassLine } from "@remixicon
 import { CreatorProfile, updateCreativeCapabilities } from "@/lib/data/creator";
 import toast from "react-hot-toast";
 
-interface CapabilitiesFormProps {
-    creatorId: number;
-    initialData: Partial<CreatorProfile>;
-    onSuccess?: (newData: CreatorProfile) => void;
-}
-
-export default function CreatorCapabilitiesForm({ creatorId, initialData, onSuccess }: CapabilitiesFormProps) {
-    const { register, handleSubmit, setValue, watch } = useForm<Partial<CreatorProfile>>({
+export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { initialData: Partial<CreatorProfile>, onSuccess?: (newData: CreatorProfile) => void }) {
+    const { handleSubmit, setValue, watch } = useForm<Partial<CreatorProfile>>({
         defaultValues: initialData,
     });
 
@@ -37,7 +31,7 @@ export default function CreatorCapabilitiesForm({ creatorId, initialData, onSucc
                 toast.success("Capabilities updated");
                 if (onSuccess) onSuccess(res.data);
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to update capabilities");
         } finally {
             setIsSubmitting(false);
@@ -48,14 +42,14 @@ export default function CreatorCapabilitiesForm({ creatorId, initialData, onSucc
         const val = tagInputs[inputKey].trim();
         const current = (watch(field) as string[]) || [];
         if (val && !current.includes(val)) {
-            setValue(field as any, [...current, val]);
+            setValue(field as keyof CreatorProfile, [...current, val] as never);
             setTagInputs(p => ({ ...p, [inputKey]: "" }));
         }
     };
 
     return (
         <Card>
-            <CardHeader shadow="none" border={false}>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <RiCompassLine className="h-5 w-5 text-primary" />
                     Creative Capabilities
@@ -68,25 +62,25 @@ export default function CreatorCapabilitiesForm({ creatorId, initialData, onSucc
                         <div className="space-y-2">
                             <Label>Professional Skill Level</Label>
                             <Select 
-                                onValueChange={(val: any) => setValue("skillLevel", val)}
+                                onValueChange={(val: string) => setValue("skillLevel", val as CreatorProfile["skillLevel"])}
                                 defaultValue={initialData.skillLevel}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Level" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Beginner">Beginner / Aspiring</SelectItem>
-                                    <SelectItem value="Intermediate">Intermediate / Growing</SelectItem>
-                                    <SelectItem value="Expert">Expert / Pro</SelectItem>
-                                    <SelectItem value="Veteran">Veteran / Established</SelectItem>
+                                    <SelectItem value="DEVELOPING">Beginner / Aspiring</SelectItem>
+                                    <SelectItem value="PROFICIENT">Intermediate / Growing</SelectItem>
+                                    <SelectItem value="ADVANCED">Expert / Pro</SelectItem>
+                                    <SelectItem value="EXPERT">Veteran / Established</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
                             <Label>Creator Type</Label>
                             <Select 
-                                onValueChange={(val: any) => setValue("creatorType", val)}
-                                defaultValue={initialData.creatorType}
+                                onValueChange={(val: string) => setValue("creatorType", [val])}
+                                defaultValue={initialData.creatorType?.[0]}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Type" />

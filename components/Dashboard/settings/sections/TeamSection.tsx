@@ -29,7 +29,7 @@ export function TeamSection() {
     // Invitation state
     const [inviteData, setInviteData] = useState({
         email: "",
-        role: "Collaborated",
+        role: "Collaborator",
         message: ""
     });
 
@@ -56,6 +56,7 @@ export function TeamSection() {
 
     const handleSendInvite = async () => {
         if (!inviteData.email) return toast.error("Email is required");
+        if (!businessId) return toast.error("Business ID not found");
         setIsInviting(true);
         try {
             const res = await createInvitation({

@@ -26,8 +26,6 @@ import {
     RiMessageLine,
     RiNavigationLine,
     RiSpeakLine,
-    RiCustomerServiceLine,
-    RiMailAddLine,
     RiBriefcaseLine,
     RiNotification3Line,
     RiSettings3Line

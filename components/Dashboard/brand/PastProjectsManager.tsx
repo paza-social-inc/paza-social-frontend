@@ -1,15 +1,15 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiExternalLinkLine } from "@remixicon/react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line } from "@remixicon/react";
 import { BrandPastProject, addBrandPastProject, removeBrandPastProject } from "@/lib/data/brands";
 import toast from "react-hot-toast";
 
@@ -46,7 +46,7 @@ export default function PastProjectsManager({ businessId, initialProjects, onUpd
                 setNewProject({ ...newProject, title: "", description: "", participationRole: "" });
                 if (onUpdate) onUpdate();
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to add project");
         } finally {
             setIsSubmitting(false);
@@ -62,7 +62,7 @@ export default function PastProjectsManager({ businessId, initialProjects, onUpd
                 setProjects(projects.filter(p => p.id !== id));
                 if (onUpdate) onUpdate();
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to remove");
         }
     };
@@ -72,7 +72,7 @@ export default function PastProjectsManager({ businessId, initialProjects, onUpd
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Case Studies & Past Projects</CardTitle>
-                    <CardDescription>Showcase your brand's previous campaign successes.</CardDescription>
+                    <CardDescription>Showcase your brand&apos;s previous campaign successes.</CardDescription>
                 </div>
                 <Button size="sm" onClick={() => setOpen(true)}>
                     <RiAddLine className="mr-1 h-4 w-4" /> Add Project
@@ -84,7 +84,7 @@ export default function PastProjectsManager({ businessId, initialProjects, onUpd
                         <Card key={project.id} className="overflow-hidden group relative">
                             <div className="aspect-video bg-muted flex items-center justify-center relative">
                                 {project.mediaLinks?.[0] ? (
-                                    <img src={project.mediaLinks[0]} alt={project.title} className="w-full h-full object-cover" />
+                                    <Image src={project.mediaLinks[0]} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
                                 ) : (
                                     <RiImageLine className="h-12 w-12 text-muted-foreground opacity-20" />
                                 )}

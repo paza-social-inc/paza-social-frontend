@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { campaignApi } from "@/lib/data/campaigns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  CampaignMilestone, 
-  CampaignMilestoneStatus 
+import {
+  CampaignMilestone,
+  CampaignMilestoneStatus
 } from "@/types/campaigns/campaignTypes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -19,7 +19,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   RiFlagLine,
@@ -29,7 +28,7 @@ import {
   RiCalendarLine,
   RiMoneyDollarCircleLine,
 } from "@remixicon/react";
-import { Loader2, MoreVertical } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface CampaignMilestoneBoardProps {
@@ -48,7 +47,7 @@ export default function CampaignMilestoneBoard({
   const [editingMilestone, setEditingMilestone] = useState<CampaignMilestone | null>(null);
 
   const addMilestoneMutation = useMutation({
-    mutationFn: (data: any) => campaignApi.addMilestone(campaignId, data),
+    mutationFn: (data: Partial<CampaignMilestone>) => campaignApi.addMilestone(campaignId, data),
     onSuccess: () => {
       toast.success("Milestone added");
       setIsAddOpen(false);
@@ -58,7 +57,7 @@ export default function CampaignMilestoneBoard({
   });
 
   const updateMilestoneMutation = useMutation({
-    mutationFn: (data: any) => {
+    mutationFn: (data: Partial<CampaignMilestone>) => {
       if (!editingMilestone?.id) throw new Error("No milestone ID");
       return campaignApi.updateMilestone(campaignId, editingMilestone.id, data);
     },
@@ -83,13 +82,13 @@ export default function CampaignMilestoneBoard({
   const handleAddSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = {
-      title: formData.get("title"),
-      description: formData.get("description"),
-      status: formData.get("status") || "To-Do",
+    const data: Partial<CampaignMilestone> = {
+      title: String(formData.get("title") || ""),
+      description: String(formData.get("description") || ""),
+      status: (formData.get("status") as CampaignMilestoneStatus) || "To-Do",
       budget: Number(formData.get("budget")) || 0,
-      start: formData.get("startDate"),
-      end: formData.get("dueDate"),
+      start: String(formData.get("startDate") || ""),
+      end: String(formData.get("dueDate") || ""),
     };
     addMilestoneMutation.mutate(data);
   };
@@ -97,13 +96,13 @@ export default function CampaignMilestoneBoard({
   const handleUpdateSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = {
-      title: formData.get("title"),
-      description: formData.get("description"),
-      status: formData.get("status"),
+    const data: Partial<CampaignMilestone> = {
+      title: String(formData.get("title") || ""),
+      description: String(formData.get("description") || ""),
+      status: (formData.get("status") as CampaignMilestoneStatus) || "To-Do",
       budget: Number(formData.get("budget")) || 0,
-      start: formData.get("startDate"),
-      end: formData.get("dueDate"),
+      start: String(formData.get("startDate") || ""),
+      end: String(formData.get("dueDate") || ""),
     };
     updateMilestoneMutation.mutate(data);
   };
@@ -174,17 +173,17 @@ export default function CampaignMilestoneBoard({
                       </div>
                       {viewerOwnsCampaign && (
                         <div className="flex items-center gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-muted-foreground"
                             onClick={() => setEditingMilestone(m)}
                           >
                             <RiEditLine className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-destructive/70 hover:text-destructive"
                             onClick={() => {
                               if (confirm("Delete this milestone?") && m.id) {
@@ -285,9 +284,9 @@ export default function CampaignMilestoneBoard({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <select 
-                  id="status" 
-                  name="status" 
+                <select
+                  id="status"
+                  name="status"
                   defaultValue={editingMilestone.status}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >

@@ -1,24 +1,18 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPlayCircleLine } from "@remixicon/react";
 import { CreatorPastProject, addCreatorPastProject, removeCreatorPastProject } from "@/lib/data/creator";
 import toast from "react-hot-toast";
 
-interface PortfolioManagerProps {
-    creatorId: number;
-    initialProjects: CreatorPastProject[];
-    onUpdate?: () => void;
-}
-
-export default function CreatorPortfolioManager({ creatorId, initialProjects, onUpdate }: PortfolioManagerProps) {
+export default function CreatorPortfolioManager({ initialProjects, onUpdate }: { initialProjects: CreatorPastProject[], onUpdate?: () => void }) {
     const [projects, setProjects] = React.useState<CreatorPastProject[]>(initialProjects);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [open, setOpen] = React.useState(false);
@@ -27,7 +21,8 @@ export default function CreatorPortfolioManager({ creatorId, initialProjects, on
         title: "",
         period: "",
         description: "",
-        mediaLinks: []
+        mediaLinks: [],
+        spendBand: ""
     });
 
     const handleAdd = async () => {
@@ -39,10 +34,10 @@ export default function CreatorPortfolioManager({ creatorId, initialProjects, on
                 toast.success("Project added to portfolio");
                 setProjects([...projects, res.data]);
                 setOpen(false);
-                setNewProject({ title: "", period: "", description: "", mediaLinks: [] });
+                setNewProject({ title: "", period: "", description: "", mediaLinks: [], spendBand: "" });
                 if (onUpdate) onUpdate();
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to add project");
         } finally {
             setIsSubmitting(false);
@@ -58,14 +53,14 @@ export default function CreatorPortfolioManager({ creatorId, initialProjects, on
                 setProjects(projects.filter(p => p.id !== id));
                 if (onUpdate) onUpdate();
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to remove");
         }
     };
 
     return (
         <Card>
-            <CardHeader shadow="none" border={false} className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Portfolio & Case Studies</CardTitle>
                     <CardDescription>Showcase your best work to brands.</CardDescription>
@@ -86,7 +81,7 @@ export default function CreatorPortfolioManager({ creatorId, initialProjects, on
                             <Card key={project.id} className="overflow-hidden group relative">
                                 <div className="aspect-video bg-muted flex items-center justify-center relative">
                                     {project.mediaLinks?.[0] ? (
-                                        <img src={project.mediaLinks[0]} alt={project.title} className="w-full h-full object-cover" />
+                                        <Image src={project.mediaLinks[0]} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
                                     ) : (
                                         <RiImageLine className="h-12 w-12 text-muted-foreground opacity-20" />
                                     )}

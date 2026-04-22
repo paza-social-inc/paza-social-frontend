@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MessageSquarePlus, Loader2, Search } from "lucide-react";
 import { usersApi } from "@/lib/data/users";
+import Image from "next/image";
 
 interface NewChatDialogProps {
     open: boolean;
@@ -99,17 +100,22 @@ export function NewChatDialog({
                                                     if (id) handleSelectUser(String(id));
                                                 }}
                                             >
-                                                {user.avatar ? (
-                                                    <img
-                                                        src={user.avatar}
-                                                        alt=""
-                                                        className="h-8 w-8 rounded-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-medium">
-                                                        {(user.firstname?.[0] || user.email[0] || "?").toUpperCase()}
-                                                    </div>
-                                                )}
+                                                <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/20">
+                                                    {user.avatar ? (
+                                                        <Image
+                                                            src={user.avatar}
+                                                            alt={user.firstname || "User"}
+                                                            width={32}
+                                                            height={32}
+                                                            className="h-full w-full object-cover"
+                                                            unoptimized
+                                                        />
+                                                    ) : (
+                                                        <span className="text-sm font-medium">
+                                                            {(user.firstname?.[0] || user.email[0] || "?").toUpperCase()}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium truncate">
                                                         {user.firstname || user.lastname

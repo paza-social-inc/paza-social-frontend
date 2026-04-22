@@ -17,9 +17,9 @@ export default function BrandProfileView() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const businessId = (user as any)?.businessId || Number(user?.id); // Workaround if businessId isn't on user object yet
+    const businessId = (user as { businessId?: number })?.businessId || (user?.id ? Number(user.id) : null);
 
-    const loadProfile = async () => {
+    const loadProfile = React.useCallback(async () => {
         if (!businessId) return;
         setLoading(true);
         try {
@@ -29,16 +29,16 @@ export default function BrandProfileView() {
             } else {
                 setError(res.message || "Failed to load profile");
             }
-        } catch (err) {
+        } catch {
             setError("Failed to fetch brand profile data");
         } finally {
             setLoading(false);
         }
-    };
+    }, [businessId]);
 
     useEffect(() => {
         loadProfile();
-    }, [businessId]);
+    }, [loadProfile]);
 
     if (loading) {
         return (
@@ -49,7 +49,7 @@ export default function BrandProfileView() {
         );
     }
 
-    if (error || !profile) {
+    if (error || !profile || businessId == null) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                 <RiErrorWarningLine className="h-12 w-12 text-destructive opacity-50" />

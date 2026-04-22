@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Loader2, Wallet, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { Loader2, Wallet, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { walletPaymentsApi } from "@/lib/data/walletPayments";
 import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
 import { useState } from "react";

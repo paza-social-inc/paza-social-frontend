@@ -11,13 +11,7 @@ import { RiAddLine, RiCloseLine, RiLoader2Line, RiTeamLine } from "@remixicon/re
 import { CreatorProfile, updateAudience } from "@/lib/data/creator";
 import toast from "react-hot-toast";
 
-interface AudienceFormProps {
-    creatorId: number;
-    initialData: Partial<CreatorProfile>;
-    onSuccess?: (newData: CreatorProfile) => void;
-}
-
-export default function AudienceDemographicsForm({ creatorId, initialData, onSuccess }: AudienceFormProps) {
+export default function AudienceDemographicsForm({ initialData, onSuccess }: { initialData: Partial<CreatorProfile>, onSuccess?: (newData: CreatorProfile) => void }) {
     const { register, handleSubmit, setValue, watch } = useForm<Partial<CreatorProfile>>({
         defaultValues: initialData,
     });
@@ -31,12 +25,12 @@ export default function AudienceDemographicsForm({ creatorId, initialData, onSuc
             // updateAudience in lib/data/creator currently takes specific fields, 
             // but we'll cast to any for now to permit the extra form fields 
             // until the backend is fully extended.
-            const res = await updateAudience(data as any);
+            const res = await updateAudience(data as Partial<CreatorProfile>);
             if (res.success) {
                 toast.success("Audience data updated");
                 if (onSuccess) onSuccess(res.data);
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to update audience");
         } finally {
             setIsSubmitting(false);
@@ -59,7 +53,7 @@ export default function AudienceDemographicsForm({ creatorId, initialData, onSuc
 
     return (
         <Card>
-            <CardHeader shadow="none" border={false}>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <RiTeamLine className="h-5 w-5 text-primary" />
                     Audience Demographics

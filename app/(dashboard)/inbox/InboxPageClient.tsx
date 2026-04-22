@@ -124,7 +124,7 @@ export default function InboxPageClient() {
         } else {
             getOrCreateMutation.mutate(userParam);
         }
-    }, [userParam, currentUserId, conversationsLoading, apiConversations]);
+    }, [userParam, currentUserId, conversationsLoading, apiConversations, getOrCreateMutation]);
 
     const handleNewConversation = (userId: string) => {
         const existing = apiConversations.find((c) =>

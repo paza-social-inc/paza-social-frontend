@@ -162,7 +162,6 @@ export function CampaignGoalTargetModal({
       onOpenChange(false);
     },
     onError: (err: unknown) => {
-      const msg = String((err as Error)?.message ?? "");
       const api =
         String((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "").trim() ||
         "";

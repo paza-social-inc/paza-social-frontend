@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { getCreatorProfile, CreatorProfile } from "@/lib/data/creator";
@@ -19,26 +19,26 @@ export default function CreatorProfileView() {
 
     const creatorId = Number(user?.id);
 
-    const loadProfile = async () => {
+    const loadProfile = useCallback(async () => {
         if (!creatorId) return;
         setLoading(true);
         try {
-            const res = await getCreatorProfile(creatorId);
+            const res = await getCreatorProfile();
             if (res.success) {
                 setProfile(res.data);
             } else {
                 setError(res.message || "Failed to load creator profile");
             }
-        } catch (err) {
+        } catch {
             setError("Error fetching creator profile");
         } finally {
             setLoading(false);
         }
-    };
+    }, [creatorId]);
 
     useEffect(() => {
         loadProfile();
-    }, [creatorId]);
+    }, [loadProfile]);
 
     if (loading) {
         return (
@@ -73,7 +73,6 @@ export default function CreatorProfileView() {
                 <div className="mt-6">
                     <TabsContent value="narrative">
                         <CreatorNarrativeForm 
-                            creatorId={creatorId} 
                             initialData={profile} 
                             onSuccess={(data) => setProfile(data)} 
                         />
@@ -81,7 +80,6 @@ export default function CreatorProfileView() {
                     
                     <TabsContent value="capabilities">
                         <CreatorCapabilitiesForm 
-                            creatorId={creatorId} 
                             initialData={profile} 
                             onSuccess={(data) => setProfile(data)} 
                         />
@@ -89,7 +87,6 @@ export default function CreatorProfileView() {
                     
                     <TabsContent value="working-style">
                         <WorkingStyleForm 
-                            creatorId={creatorId} 
                             initialData={profile} 
                             onSuccess={(data) => setProfile(data)} 
                         />
@@ -97,7 +94,6 @@ export default function CreatorProfileView() {
                     
                     <TabsContent value="audience">
                         <AudienceDemographicsForm 
-                            creatorId={creatorId} 
                             initialData={profile} 
                             onSuccess={(data) => setProfile(data)} 
                         />
@@ -105,8 +101,7 @@ export default function CreatorProfileView() {
 
                     <TabsContent value="portfolio">
                         <CreatorPortfolioManager 
-                            creatorId={creatorId} 
-                            initialProjects={profile.portfolio || []} 
+                            initialProjects={profile.pastProjects || []} 
                             onUpdate={loadProfile}
                         />
                     </TabsContent>
