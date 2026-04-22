@@ -682,10 +682,12 @@ const SERVICE_ROWS = [
 ] as const;
 
 function OurServicesSection() {
+  const docIsDark = useDocumentThemeIsDark();
+
   return (
     <section
       id="our-services"
-      className="border-t border-white/[0.08] bg-black py-14 text-white sm:py-20 md:py-24 lg:py-32"
+      className="border-t border-border bg-zinc-100 py-14 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:py-20 md:py-24 lg:py-32"
     >
       <div className={PAGE}>
         {/*
@@ -701,7 +703,7 @@ function OurServicesSection() {
           <MaskedReveal delay={0.06}>
             <div className="min-w-0 flex-1">
               <p
-                className="m-0 text-left uppercase text-[#FFFFFF]"
+                className="m-0 text-left uppercase text-neutral-900 dark:text-white"
                 style={servicesQuoteTypography}
               >
                 <span className="block">
@@ -720,8 +722,8 @@ function OurServicesSection() {
         </div>
       </div>
 
-      <div className="w-full border-y border-white/10 bg-black">
-        <ul className="m-0 list-none divide-y divide-white/[0.08] p-0">
+      <div className="w-full border-y border-border bg-zinc-100 dark:border-white/10 dark:bg-black">
+        <ul className="m-0 list-none divide-y divide-border dark:divide-white/10 p-0">
           {SERVICE_ROWS.map((row) => (
             <li key={`${row.index}-${row.title}`}>
               <Link
@@ -731,22 +733,22 @@ function OurServicesSection() {
                   PAGE_PAD,
                   "grid-cols-[minmax(2rem,2.75rem)_minmax(0,5.25rem)_minmax(0,1fr)_auto]",
                   "gap-x-2 gap-y-2 py-6 sm:gap-x-5 sm:py-8 md:gap-x-8 md:py-10",
-                  "transition-colors hover:bg-white/[0.03]",
+                  "transition-colors hover:bg-black/5 dark:hover:bg-white/3",
                 )}
               >
-                <span className="services-index tabular-nums text-[clamp(1.1rem,2.2vw,1.75rem)] font-medium leading-none text-white">
+                <span className="services-index tabular-nums text-[clamp(1.1rem,2.2vw,1.75rem)] font-medium leading-none text-neutral-900 dark:text-white">
                   {row.index}
                 </span>
-                <span className="services-click hidden min-w-0 whitespace-nowrap text-[10px] font-medium leading-snug tracking-[0.04em] text-zinc-500 sm:block sm:text-[11px] md:text-[12px]">
+                <span className="services-click hidden min-w-0 whitespace-nowrap text-[10px] font-medium leading-snug tracking-[0.04em] text-neutral-500 dark:text-zinc-500 sm:block sm:text-[11px] md:text-[12px]">
                   Click to open
                 </span>
                 <span
-                  className="services-title min-w-0 text-left text-white"
+                  className="services-title min-w-0 text-left text-neutral-900 dark:text-white"
                   style={servicesRowTitle}
                 >
                   {row.title}
                 </span>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center text-white transition group-hover:text-[#FF6B00] sm:h-10 sm:w-10">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center text-neutral-900 transition group-hover:text-[#FF6B00] dark:text-white sm:h-10 sm:w-10">
                   <ArrowUpRight className="h-5 w-5 stroke-[1.25] sm:h-[22px] sm:w-[22px]" aria-hidden />
                 </span>
               </Link>
@@ -758,10 +760,16 @@ function OurServicesSection() {
       <div className={PAGE}>
         <MaskedReveal delay={0.1}>
           <div className="mt-16 flex justify-center md:mt-20">
-            <EditorialRuleCta align="center" href="/services" invert>
+            <EditorialRuleCta align="center" href="/services" invert={docIsDark}>
               <>
                 View Our Services
-                <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-white group-hover:text-[#FF6B00]" aria-hidden />
+                <ArrowRight
+                  className={cn(
+                    "h-3.5 w-3.5 shrink-0 stroke-[1.75] group-hover:text-[#FF6B00]",
+                    docIsDark ? "text-white" : "text-neutral-900",
+                  )}
+                  aria-hidden
+                />
               </>
             </EditorialRuleCta>
           </div>
@@ -1038,7 +1046,7 @@ function HowItWorksSection() {
         Figma header: black strip, label left + centered 2-line headline (40px / 172% / PP Neue),
         #FFFFFF + #FF6B00 on CONNECT / CAMPAIGNS.
       */}
-      <div className="border-b border-white/10 bg-black py-10 text-white sm:py-12 md:py-16 lg:py-20">
+      <div className="border-b border-border bg-zinc-100 py-10 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:py-12 md:py-16 lg:py-20">
         <div className={PAGE}>
           <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:gap-12 md:gap-16 lg:gap-20 xl:gap-24">
             <MaskedReveal delay={0}>
@@ -1049,7 +1057,7 @@ function HowItWorksSection() {
             <MaskedReveal delay={0.06}>
               <div className="flex min-w-0 flex-1 justify-center">
                 <p
-                  className="m-0 max-w-[min(100%,52rem)] text-center uppercase text-[#FFFFFF]"
+                  className="m-0 max-w-[min(100%,52rem)] text-center uppercase text-neutral-900 dark:text-white"
                   style={servicesQuoteTypography}
                 >
                   <span className="block">
@@ -1113,6 +1121,8 @@ function HowItWorksSection() {
 
 /** Figma 1419:925 — form + contact grid in one #050505 plate */
 function FigmaContactSection() {
+  const docIsDark = useDocumentThemeIsDark();
+
   return (
     <section id="contact" className={cn("py-12 sm:py-16 md:py-24 lg:py-28", LANDING_PLATE)}>
       <div className={PAGE}>
@@ -1150,41 +1160,47 @@ function FigmaContactSection() {
           Figma contact footer: black plate, CONTACT US + subtext | Start your journey (rule),
           social row right, divider, Nairobi | phone/email/location grid.
         */}
-        <div className="mt-12 w-full border-t border-white/10 bg-black py-12 text-white sm:mt-16 sm:py-16 md:mt-20 md:py-20 lg:py-24">
+        <div className="mt-12 w-full border-t border-border bg-zinc-100 py-12 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:mt-16 sm:py-16 md:mt-20 md:py-20 lg:py-24">
           <div className={PAGE}>
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
               <div className="min-w-0 max-w-[min(100%,36rem)]">
                 <h2
                   id="contact-us-heading"
-                  className="m-0 uppercase leading-[1.72] tracking-tight text-[#FFFFFF]"
+                  className="m-0 uppercase leading-[1.72] tracking-tight text-neutral-900 dark:text-white"
                   style={servicesQuoteTypography}
                 >
                   Contact us
                 </h2>
-                <p className="mt-4 max-w-[26rem] text-base leading-relaxed text-[#9e9e9e] sm:text-lg">
+                <p className="mt-4 max-w-[26rem] text-base leading-relaxed text-neutral-600 dark:text-[#9e9e9e] sm:text-lg">
                   Have a collaboration need? Contact us to design a solution that scales with your
                   vision
                 </p>
               </div>
               <div className="shrink-0 self-end lg:self-auto lg:pt-1">
-                <EditorialRuleCta align="end" href={SIGNUP_HREF} invert>
+                <EditorialRuleCta align="end" href={SIGNUP_HREF} invert={docIsDark}>
                   <>
                     Start your journey
-                    <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-white group-hover:text-[#FF6B00]" aria-hidden />
+                    <ArrowRight
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 stroke-[1.75] group-hover:text-[#FF6B00]",
+                        docIsDark ? "text-white" : "text-neutral-900",
+                      )}
+                      aria-hidden
+                    />
                   </>
                 </EditorialRuleCta>
               </div>
             </div>
 
             <nav
-              className="mt-10 flex flex-wrap justify-end gap-x-10 gap-y-3 text-lg underline decoration-white/40 underline-offset-4 sm:mt-12"
+              className="mt-10 flex flex-wrap justify-end gap-x-10 gap-y-3 text-lg underline decoration-neutral-400/70 underline-offset-4 dark:decoration-white/40 sm:mt-12"
               aria-label="Social links"
             >
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white transition-colors hover:text-[#FF6B00]"
+                className="text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
               >
                 Twitter
               </a>
@@ -1192,7 +1208,7 @@ function FigmaContactSection() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-white transition-colors hover:text-[#FF6B00]"
+                className="inline-flex items-center gap-2 text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
               >
                 <Instagram className="h-5 w-5 shrink-0" aria-hidden />
                 Instagram
@@ -1201,44 +1217,44 @@ function FigmaContactSection() {
                 href="https://youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-white transition-colors hover:text-[#FF6B00]"
+                className="inline-flex items-center gap-2 text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
               >
                 <Youtube className="h-5 w-5 shrink-0" aria-hidden />
                 Youtube
               </a>
             </nav>
 
-            <div className="mt-8 h-px w-full bg-white/15 sm:mt-10" aria-hidden />
+            <div className="mt-8 h-px w-full bg-border dark:bg-white/15 sm:mt-10" aria-hidden />
 
             <div className="mt-10 flex flex-col gap-10 sm:mt-12 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
               <p
-                className="m-0 uppercase leading-[1.72] tracking-tight text-[#FFFFFF]"
+                className="m-0 uppercase leading-[1.72] tracking-tight text-neutral-900 dark:text-white"
                 style={servicesQuoteTypography}
               >
                 Nairobi, Kenya
               </p>
               <div className="grid w-full max-w-2xl gap-10 sm:grid-cols-3 sm:gap-8 lg:max-w-none">
                 <div className="text-left">
-                  <p className="text-lg font-medium text-[#9e9e9e]">Phone no.</p>
+                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Phone no.</p>
                   <a
                     href="tel:+254422189529"
-                    className="mt-2 block text-lg text-white transition-colors hover:text-[#FF6B00]"
+                    className="mt-2 block text-lg text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
                   >
                     +254 422 189 529
                   </a>
                 </div>
                 <div className="text-left">
-                  <p className="text-lg font-medium text-[#9e9e9e]">Email</p>
+                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Email</p>
                   <a
                     href="mailto:info@pazasocial.com"
-                    className="mt-2 block text-lg text-white transition-colors hover:text-[#FF6B00]"
+                    className="mt-2 block text-lg text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
                   >
                     info@pazasocial.com
                   </a>
                 </div>
                 <div className="text-left">
-                  <p className="text-lg font-medium text-[#9e9e9e]">Location</p>
-                  <p className="mt-2 text-lg text-white">00100, Ronald Ngala St, Nairobi, Kenya</p>
+                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Location</p>
+                  <p className="mt-2 text-lg text-neutral-900 dark:text-white">00100, Ronald Ngala St, Nairobi, Kenya</p>
                 </div>
               </div>
             </div>

@@ -13,7 +13,7 @@ import {
   campaignFashionEnsemble,
 } from "@/assets";
 
-const CONTAINER = "px-6 sm:px-10 lg:px-14 max-w-[1220px] mx-auto";
+const CONTAINER = "px-4 sm:px-6 lg:px-10 xl:px-14 max-w-[1220px] mx-auto";
 
 const BRAND_SERVICE_DETAILS = [
   {
@@ -195,43 +195,45 @@ export default function Services() {
       <div className="min-h-screen bg-background pt-14 text-foreground">
         <section className="relative overflow-hidden">
           <div className={CONTAINER}>
-            <div className="pt-10 pb-14">
-              <div className="flex items-stretch gap-10">
-                <div className="relative flex-1 min-h-[520px]">
+            <div className="pt-8 sm:pt-10 pb-12 sm:pb-14">
+              <div className="flex flex-col lg:flex-row items-stretch gap-4 sm:gap-6 lg:gap-10">
+                <div className="relative flex-1 min-h-[520px] sm:min-h-[560px]">
                   <Image src={campaignCrowdRadial} alt="" fill className="object-cover grayscale" />
                   <div className="absolute inset-0 bg-black/55" />
 
-                  <div className="absolute inset-0 p-2 sm:p-6 flex flex-col justify-center">
-                    <div className="text-[54px] sm:text-[70px] leading-[0.95] font-extrabold tracking-[-0.03em]">
+                  <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-center">
+                    <div className="text-[clamp(2.2rem,12vw,3.4rem)] sm:text-[70px] leading-[0.9] sm:leading-[0.95] font-extrabold tracking-[-0.03em] max-w-full">
                       <div>BEYOND</div>
-                      <div>TRANSACTIONS - UNITING</div>
-                      <div>COMMUNITIES THAT BUILD WITH</div>
+                      <div>TRANSACTIONS</div>
+                      <div>- UNITING</div>
+                      <div>COMMUNITIES</div>
+                      <div>THAT BUILD WITH</div>
                       <div className="mt-2">AND SHAPE</div>
-                      <div className="mt-1 text-[44px] sm:text-[56px]">CULTURE</div>
+                      <div className="mt-1 text-[clamp(1.9rem,9vw,2.8rem)] sm:text-[56px]">CULTURE</div>
                     </div>
                   </div>
 
-                  <div className="absolute left-0 bottom-28 p-6 max-w-[260px] text-[11px] text-foreground dark:text-zinc-300 leading-relaxed">
+                  <div className="absolute left-0 bottom-5 sm:bottom-10 lg:bottom-24 p-4 sm:p-6 max-w-[280px] text-[11px] sm:text-[12px] text-foreground dark:text-zinc-300 leading-relaxed">
                     Together we create a powerful synergy that propels creativity fuels innovation and
                     unlocks endless possibilities.Join us at Paza and embark on a transformative journey.
                   </div>
                 </div>
 
-                <div className="relative w-[460px] hidden lg:block">
+                <div className="relative w-full lg:w-[460px] min-h-[260px] sm:min-h-[320px] lg:min-h-[560px]">
                   <Image src={campaignDjPerformance} alt="" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/25" />
 
-                  <div className="absolute right-0 top-14 w-[310px] text-[11px] text-foreground dark:text-zinc-300 leading-relaxed">
+                  <div className="absolute right-0 top-5 sm:top-8 lg:top-14 w-[80%] sm:w-[310px] p-4 sm:p-0 text-[11px] sm:text-[12px] text-foreground dark:text-zinc-300 leading-relaxed">
                     Together we create a powerful synergy that propels creativity fuels innovation and
                     unlocks endless possibilities.Join us at Paza and embark on a transformative journey.
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 <Link
                   href="/#contact"
-                  className="inline-flex items-center justify-between w-[280px] border border-white px-6 py-3 text-[13px] gap-4"
+                  className="inline-flex items-center justify-between w-full sm:w-[280px] border border-white px-5 sm:px-6 py-3 text-[13px] gap-4"
                 >
                   <span>Lets talk about project</span>
                   <ArrowUpRight className="h-4 w-4" />
@@ -241,7 +243,7 @@ export default function Services() {
           </div>
 
           <div className={`${CONTAINER} pb-10`}>
-            <div className="flex items-end gap-8">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-8">
               <div className="flex items-center gap-3">
                 <span className="w-2 h-2 bg-orange-500 block" />
                 <span className="w-2 h-2 bg-orange-500 block" />
@@ -250,14 +252,14 @@ export default function Services() {
                 </span>
               </div>
 
-              <h2 className="text-[22px] sm:text-[28px] leading-[1.15] font-medium">
+              <h2 className="text-[20px] sm:text-[28px] leading-[1.15] font-medium max-w-[780px]">
                 EXPLORE SERVICES DESIGNED FOR{" "}
                 <span className="text-orange-500">CREATORS</span> AND{" "}
                 <span className="text-orange-500">BRANDS</span> TO THRIVE
               </h2>
             </div>
 
-            <div className="mt-10 flex w-full items-stretch border-t border-zinc-800 pt-8 text-[18px] font-medium">
+            <div className="mt-8 sm:mt-10 flex w-full items-stretch border-t border-zinc-800 pt-6 sm:pt-8 text-[16px] sm:text-[18px] font-medium">
               <button
                 type="button"
                 onClick={() => setAudienceTab("brands")}
@@ -284,17 +286,17 @@ export default function Services() {
               </button>
             </div>
 
-            <div className="mt-10">
+            <div className="mt-8 sm:mt-10">
               {serviceDetails.map((s, i) => (
-                <div key={s.idx} className="border-t border-zinc-800 pt-10">
-                  <div className="grid grid-cols-[120px_1fr] gap-10 items-start">
-                    <div className="text-[18px] text-foreground dark:text-zinc-400">{s.idx}</div>
+                <div key={s.idx} className="border-t border-zinc-800 pt-7 sm:pt-10">
+                  <div className="grid grid-cols-1 sm:grid-cols-[90px_1fr] lg:grid-cols-[120px_1fr] gap-3 sm:gap-8 lg:gap-10 items-start">
+                    <div className="text-[15px] sm:text-[18px] text-foreground dark:text-zinc-400">{s.idx}</div>
 
                     <div>
-                      <h3 className="text-[20px] sm:text-[22px] font-medium tracking-tight">
+                      <h3 className="text-[18px] sm:text-[22px] font-medium tracking-tight">
                         {s.title}
                       </h3>
-                      <div className="mt-3 space-y-3 text-[11px] text-foreground dark:text-zinc-400 leading-relaxed max-w-[620px]">
+                      <div className="mt-3 space-y-3 text-[12px] sm:text-[13px] text-foreground dark:text-zinc-400 leading-relaxed max-w-[620px]">
                         {s.description.map((line) => (
                           <p key={line}>{line}</p>
                         ))}
@@ -303,7 +305,7 @@ export default function Services() {
                       <div className="mt-6">
                         <Link
                           href="/#contact"
-                          className="inline-flex items-center gap-2 text-[11px] text-foreground dark:text-zinc-300 underline underline-offset-4 hover:text-foreground dark:hover:text-white"
+                          className="inline-flex items-center gap-2 text-[12px] sm:text-[13px] text-foreground dark:text-zinc-300 underline underline-offset-4 hover:text-foreground dark:hover:text-white"
                         >
                           Get in touch
                           <ArrowUpRight className="h-4 w-4" />
@@ -312,10 +314,10 @@ export default function Services() {
                     </div>
                   </div>
 
-                  {i < serviceDetails.length - 1 && <div className="h-6" />}
+                  {i < serviceDetails.length - 1 && <div className="h-5 sm:h-6" />}
                 </div>
               ))}
-              <div className="flex justify-center mt-14">
+              <div className="flex justify-center mt-10 sm:mt-14">
                 <Link
                   href="/#contact"
                   className="text-[14px] text-foreground dark:text-zinc-200 underline underline-offset-4 decoration-zinc-500"
@@ -326,7 +328,7 @@ export default function Services() {
             </div>
 
             {/* Pricing */}
-            <div className="relative mt-24">
+            <div className="relative mt-16 sm:mt-24">
               <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12]">
                 <Image src={campaignAerialSuits} alt="" fill className="object-cover object-top" />
               </div>
@@ -339,14 +341,14 @@ export default function Services() {
                 </div>
               </div>
 
-              <h2 className="mt-6 text-[30px] sm:text-[38px] md:text-[52px] leading-none tracking-[-0.02em]">
+              <h2 className="mt-5 sm:mt-6 text-[26px] sm:text-[38px] md:text-[52px] leading-[0.95] tracking-[-0.02em]">
                 LET VALUE DRIVEN{" "}
                 <span className="text-orange-500">PATNERSHIPS</span>
                 <br />
                 <span className="text-foreground dark:text-white">POWER YOUR REVENUE</span>
               </h2>
 
-              <div className="mt-10 flex items-center justify-between font-medium text-[18px]">
+              <div className="mt-8 sm:mt-10 flex items-center justify-between font-medium text-[16px] sm:text-[18px]">
                 <button
                   type="button"
                   onClick={() => setPricingTab("brands")}
@@ -373,12 +375,12 @@ export default function Services() {
                 </button>
               </div>
 
-              <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-0">
+              <div className="mt-7 sm:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-0">
                 {pricingPlans.map((p, idx) => (
                   <div
                     key={p.name}
                     className={[
-                      "px-6 py-8 border-t border-zinc-900/40",
+                      "px-4 sm:px-6 py-7 sm:py-8 border-t border-zinc-900/40",
                       "bg-black/10",
                       idx === 0 ? "border-l border-zinc-900/40" : "border-l border-zinc-900/40",
                     ].join(" ")}
@@ -386,14 +388,14 @@ export default function Services() {
                     <div className="text-[12px] uppercase tracking-[0.18em] text-foreground dark:text-zinc-500">
                       {p.name}
                     </div>
-                    <div className="mt-2 text-[18px] text-foreground dark:text-zinc-400">
+                    <div className="mt-2 text-[16px] sm:text-[18px] text-foreground dark:text-zinc-400">
                       Sh{" "}
-                      <span className="text-[42px] font-semibold text-foreground dark:text-white leading-none">
+                      <span className="text-[34px] sm:text-[42px] font-semibold text-foreground dark:text-white leading-none">
                         {p.price}
                       </span>{" "}
                       {p.period}
                     </div>
-                    <div className="mt-5 space-y-2 text-[11px] text-foreground dark:text-zinc-500 leading-relaxed uppercase">
+                    <div className="mt-5 space-y-2 text-[11px] sm:text-[12px] text-foreground dark:text-zinc-500 leading-relaxed uppercase">
                       {p.items.slice(0, 6).map((it) => (
                         <p key={it}>{it}</p>
                       ))}
@@ -414,22 +416,22 @@ export default function Services() {
             </div>
 
             {/* Final CTA */}
-            <div className="relative mt-28 pb-20">
+            <div className="relative mt-20 sm:mt-28 pb-16 sm:pb-20">
               <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.14]">
                 <Image src={campaignFashionEnsemble} alt="" fill className="object-cover object-center" />
               </div>
-              <h2 className="text-center text-[44px] sm:text-[56px] md:text-[64px] leading-none tracking-[-0.02em]">
+              <h2 className="text-center text-[28px] sm:text-[56px] md:text-[64px] leading-[0.95] tracking-[-0.02em]">
                 WHAT IF YOUR NEXT <br />
                 <span className="text-orange-500">CAMPAIGN</span> STARTED HERE?
               </h2>
-              <p className="mx-auto mt-6 max-w-[680px] text-center text-[13px] text-foreground dark:text-zinc-400 leading-relaxed">
+              <p className="mx-auto mt-5 sm:mt-6 max-w-[680px] text-center text-[12px] sm:text-[13px] text-foreground dark:text-zinc-400 leading-relaxed">
                 Connect with the right creators, launch impactful campaigns, and watch your brand
                 grow. Join us and be among the first to experience seamless brand-creator collaborations.
               </p>
-              <div className="mt-10 flex justify-center">
+              <div className="mt-8 sm:mt-10 flex justify-center">
                 <Link
                   href="/#contact"
-                  className="inline-flex items-center gap-3 border border-white px-8 py-4 text-[14px] hover:bg-white/5 transition-colors"
+                  className="inline-flex items-center gap-3 border border-white px-6 sm:px-8 py-3 sm:py-4 text-[13px] sm:text-[14px] hover:bg-white/5 transition-colors"
                 >
                   <span>Get Early Access</span>
                   <ArrowRight className="h-4 w-4" />
@@ -438,13 +440,13 @@ export default function Services() {
             </div>
 
             {/* Footer */}
-            <div className={`${CONTAINER} py-16`}>
-              <div className="grid md:grid-cols-[1fr_1.2fr_1fr] gap-8 items-start">
-                <div>
+            <div className={`${CONTAINER} py-12 sm:py-16`}>
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1fr] gap-10 md:gap-8 items-start">
+                <div className="order-1 md:order-0">
                   <div className="text-[14px]">
                     <Link href="/">Home</Link>
                   </div>
-                  <div className="mt-16 flex items-center gap-4">
+                  <div className="mt-8 sm:mt-16 flex items-center gap-4">
                     <button
                       type="button"
                       onClick={() => scrollPageToTop()}
@@ -456,14 +458,14 @@ export default function Services() {
                   </div>
                 </div>
 
-                <div className="text-[14px]">
+                <div className="text-[14px] order-3 md:order-0">
                   <div className="space-y-2">
                     <p className="text-orange-500">Services</p>
                     <p>Partnership</p>
                     <p>About us</p>
                   </div>
 
-                  <div className="mt-16 space-y-2 text-foreground dark:text-zinc-300">
+                  <div className="mt-10 sm:mt-16 space-y-2 text-foreground dark:text-zinc-300">
                     <p>+1 891 989-11-91</p>
                     <p>hello@logoipsum.com</p>
                     <p className="text-orange-500">Call me back</p>
@@ -485,15 +487,15 @@ export default function Services() {
                     <span>Instagram</span>
                   </div>
 
-                  <div className="mt-16 text-[10px] uppercase text-foreground dark:text-zinc-500">
+                  <div className="mt-10 sm:mt-16 text-[10px] uppercase text-foreground dark:text-zinc-500">
                     <p>© 2023 — copyright</p>
                     <p>Privacy</p>
                   </div>
                 </div>
 
-                <div className="text-[14px]">
+                <div className="text-[14px] order-2 md:order-0">
                   <p>Contacts</p>
-                  <p className="mt-20 text-foreground dark:text-zinc-300">
+                  <p className="mt-8 sm:mt-20 text-foreground dark:text-zinc-300">
                     2972 Westheimer Rd. Santa Ana,
                     <br />
                     Illinois 85486
