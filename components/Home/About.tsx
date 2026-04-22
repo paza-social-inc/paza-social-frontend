@@ -16,6 +16,15 @@ import HomeLayout from "./Layout";
 
 const CONTAINER = "px-4 sm:px-6 lg:px-10 xl:px-14 max-w-[1220px] mx-auto";
 
+function SectionEyebrow({ label }: { label: string }) {
+  return (
+    <p className="flex items-center gap-2.5 text-[12px] font-medium text-orange-500">
+      <span className="block h-2 w-2 shrink-0 bg-orange-500" aria-hidden />
+      <span>{label}</span>
+    </p>
+  );
+}
+
 export default function About() {
   return (
     <HomeLayout hideFooter>
@@ -44,7 +53,7 @@ export default function About() {
 
         <div className={`${CONTAINER} mt-12 sm:mt-24`}>
           <div className="grid grid-cols-1 md:grid-cols-[120px_160px_1fr] lg:grid-cols-[130px_180px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
-            <p className="text-[12px] text-orange-500">▮&nbsp; Our Story</p>
+            <SectionEyebrow label="Our Story" />
             <p className="text-[28px] sm:text-[36px] tracking-[-0.01em]">PAZA SOCIAL</p>
             <p className="text-[14px] sm:text-[17px] text-foreground dark:text-zinc-300 leading-[1.75] sm:leading-[1.8] max-w-[780px]">
               Paza was born in Nairobi from a simple but urgent insight: creators-full of talent and vision-lacked
@@ -100,8 +109,8 @@ export default function About() {
             </div>
 
             <div>
-              <p className="text-[12px] text-orange-500">▮&nbsp; Our Mission</p>
-              <p className="mt-2 text-[clamp(1.8rem,8.5vw,2.95rem)] leading-[1.2] sm:leading-[1.35] tracking-[-0.01em] max-w-[760px]">
+              <SectionEyebrow label="Our Mission" />
+              <p className="mt-2 max-w-[min(100%,38rem)] text-[0.9375rem] leading-[1.65] tracking-[-0.01em] text-foreground sm:mt-3 sm:max-w-[760px] sm:text-[1rem] sm:leading-relaxed md:text-[1.0625rem]">
                 Make it easy to collaborate with anyone around the world while maximizing the
                 potential of every collaboration fostering a win-win scenario where creativity thrives
                 and all the parties involved get to achieve their goals and objectives.
@@ -118,22 +127,26 @@ export default function About() {
 
         <div className={`${CONTAINER} mt-12 sm:mt-16 pb-8 sm:pb-10`}>
           <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] lg:grid-cols-[170px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
-            <p className="text-[12px] text-orange-500">▮&nbsp; Why choose us</p>
+            <SectionEyebrow label="Why choose us" />
             <div>
-              <p className="text-[clamp(1.7rem,8vw,2.7rem)] leading-tight sm:leading-[1.45] tracking-[-0.01em] text-black dark:text-zinc-100 max-w-[900px]">
-                At Paza, its not just about connecting -it&apos;s about forging collaborations where
-                identity, tone, purpose and vision converge-delivering campaigns that achieve its goals
+              <p className="max-w-[min(100%,38rem)] text-[0.9375rem] leading-[1.65] tracking-[-0.01em] text-black dark:text-zinc-100 sm:max-w-[900px] sm:text-[1rem] sm:leading-relaxed md:text-[1.0625rem]">
+                At Paza, it&apos;s not just about connecting—it&apos;s about forging collaborations where
+                identity, tone, purpose, and vision converge, delivering campaigns that achieve their goals
                 as well as shape culture. Paza supports long-term synergy and empowers any type of
                 collaboration to thrive.
                 <br />
+                <br />
                 Whether scaling, experimenting, or fine-tuning your strategy, Paza evolves with
-                you-equipping you to co-create with intention and build lasting impact, one genuine
+                you—equipping you to co-create with intention and build lasting impact, one genuine
                 story at a time.
               </p>
               <div className="mt-6 sm:mt-7 flex justify-start sm:justify-end">
-                <Link href="/#contact" className="inline-flex items-center gap-2 text-[23px] sm:text-[34px] text-black dark:text-zinc-100 border-b border-zinc-500 pb-1">
+                <Link
+                  href="/#contact"
+                  className="inline-flex items-center gap-2 border-b border-zinc-500 pb-1 text-[17px] font-medium text-black dark:text-zinc-100 sm:text-[22px] md:text-[26px]"
+                >
                   Start your journey
-                  <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                 </Link>
               </div>
             </div>
@@ -144,19 +157,22 @@ export default function About() {
           <div className="relative min-h-[560px] sm:min-h-[880px] overflow-hidden">
             <Image src={campaignTradingFloor} alt="" fill className="object-cover grayscale opacity-45" />
             <div className="absolute inset-0 bg-black/70" />
-            <div className="relative z-10 p-4 sm:p-10 lg:p-12">
-              <p className="text-[12px] text-orange-500">▮&nbsp; About Us</p>
-              <h3 className="mt-3 sm:mt-4 text-[clamp(1.9rem,11vw,6.2rem)] leading-[1.04] tracking-[-0.02em] uppercase max-w-[980px]">
-                At our core, we are guided by <span className="text-zinc-500">collaboration, flexibility, transparency,
-                performance, and authenticity</span>-values that empower us to nurture real
-                connections, and shape partnerships that turn bold ideas into lasting impact
+            <div className="relative z-10 px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+              <SectionEyebrow label="About Us" />
+              <h3 className="mt-3 max-w-[980px] text-balance text-[clamp(1.15rem,3.9vw+0.4rem,2.75rem)] leading-[1.14] tracking-[-0.015em] text-white uppercase sm:mt-4 sm:text-[clamp(1.4rem,3.2vw+0.55rem,3.25rem)] sm:leading-[1.1] lg:text-[clamp(1.55rem,2.4vw+0.65rem,4rem)] lg:leading-[1.08]">
+                At our core, we are guided by{" "}
+                <span className="text-zinc-400 sm:text-zinc-500">
+                  collaboration, flexibility, transparency, performance, and authenticity
+                </span>
+                —values that empower us to nurture real connections, and shape partnerships that turn bold
+                ideas into lasting impact
               </h3>
             </div>
           </div>
         </div>
 
         <div className={`${CONTAINER} py-12 sm:py-16`}>
-          <h3 className="text-center text-[clamp(2.1rem,12vw,6.8rem)] uppercase leading-[1.02] tracking-[-0.02em]">
+          <h3 className="text-center text-[clamp(1.45rem,5vw+0.45rem,3.25rem)] uppercase leading-[1.08] tracking-[-0.02em] sm:text-[clamp(1.75rem,4.5vw,3.75rem)] lg:text-[clamp(2rem,3.5vw,4.5rem)]">
             Be part of
           </h3>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-[1fr_320px_1fr] lg:grid-cols-[1fr_430px_1fr] gap-6 items-center">
@@ -171,7 +187,7 @@ export default function About() {
               Join us at Paza and embark on a transformative journey.
             </p>
           </div>
-          <h3 className="mt-4 text-center text-[clamp(2.1rem,12vw,6.8rem)] uppercase leading-[1.02] tracking-[-0.02em]">
+          <h3 className="mt-4 text-center text-[clamp(1.45rem,5vw+0.45rem,3.25rem)] uppercase leading-[1.08] tracking-[-0.02em] sm:text-[clamp(1.75rem,4.5vw,3.75rem)] lg:text-[clamp(2rem,3.5vw,4.5rem)]">
             Our community
           </h3>
           <div className="mt-8 sm:mt-12 flex justify-center">
