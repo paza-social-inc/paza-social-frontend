@@ -131,7 +131,7 @@ export default function NavBar() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="flex min-w-0 shrink-0 items-center"
+          className="flex min-w-[80px] lg:min-w-[120px] shrink-0 items-center"
         >
           <Link
             href="/"
@@ -145,24 +145,21 @@ export default function NavBar() {
           </Link>
         </motion.div>
 
-        {/* Center: primary links (final design) */}
+        {/* Center: primary links (Centered via flex-1) */}
         <motion.div
           variants={NAV_CONTAINER}
           initial="hidden"
           animate="show"
-          className={cn(
-            "absolute left-1/2 hidden min-w-0 -translate-x-1/2 md:block",
-            minimalMarketingNav ? "" : "",
-          )}
+          className="hidden flex-1 justify-center min-w-0 md:flex"
         >
-          <nav aria-label="Primary" className="flex items-center gap-8 lg:gap-[33px]">
+          <nav aria-label="Primary" className="flex items-center gap-4 lg:gap-8">
             {navLinks.map((link) => (
               <motion.div key={link.name} variants={NAV_ITEM} className="flex flex-col items-center gap-1.5">
                 <Link
                   href={link.hash ? `${link.href}${link.hash}` : link.href}
                   onClick={() => setActive(link.name)}
                   className={cn(
-                    "inline-flex shrink-0 items-center px-0 text-base font-semibold tracking-[0.05em] transition-colors touch-manipulation",
+                    "inline-flex shrink-0 items-center px-1 text-sm lg:text-base font-semibold tracking-[0.05em] transition-colors touch-manipulation",
                     isDarkMarketing && active === link.name && "text-[#FF6B00]",
                     darkMarketingChrome && active !== link.name && "font-normal text-[#d9d9d9] hover:text-white",
                     isDarkMarketing && !darkMarketingChrome && active !== link.name && "font-normal text-muted-foreground hover:text-foreground",
@@ -177,7 +174,7 @@ export default function NavBar() {
                 {isDarkMarketing && active === link.name && (
                   <span
                     className={cn(
-                      "h-px w-12 max-w-full",
+                      "h-px w-8 lg:w-12 max-w-full",
                       darkMarketingChrome ? "bg-[#FF6B00]" : "bg-primary",
                     )}
                     aria-hidden
@@ -194,19 +191,30 @@ export default function NavBar() {
           initial="hidden"
           animate="show"
           className={cn(
-            "ml-auto flex min-w-0 shrink-0 items-center justify-end gap-1 md:gap-2",
+            "flex min-w-0 shrink-0 items-center justify-end gap-2 lg:gap-3",
           )}
         >
           <Button
             asChild
             variant="outline"
             className={cn(
-              "hidden h-8 rounded px-2.5 text-[10px] font-semibold uppercase tracking-wider sm:h-9 sm:inline-flex sm:rounded-md sm:px-3 sm:text-[11px] md:text-xs",
+              "hidden h-8 rounded px-4 text-[10px] font-semibold uppercase tracking-wider sm:h-9 sm:inline-flex sm:rounded-md sm:px-6 sm:text-[11px] md:text-xs",
               darkMarketingChrome &&
               "border-white/45 bg-transparent text-white hover:border-white hover:bg-white/10 hover:text-white",
             )}
           >
             <Link href="/login">Login</Link>
+          </Button>
+          <Button
+            asChild
+            className={cn(
+              "hidden h-8 rounded px-4 text-[10px] font-semibold uppercase tracking-wider sm:h-9 sm:inline-flex sm:rounded-md sm:px-6 sm:text-[11px] md:text-xs",
+              darkMarketingChrome
+                ? "bg-white text-black hover:bg-white/90"
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
+            )}
+          >
+            <Link href="/account-type">Sign Up</Link>
           </Button>
           <Button
             asChild
@@ -339,6 +347,19 @@ export default function NavBar() {
                         )}
                       >
                         Login
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/account-type"
+                        className={cn(
+                          "mt-2 flex min-h-[48px] items-center justify-center rounded-xl border px-4 text-base font-semibold",
+                          darkMarketingChrome
+                            ? "bg-white text-black hover:bg-white/90"
+                            : "bg-primary text-primary-foreground hover:bg-primary/90",
+                        )}
+                      >
+                        Sign Up
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
