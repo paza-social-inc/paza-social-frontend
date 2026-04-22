@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RiAddLine, RiMailLine, RiShieldUserLine, RiUserAddLine, RiLoader2Line, RiDeleteBinLine } from "@remixicon/react";
+import { RiMailLine, RiShieldUserLine, RiUserAddLine, RiLoader2Line, RiDeleteBinLine } from "@remixicon/react";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { 
     Collaborator, 
@@ -33,9 +33,9 @@ export function TeamSection() {
         message: ""
     });
 
-    const businessId = (user as any)?.businessId || Number(user?.id);
+    const businessId = (user as { businessId?: number })?.businessId || (user?.id ? Number(user.id) : null);
 
-    const loadMembers = async () => {
+    const loadMembers = React.useCallback(async () => {
         if (!businessId) return;
         setLoading(true);
         try {
@@ -43,16 +43,16 @@ export function TeamSection() {
             if (res.success) {
                 setMembers(res.data);
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to load team members");
         } finally {
             setLoading(false);
         }
-    };
+    }, [businessId]);
 
     useEffect(() => {
         loadMembers();
-    }, [businessId]);
+    }, [loadMembers]);
 
     const handleSendInvite = async () => {
         if (!inviteData.email) return toast.error("Email is required");
@@ -70,7 +70,7 @@ export function TeamSection() {
                 setOpenInvite(false);
                 setInviteData({ email: "", role: "Collaborator", message: "" });
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to send invitation");
         } finally {
             setIsInviting(false);
@@ -85,7 +85,7 @@ export function TeamSection() {
                 toast.success("Member removed");
                 setMembers(members.filter(m => m.id !== collabId));
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to remove member");
         }
     };
@@ -96,7 +96,7 @@ export function TeamSection() {
                 <div>
                     <h1 className="text-2xl font-semibold text-balance">Team Management</h1>
                     <p className="text-muted-foreground mt-1">
-                        Manage your organization's members and their access roles.
+                        Manage your organization&apos;s members and their access roles.
                     </p>
                 </div>
                 <Dialog open={openInvite} onOpenChange={setOpenInvite}>

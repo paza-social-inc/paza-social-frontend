@@ -13,7 +13,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, MapPin, User, Settings, Loader2 } from "lucide-react";
+import { Upload, MapPin, User, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { fetchAuthMe } from "@/lib/data/auth";
 import { getCreatorProfile, updateFullCreatorProfile, uploadCreatorAvatar } from "@/lib/data/creator";
@@ -22,7 +22,7 @@ import toast from "react-hot-toast";
 
 export function ProfileSection() {
     const queryClient = useQueryClient();
-    const { token } = useAuth();
+    const { user } = useAuth();
     
     // Fetch user and profile data
     const { data: authMe, isLoading: authLoading } = useQuery({
@@ -96,7 +96,7 @@ export function ProfileSection() {
 
     // Mutations
     const updateProfileMutation = useMutation({
-        mutationFn: (data: any) => {
+        mutationFn: (data: Record<string, unknown>) => {
             if (isCreator) return updateFullCreatorProfile(data);
             if (isBrand && businessId) return updateBrandIdentity(businessId, data);
             throw new Error("Invalid account type");

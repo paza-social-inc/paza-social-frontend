@@ -25,7 +25,7 @@ export function getSocialAuthUrl(platform: SocialPlatform): string {
  * Handle callback verification for platforms that might use a client-side callback 
  * (though usually handled by backend redirecting back to /dashboard with status).
  */
-export async function verifySocialCallback(platform: SocialPlatform, code: string): Promise<any> {
+export async function verifySocialCallback(platform: SocialPlatform, code: string): Promise<Record<string, unknown>> {
     const response = await pazaApi.get(`/api/social-verification/${platform}/callback`, {
         params: { code }
     });

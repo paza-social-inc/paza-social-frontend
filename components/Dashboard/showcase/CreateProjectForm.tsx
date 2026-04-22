@@ -14,7 +14,7 @@ import {
   FieldLabel,
   FieldError,
 } from "@/components/ui/field";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// Card components removed as they are unused
 import { projectsApi } from "@/lib/data/projects";
 import { ArrowLeft, Loader2, Link as LinkIcon, X } from "lucide-react";
 import Link from "next/link";
@@ -67,8 +67,8 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [wizardStep, setWizardStep] = useState<number | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
+  const [selectedSubCategory] = useState<string | null>(null);
   const [createdProjectId, setCreatedProjectId] = useState<string | undefined>();
   const [showObjectiveModal, setShowObjectiveModal] = useState(false);
   const [objectiveDescription, setObjectiveDescription] = useState("");
