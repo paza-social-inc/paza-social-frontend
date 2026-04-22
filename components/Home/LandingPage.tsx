@@ -36,7 +36,6 @@ import { AnimatedThemeToggler } from "@/components/ui/theme-toggle";
 import HomeLayout from "./Layout";
 import { MaskedReveal } from "./MaskedReveal";
 import { LandingContactForm } from "./LandingContactForm";
-import { Button } from "../ui/button";
 
 /** Light: zinc plate; dark: near-black editorial (matches Services `bg-background` behavior) */
 const LANDING_PLATE =
@@ -161,14 +160,14 @@ function PazaSplashHero() {
           </div>
 
           {/* Hero Actions for Mobile */}
-          <div className="mt-4 flex flex-col gap-3">
+          {/* <div className="mt-4 flex flex-col gap-3">
             <Button asChild className="h-12 w-full text-sm font-semibold uppercase tracking-wider">
               <Link href={SIGNUP_HREF}>Sign Up Now</Link>
             </Button>
             <Button asChild variant="outline" className="h-12 w-full text-sm font-semibold uppercase tracking-wider bg-transparent border-neutral-400 dark:border-white/20">
               <Link href="/login">Login</Link>
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* lg+: absolute-layered hero (same content order as mobile: copy → image → PAZA → scroll) */}
@@ -185,7 +184,7 @@ function PazaSplashHero() {
                   Collaborate with creators, communities, individuals, or brands that perfectly align with
                   your essence and goals.
                 </p>
-                <div className="flex items-center gap-4">
+                {/* <div className="flex items-center gap-4">
                   <Button asChild className="h-11 rounded-none px-8 text-[12px] font-semibold uppercase tracking-wider shadow-none">
                     <Link href={SIGNUP_HREF}>Sign Up</Link>
                   </Button>
@@ -195,7 +194,7 @@ function PazaSplashHero() {
                   )}>
                     <Link href="/login">Login</Link>
                   </Button>
-                </div>
+                </div> */}
               </div>
             </MaskedReveal>
           </div>
