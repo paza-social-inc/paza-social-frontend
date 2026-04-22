@@ -33,7 +33,7 @@ export function buildCreatorProfilePayload(data: Creator): Record<string, unknow
         topics: data.topics ?? [],
     };
 
-    // Avoid persisting ephemeral blob: URLs from local file picks until upload pipeline exists.
+    // Persist uploaded URL values only.
     if (data.avatar && !data.avatar.startsWith("blob:")) {
         payload.avatar = data.avatar;
     }
@@ -44,7 +44,34 @@ export function buildCreatorProfilePayload(data: Creator): Record<string, unknow
     return payload;
 }
 
+async function uploadImageFile(file: File): Promise<string> {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await pazaApi.post("/api/uploads/image", form, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+    const url = res?.data?.data?.url;
+    if (typeof url !== "string" || !url) {
+        throw new Error("Upload succeeded but no file URL was returned.");
+    }
+    return url;
+}
+
 export async function saveCreatorProfileFull(data: Creator): Promise<unknown> {
-    const res = await pazaApi.put("/api/auth/creator-profile/full", buildCreatorProfilePayload(data));
+    const payloadData: Creator = { ...data };
+
+    if (payloadData.avatarFile instanceof File) {
+        payloadData.avatar = await uploadImageFile(payloadData.avatarFile);
+        payloadData.avatarFile = undefined;
+    }
+
+    if (payloadData.previewFile instanceof File) {
+        payloadData.preview = await uploadImageFile(payloadData.previewFile);
+        payloadData.previewFile = undefined;
+    }
+
+    const res = await pazaApi.put("/api/auth/creator-profile/full", buildCreatorProfilePayload(payloadData));
     return res.data;
 }

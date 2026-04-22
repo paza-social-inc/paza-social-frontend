@@ -159,6 +159,9 @@ export function CampaignGoalTargetModal({
       queryClient.setQueryData(["campaign", campaignId], normalizeCampaign(updated));
       void queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
       void queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      // Jobs linked to this campaign should reflect updated goals on the board and in job detail.
+      void queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      void queryClient.invalidateQueries({ queryKey: ["job"] });
       onOpenChange(false);
     },
     onError: (err: unknown) => {

@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -26,7 +27,7 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Paperclip, X, Loader2 } from "lucide-react";
+import { Paperclip, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { projectProposalsApi } from "@/lib/data/projectProposals";
 
@@ -40,17 +41,28 @@ function getKindFromCollabType(collabType?: string): CollaborationKind {
   return "support";
 }
 
-const schema = z.object({
-  collabType: z.string().min(1, "Select a collaboration type"),
-  description: z
-    .string()
-    .min(5, "Please provide a short description")
-    .max(2000, "Description is too long"),
-  fee: z.string().optional().or(z.literal("")),
-  timeline: z.string().optional().or(z.literal("")),
-  attachments: z.array(z.string()).optional(),
-  collaborators: z.array(z.string()).optional(),
-});
+const schema = z
+  .object({
+    collabType: z.string().min(1, "Select a collaboration type"),
+    description: z
+      .string()
+      .min(5, "Please provide a short description")
+      .max(2000, "Description is too long"),
+    fee: z.string().optional().or(z.literal("")),
+    timelineStart: z.string().optional().or(z.literal("")),
+    timelineEnd: z.string().optional().or(z.literal("")),
+    attachments: z.array(z.string()).optional(),
+    collaborators: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      const start = data.timelineStart?.trim();
+      const end = data.timelineEnd?.trim();
+      if (!start || !end) return true;
+      return new Date(start) <= new Date(end);
+    },
+    { message: "End date must be on or after start date", path: ["timelineEnd"] }
+  );
 
 type FormData = z.infer<typeof schema>;
 
@@ -78,7 +90,8 @@ export function RequestCollaborateModal({
       collabType: "",
       description: "",
       fee: "",
-      timeline: "",
+      timelineStart: "",
+      timelineEnd: "",
       attachments: [],
       collaborators: [],
     },
@@ -88,7 +101,6 @@ export function RequestCollaborateModal({
   const projectIdNumber = Number(projectId);
 
   const fee = watch("fee");
-  const timeline = watch("timeline");
   const attachments = watch("attachments");
   const collaborators = watch("collaborators");
 
@@ -103,7 +115,8 @@ export function RequestCollaborateModal({
         collaborationType: data.collabType,
         reason: data.description,
         fee: data.fee?.trim() || null,
-        timeline: data.timeline?.trim() || null,
+        timelineStart: data.timelineStart?.trim() || null,
+        timelineEnd: data.timelineEnd?.trim() || null,
         attachments: data.attachments ?? null,
         collaborators: data.collaborators ?? null,
       })
@@ -213,42 +226,58 @@ export function RequestCollaborateModal({
               )}
           </Field>
 
-          {/* Fee + Timeline */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>Set fee</FieldLabel>
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2">
-                <span className="text-xs text-muted-foreground">Amount</span>
-                <input
-                  type="text"
-                  {...register("fee")}
-                  value={fee}
-                  onChange={(e) => setValue("fee", e.target.value)}
-                  placeholder="e.g. KES 50,000"
-                  className="flex-1 bg-transparent text-sm outline-none border-none placeholder:text-muted-foreground"
+          {/* Fee + timeline: one card, aligned labels, equal control height */}
+          <div
+            className={cn(
+              "rounded-xl border border-border bg-muted/10 p-4 sm:p-5",
+              "space-y-4"
+            )}
+          >
+            <p className="text-sm font-medium text-foreground">Fee and schedule</p>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-4 md:items-start">
+              <Field className="gap-2">
+                <FieldLabel className="text-sm">Set fee</FieldLabel>
+                <div className="flex h-12 min-h-12 w-full items-center gap-2 rounded-md border border-input bg-background px-3 shadow-xs">
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                    Amount
+                  </span>
+                  <input
+                    type="text"
+                    {...register("fee")}
+                    value={fee}
+                    onChange={(e) => setValue("fee", e.target.value)}
+                    placeholder="e.g. KES 50,000"
+                    className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+                <FieldDescription className="text-xs leading-snug">
+                  You can refine this together with the creator.
+                </FieldDescription>
+              </Field>
+              <Field className="gap-2">
+                <FieldLabel className="text-sm">Start date</FieldLabel>
+                <Input
+                  type="date"
+                  {...register("timelineStart")}
+                  className="h-12 min-h-12 w-full scheme-dark sm:min-w-0"
                 />
-              </div>
-              <FieldDescription className="text-[11px]">
-                You can refine this together with the creator.
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel>Timeline</FieldLabel>
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  {...register("timeline")}
-                  value={timeline}
-                  onChange={(e) => setValue("timeline", e.target.value)}
-                  placeholder="e.g. 4 weeks"
-                  className="flex-1 bg-transparent text-sm outline-none border-none placeholder:text-muted-foreground"
+              </Field>
+              <Field className="gap-2">
+                <FieldLabel className="text-sm">End date</FieldLabel>
+                <Input
+                  type="date"
+                  {...register("timelineEnd")}
+                  className="h-12 min-h-12 w-full scheme-dark sm:min-w-0"
                 />
-              </div>
-              <FieldDescription className="text-[11px]">
-                Share expected duration or key dates.
-              </FieldDescription>
-            </Field>
+              </Field>
+            </div>
+            {errors.timelineEnd && (
+              <FieldError>{errors.timelineEnd.message}</FieldError>
+            )}
+            <FieldDescription className="text-xs leading-snug">
+              Timeline is optional. If you set both dates, the end date must be on or after the start
+              date.
+            </FieldDescription>
           </div>
 
           {/* Attachments */}

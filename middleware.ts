@@ -2,7 +2,8 @@ import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const SECRET = process.env.JWT_SECRET!;
+const PLACEHOLDER_SECRETS = new Set(["your-jwt-secret-here", "your_jwt_secret_here"]);
+const SECRET = process.env.JWT_SECRET ?? "";
 const encodedSecret = new TextEncoder().encode(SECRET);
 
 export async function middleware(req: NextRequest) {
@@ -35,9 +36,12 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // Check if secret is still the placeholder
-    if (SECRET === "your-jwt-secret-here") {
-      console.warn("Middleware using placeholder JWT_SECRET. Verification will likely fail for production tokens.");
+    if (!SECRET) {
+      console.warn("JWT_SECRET is unset; cookie JWT verification will fail.");
+    } else if (PLACEHOLDER_SECRETS.has(SECRET)) {
+      console.warn(
+        "Middleware JWT_SECRET is still a placeholder. Tokens must be signed with the same secret; use a strong value in dev/prod and match Pbbackend-v1 JWT_SECRET.",
+      );
     }
 
     // verify jwt using jose (Edge compatible)

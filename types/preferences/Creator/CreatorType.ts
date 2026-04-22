@@ -28,6 +28,8 @@ export type Creator = {
     collabs: string[];
     preview: string;
     avatar: string;
+    avatarFile?: File;
+    previewFile?: File;
     type: "Creator";
 };
 
@@ -73,7 +75,7 @@ export type CategoriesValuesStep = Pick<
 
 export type ProfileMediaStep = Pick<
     Creator,
-    "avatar" | "preview"
+    "avatar" | "preview" | "avatarFile" | "previewFile"
 >;
 
 // Props types for step components
@@ -120,5 +122,7 @@ export const initialCreatorData: Creator = {
     collabs: [],
     preview: "",
     avatar: "",
+    avatarFile: undefined,
+    previewFile: undefined,
     type: "Creator",
 };

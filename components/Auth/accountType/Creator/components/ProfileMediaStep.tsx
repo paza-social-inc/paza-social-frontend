@@ -42,7 +42,12 @@ export default function ProfileMediaStep({ data, onUpdate }: ProfileMediaStepPro
                                 className="sr-only"
                                 onChange={(e) => {
                                     const file = e.target.files?.[0];
-                                    if (file) onUpdate({ avatar: URL.createObjectURL(file) });
+                                    if (file) {
+                                        onUpdate({
+                                            avatar: URL.createObjectURL(file),
+                                            avatarFile: file,
+                                        });
+                                    }
                                 }}
                             />
                         </label>
@@ -61,7 +66,12 @@ export default function ProfileMediaStep({ data, onUpdate }: ProfileMediaStepPro
                         className="hidden"
                         onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) onUpdate({ preview: URL.createObjectURL(file) });
+                            if (file) {
+                                onUpdate({
+                                    preview: URL.createObjectURL(file),
+                                    previewFile: file,
+                                });
+                            }
                         }}
                     />
                     <Button

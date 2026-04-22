@@ -10,9 +10,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
-import { mockProject, mockGuardrails } from "./showcaseData";
+import { mockProject } from "./showcaseData";
 import { AssetsFundingSection, mergeAssetsFundingFromProject } from "./AssetsFundingSection";
-import { GuardrailsSection } from "./GuardrailsSection";
+import { GuardrailsSection, mergeGuardrailsFromProject } from "./GuardrailsSection";
 import { SlotsSection, mergeSlotsFromProject } from "./SlotsSection";
 import { ProgressSection, mergeProgressFromProject } from "./ProgressSection";
 import { AboutSection, mergeAboutFromProject } from "./AboutSection";
@@ -65,6 +65,10 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
   );
   const aboutMerged = useMemo(
     () => mergeAboutFromProject(project as Project & Record<string, unknown>),
+    [project]
+  );
+  const guardrailsMerged = useMemo(
+    () => mergeGuardrailsFromProject(project as Project & Record<string, unknown>),
     [project]
   );
   const resolvedTitle = project.title ?? mockProject.title;
@@ -184,7 +188,11 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
         )}
 
         {activeTab === "guardrails" && (
-          <GuardrailsSection guardrails={mockGuardrails} />
+          <GuardrailsSection
+            projectId={String(project.id ?? mockProject.id)}
+            initial={guardrailsMerged}
+            canEdit={Boolean(isOwner)}
+          />
         )}
 
         {activeTab === "qas" &&

@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import {
   projectProposalsApi,
+  formatProposalTimeline,
   type CreatorProjectProposal,
   type CreatorProjectProposalStatusAction,
 } from "@/lib/data/projectProposals";
@@ -61,9 +62,9 @@ function highlightsForProposal(p: CreatorProjectProposal): string[] {
   const lines: string[] = [
     "I have the required number of followers.",
   ];
-  const tl = p.timeline?.trim();
-  if (tl) {
-    lines.push(`Availability: ${tl}`);
+  const range = formatProposalTimeline(p);
+  if (range) {
+    lines.push(`Availability: ${range}`);
   } else {
     lines.push("I'm available for an immediate start.");
   }

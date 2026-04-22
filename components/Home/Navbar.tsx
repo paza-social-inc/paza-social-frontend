@@ -101,7 +101,7 @@ export default function NavBar() {
     /* Full-width fixed wrapper — lets page content scroll behind the nav so backdrop-blur works */
     <div
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 pt-[env(safe-area-inset-top,0px)]",
         darkMarketingChrome
           ? scrolled
             ? "bg-black/60 backdrop-blur-xl border-b border-white/8 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]"
@@ -120,8 +120,8 @@ export default function NavBar() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "relative mx-auto flex w-full max-w-[1320px] items-center transition-all duration-500",
-        "h-14 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-[60px]",
+        "relative mx-auto flex w-full max-w-[1320px] min-w-0 items-center justify-between gap-2 transition-all duration-500 sm:gap-3",
+        "min-h-14 h-auto py-2 sm:h-14 sm:py-0 px-3 sm:px-6 md:px-10 lg:px-12 xl:px-[60px]",
         isDarkMarketing && "mt-0",
         darkMarketingChrome ? "text-white" : "text-foreground",
       )}
@@ -137,7 +137,7 @@ export default function NavBar() {
           href="/"
           className={cn(
             "font-extrabold tracking-tight leading-none transition-colors",
-            "text-[24px] sm:text-[26px] lg:text-[28px]",
+            "text-xl max-[380px]:text-lg sm:text-[26px] lg:text-[28px]",
             darkMarketingChrome ? "text-white hover:text-[#FF6B00]" : "text-foreground hover:text-primary"
           )}
         >
@@ -194,7 +194,7 @@ export default function NavBar() {
         initial="hidden"
         animate="show"
         className={cn(
-          "ml-auto flex min-w-0 shrink-0 items-center justify-end gap-1 md:gap-2",
+          "flex min-w-0 shrink-0 items-center justify-end gap-1 sm:gap-2 md:gap-2",
         )}
       >
         <Button
@@ -243,29 +243,26 @@ export default function NavBar() {
           </Button>
         </motion.div>
         {darkMarketingChrome ? (
-          <AnimatedThemeToggler className="inline-flex h-8 w-8 shrink-0 touch-manipulation rounded-full border border-white/35 bg-white/10 text-white hover:bg-white/15 [&_svg]:text-white sm:h-9 sm:w-9" />
+          <AnimatedThemeToggler className="inline-flex h-9 w-9 max-[360px]:h-8 max-[360px]:w-8 shrink-0 touch-manipulation rounded-full border border-white/35 bg-white/10 text-white hover:bg-white/15 [&_svg]:text-white sm:h-9 sm:w-9" />
         ) : (
-          <>
-            <AnimatedThemeToggler className="hidden h-8 w-8 shrink-0 sm:h-9 sm:w-9 md:inline-flex" />
-            <AnimatedThemeToggler className="h-8 w-8 shrink-0 sm:h-9 sm:w-9 md:hidden" />
-          </>
+          <AnimatedThemeToggler className="inline-flex h-9 w-9 max-[360px]:h-8 max-[360px]:w-8 shrink-0 touch-manipulation rounded-full border border-border bg-background sm:h-9 sm:w-9 md:inline-flex md:border-border" />
         )}
 
-        <div className="flex md:hidden">
+        <div className="flex shrink-0 md:hidden">
           {!mobileSheetReady ? (
             <Button
               variant="ghost"
               size="icon"
               type="button"
               className={cn(
-                "min-h-[44px] min-w-[44px] touch-manipulation rounded-xl",
+                "h-9 w-9 min-h-[44px] min-w-[44px] max-[360px]:h-8 max-[360px]:w-8 max-[360px]:min-h-[40px] max-[360px]:min-w-[40px] touch-manipulation rounded-xl",
                 darkMarketingChrome && "text-white hover:bg-white/10 hover:text-white",
               )}
               aria-hidden
               tabIndex={-1}
               disabled
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
             </Button>
           ) : (
           <Sheet>
@@ -274,29 +271,45 @@ export default function NavBar() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "min-h-[44px] min-w-[44px] touch-manipulation rounded-xl",
+                  "h-9 w-9 min-h-[44px] min-w-[44px] max-[360px]:h-8 max-[360px]:w-8 max-[360px]:min-h-[40px] max-[360px]:min-w-[40px] touch-manipulation rounded-xl",
                   darkMarketingChrome && "text-white hover:bg-white/10 hover:text-white"
                 )}
                 aria-label="Open menu"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </SheetTrigger>
             <SheetContent
               side="right"
               className={cn(
-                "w-[280px] rounded-l-2xl",
+                "z-60 w-[min(20rem,calc(100vw-1rem))] max-w-[min(20rem,90vw)] rounded-l-2xl border-l p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:max-w-none",
                 darkMarketingChrome && "border-white/10 bg-zinc-950 text-white",
               )}
             >
-              <SheetHeader>
+              <SheetHeader className="space-y-1 text-left">
                 <SheetTitle
-                  className={cn("text-left text-lg font-bold", darkMarketingChrome && "text-white")}
+                  className={cn("text-lg font-bold", darkMarketingChrome && "text-white")}
                 >
                   Menu
                 </SheetTitle>
+                <p
+                  className={cn(
+                    "text-xs font-normal normal-case tracking-normal",
+                    darkMarketingChrome ? "text-zinc-400" : "text-muted-foreground",
+                  )}
+                >
+                  Navigate Paza on any screen size.
+                </p>
               </SheetHeader>
-              <div className="mt-8 flex flex-col gap-1">
+              <div className="mt-6 flex flex-col gap-1">
+                <p
+                  className={cn(
+                    "px-1 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em]",
+                    darkMarketingChrome ? "text-zinc-500" : "text-muted-foreground",
+                  )}
+                >
+                  Pages
+                </p>
                 {navLinks.map((link) => (
                   <SheetClose key={link.name} asChild>
                     <Link
@@ -317,12 +330,20 @@ export default function NavBar() {
                     </Link>
                   </SheetClose>
                 ))}
+                <p
+                  className={cn(
+                    "mt-4 px-1 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em]",
+                    darkMarketingChrome ? "text-zinc-500" : "text-muted-foreground",
+                  )}
+                >
+                  Get started
+                </p>
                 <SheetClose asChild>
                   <a
                     href={WHATSAPP_HREF}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-base font-semibold text-white"
+                    className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-base font-semibold text-white"
                   >
                     <WhatsAppGlyph className="size-5 shrink-0" />
                     WhatsApp
@@ -332,7 +353,7 @@ export default function NavBar() {
                   <Link
                     href="/login"
                     className={cn(
-                      "mt-2 flex min-h-[48px] items-center justify-center rounded-xl border px-4 text-base font-semibold",
+                      "flex min-h-[48px] items-center justify-center rounded-xl border px-4 text-base font-semibold",
                       darkMarketingChrome
                         ? "border-white/20 bg-zinc-900 text-white hover:bg-zinc-800"
                         : "border-border bg-background text-foreground",
@@ -343,9 +364,22 @@ export default function NavBar() {
                 </SheetClose>
                 <SheetClose asChild>
                   <Link
+                    href="/account-type"
+                    className={cn(
+                      "flex min-h-[48px] items-center justify-center rounded-xl border px-4 text-base font-semibold",
+                      darkMarketingChrome
+                        ? "border-white/30 bg-white/5 text-white hover:bg-white/10"
+                        : "border-border bg-muted/40 text-foreground hover:bg-muted/60",
+                    )}
+                  >
+                    Sign up
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link
                     href="/#contact"
                     className={cn(
-                      "mt-4 flex min-h-[48px] items-center justify-center rounded-xl text-sm font-semibold uppercase tracking-wide",
+                      "mt-1 flex min-h-[48px] items-center justify-center rounded-xl text-sm font-semibold uppercase tracking-wide",
                       darkMarketingChrome
                         ? "bg-white text-neutral-900 hover:bg-zinc-100"
                         : "bg-primary text-primary-foreground hover:bg-primary/90",

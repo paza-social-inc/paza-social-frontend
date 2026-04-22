@@ -2,8 +2,30 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Campaign } from "@/types/campaigns/campaignTypes";
+import type { Campaign } from "@/types/campaigns/campaignTypes";
 import { RiCalendarLine, RiEdit2Line, RiDeleteBin6Line, RiTeamLine, RiFileList3Line, RiMoneyDollarCircleLine } from "@remixicon/react";
+
+/** Unique people listed on any campaign team (same person on two teams counts once). */
+function countUniqueCampaignTeamMembers(campaign: Campaign): number {
+  const seen = new Set<string>();
+  for (const team of campaign.teams ?? []) {
+    for (const m of team.members ?? []) {
+      const id = m.id;
+      if (id != null && Number.isFinite(Number(id))) {
+        seen.add(`id:${Number(id)}`);
+        continue;
+      }
+      const email = (m.email ?? "").trim().toLowerCase();
+      if (email) {
+        seen.add(`em:${email}`);
+        continue;
+      }
+      const name = (m.name ?? "").trim().toLowerCase();
+      if (name) seen.add(`nm:${name}`);
+    }
+  }
+  return seen.size;
+}
 
 interface Props {
   campaign: Campaign;
@@ -23,7 +45,7 @@ export default function CampaignCard({
   onAddProject,
   primaryCtaLabel = "Create Project",
 }: Props) {
-  const creators = campaign.teams?.find(t => t.name.toLowerCase().includes("creator"))?.members?.length || 0;
+  const memberCount = countUniqueCampaignTeamMembers(campaign);
   const milestoneDeliverables = campaign.milestones?.reduce((acc, m) => acc + (m.objectives?.length || 0), 0) || 0;
   const deliverables = milestoneDeliverables > 0 ? milestoneDeliverables : (campaign.goals?.length || 0);
   const amountSpent = Number(campaign.budget) || campaign.milestones?.reduce((acc, m) => acc + (Number(m.budget) || 0), 0) || 0;
@@ -49,8 +71,8 @@ export default function CampaignCard({
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
             <RiTeamLine className="h-4 w-4" />
-            <span className="font-medium">{creators}</span>
-            <span className="text-muted-foreground">creators</span>
+            <span className="font-medium">{memberCount}</span>
+            <span className="text-muted-foreground">members</span>
           </div>
           <div className="flex items-center gap-2">
             <RiFileList3Line className="h-4 w-4" />

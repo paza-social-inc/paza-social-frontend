@@ -15,6 +15,34 @@ export interface AssetsFunding {
   killSwitchEnabled?: boolean;
 }
 
+/** Stable ids for “hard no” mandate categories (showcase Guardrails tab). */
+export type HardNoCategoryId =
+  | "alcohol"
+  | "gambling"
+  | "politics"
+  | "adult"
+  | "tobacco"
+  | "crypto";
+
+export type BrandDelayRule = "24h" | "48h" | "72h";
+export type BrandCancellationRule = "20%" | "40%" | "60%";
+
+/** Creator rules for brand collaboration — persisted as JSON on the project. */
+export interface ProjectGuardrails {
+  hardNo: HardNoCategoryId[];
+  creativeNonNegotiables: {
+    noScriptedLines: boolean;
+    noDancing: boolean;
+    noProfanity: boolean;
+    noMedicalClaims: boolean;
+    noPaidAds: boolean;
+    noRepostingToBrand: boolean;
+  };
+  brandDelayRule: BrandDelayRule;
+  brandCancellationRule: BrandCancellationRule;
+  unauthorizedUsageCharge: boolean;
+}
+
 /** One commercial / deliverable slot on the showcase (max 3 per project). */
 export interface ProjectSlotItem {
   /** Stable id for edit/delete in the UI */
@@ -112,6 +140,8 @@ export interface ProjectCreateRequest {
   slots?: ProjectSlots | null;
   /** Progress tab — reach summary and structured goals */
   progress?: ProjectProgress | null;
+  /** Guardrails tab */
+  guardrails?: ProjectGuardrails | null;
 }
 
 /** Subset of `creator_profiles` returned on creator project payloads. */
@@ -210,6 +240,8 @@ export interface Project {
   slots?: ProjectSlots | null;
   /** Progress tab */
   progress?: ProjectProgress | null;
+  /** Guardrails tab — mandates, creative rules, recourse */
+  guardrails?: ProjectGuardrails | null;
   /** Legacy / mock summary fields when `progress` JSON is absent */
   reachTarget?: string;
   reachAchieved?: string;

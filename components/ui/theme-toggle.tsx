@@ -29,6 +29,11 @@ export const AnimatedThemeToggler = ({ className }: Props) => {
   }, [resolvedTheme, theme, setTheme]);
 
   const isDark = (resolvedTheme ?? theme) === "dark";
+  const ariaLabel = mounted
+    ? isDark
+      ? "Switch to light mode"
+      : "Switch to dark mode"
+    : "Toggle color theme";
 
   return (
     <Button
@@ -36,7 +41,7 @@ export const AnimatedThemeToggler = ({ className }: Props) => {
       size="icon"
       variant="outline"
       onClick={toggleTheme}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={ariaLabel}
       className={cn(
         "z-20 h-10 w-10 cursor-pointer rounded-full border border-zinc-500 bg-background dark:border-zinc-600",
         className,

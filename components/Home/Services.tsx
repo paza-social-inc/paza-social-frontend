@@ -197,25 +197,32 @@ export default function Services() {
           <div className={CONTAINER}>
             <div className="pt-8 sm:pt-10 pb-12 sm:pb-14">
               <div className="flex flex-col lg:flex-row items-stretch gap-4 sm:gap-6 lg:gap-10">
-                <div className="relative flex-1 min-h-[520px] sm:min-h-[560px]">
+                <div className="relative flex-1 min-h-[clamp(380px,52dvh,560px)] sm:min-h-[560px]">
                   <Image src={campaignCrowdRadial} alt="" fill className="object-cover grayscale" />
                   <div className="absolute inset-0 bg-black/55" />
 
-                  <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-center">
-                    <div className="text-[clamp(2.2rem,12vw,3.4rem)] sm:text-[70px] leading-[0.9] sm:leading-[0.95] font-extrabold tracking-[-0.03em] max-w-full">
-                      <div>BEYOND</div>
-                      <div>TRANSACTIONS</div>
-                      <div>- UNITING</div>
-                      <div>COMMUNITIES</div>
-                      <div>THAT BUILD WITH</div>
-                      <div className="mt-2">AND SHAPE</div>
-                      <div className="mt-1 text-[clamp(1.9rem,9vw,2.8rem)] sm:text-[56px]">CULTURE</div>
-                    </div>
+                  <div className="absolute inset-0 flex flex-col justify-center px-4 pb-28 pt-10 sm:p-6 sm:pb-24">
+                    <h1 className="max-w-full text-balance wrap-break-word font-extrabold uppercase tracking-[-0.02em] text-white">
+                      <span className="block text-[clamp(1.35rem,4.2vw+0.55rem,2.35rem)] leading-[1.08] sm:text-[clamp(2.25rem,5vw,3.75rem)] sm:leading-[0.98]">
+                        Beyond transactions
+                      </span>
+                      <span className="mt-1 block text-[clamp(1.2rem,3.85vw+0.45rem,2.1rem)] leading-[1.1] sm:mt-2 sm:text-[clamp(2rem,4.5vw,3.25rem)] sm:leading-[1.02]">
+                        — uniting communities
+                      </span>
+                      <span className="mt-1 block text-[clamp(1.15rem,3.6vw+0.4rem,2rem)] leading-[1.12] sm:mt-2 sm:text-[clamp(1.85rem,4vw,2.85rem)] sm:leading-[1.02]">
+                        that build with and shape
+                      </span>
+                      <span className="mt-2 block text-[clamp(1.45rem,4.8vw+0.5rem,2.6rem)] leading-[1.06] sm:mt-3 sm:text-[clamp(2.5rem,5.5vw,4.25rem)] sm:leading-[0.95]">
+                        culture
+                      </span>
+                    </h1>
                   </div>
 
-                  <div className="absolute left-0 bottom-5 sm:bottom-10 lg:bottom-24 p-4 sm:p-6 max-w-[280px] text-[11px] sm:text-[12px] text-foreground dark:text-zinc-300 leading-relaxed">
-                    Together we create a powerful synergy that propels creativity fuels innovation and
-                    unlocks endless possibilities.Join us at Paza and embark on a transformative journey.
+                  <div className="absolute bottom-4 left-0 right-0 px-4 sm:bottom-10 sm:left-0 sm:right-auto lg:bottom-24 sm:max-w-sm sm:p-6">
+                    <p className="mx-auto max-w-[min(100%,22rem)] text-[13px] leading-relaxed text-white/90 sm:mx-0 sm:max-w-[280px] sm:text-sm">
+                      Together we create a powerful synergy that propels creativity, fuels innovation, and
+                      unlocks endless possibilities. Join us at Paza and embark on a transformative journey.
+                    </p>
                   </div>
                 </div>
 
@@ -223,9 +230,9 @@ export default function Services() {
                   <Image src={campaignDjPerformance} alt="" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/25" />
 
-                  <div className="absolute right-0 top-5 sm:top-8 lg:top-14 w-[80%] sm:w-[310px] p-4 sm:p-0 text-[11px] sm:text-[12px] text-foreground dark:text-zinc-300 leading-relaxed">
-                    Together we create a powerful synergy that propels creativity fuels innovation and
-                    unlocks endless possibilities.Join us at Paza and embark on a transformative journey.
+                  <div className="absolute right-0 top-5 max-w-[min(100%,20rem)] p-4 text-[13px] leading-relaxed text-foreground/95 sm:top-8 sm:w-[310px] sm:max-w-none sm:p-0 sm:text-sm dark:text-zinc-200 lg:top-14">
+                    Together we create a powerful synergy that propels creativity, fuels innovation, and
+                    unlocks endless possibilities. Join us at Paza and embark on a transformative journey.
                   </div>
                 </div>
               </div>
@@ -245,8 +252,7 @@ export default function Services() {
           <div className={`${CONTAINER} pb-10`}>
             <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-8">
               <div className="flex items-center gap-3">
-                <span className="w-2 h-2 bg-orange-500 block" />
-                <span className="w-2 h-2 bg-orange-500 block" />
+                <span className="block h-2 w-2 shrink-0 bg-orange-500" aria-hidden />
                 <span className="text-[12px] uppercase tracking-[0.18em] text-orange-500">
                   Our Services
                 </span>

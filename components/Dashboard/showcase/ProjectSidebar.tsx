@@ -23,6 +23,7 @@ import type { Opening } from "@/types/openings";
 import { openingsApi } from "@/lib/data/openings";
 import {
   projectProposalsApi,
+  formatProposalTimeline,
   type CreatorProjectProposal,
   type CreatorProjectProposalMine,
 } from "@/lib/data/projectProposals";
@@ -297,6 +298,7 @@ export function ProjectSidebar({
                 const proposerName = p.proposer
                   ? `${p.proposer.firstName} ${p.proposer.lastName}`
                   : "—";
+                const timelineLabel = formatProposalTimeline(p);
                 return (
                   <button
                     type="button"
@@ -321,7 +323,7 @@ export function ProjectSidebar({
                     <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
                       <span>{new Date(p.createdAt).toLocaleDateString()}</span>
                       {p.fee ? <span>• Fee: {p.fee}</span> : null}
-                      {p.timeline ? <span>• {p.timeline}</span> : null}
+                      {timelineLabel ? <span>• {timelineLabel}</span> : null}
                     </div>
                   </button>
                 );

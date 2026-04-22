@@ -23,6 +23,12 @@ import type { Job, JobValues } from "@/types";
 /** API may return extra top-level fields not on the base `Job` type. */
 type JobDetailRecord = Job & {
     business?: { logoUrl?: string; name?: string; industry?: string };
+    campaign?: {
+        id?: number;
+        title?: string;
+        goals?: string[] | null;
+        goalDetails?: Array<{ goal?: string | null }> | null;
+    };
 };
 
 interface JobDetailsProps {
@@ -121,7 +127,19 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
   const skills = jb.skills ?? [];
   const contents = jb.contents ?? [];
   const platforms = jb.platforms ?? [];
-  const goals = jb.goals ?? [];
+  const campaignGoalsFromDetails =
+    Array.isArray(jb.campaign?.goalDetails)
+      ? jb.campaign.goalDetails
+          .map((g) => String(g?.goal ?? "").trim())
+          .filter(Boolean)
+      : [];
+  const campaignGoals =
+    campaignGoalsFromDetails.length > 0
+      ? campaignGoalsFromDetails
+      : Array.isArray(jb.campaign?.goals)
+        ? jb.campaign.goals.filter((g): g is string => typeof g === "string" && g.trim().length > 0)
+        : [];
+  const goals = campaignGoals.length > 0 ? campaignGoals : (jb.goals ?? []);
   const owner = jb.owner;
   const business = jb.business;
   const createdAt = jb.createdAt;

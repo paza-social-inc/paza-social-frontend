@@ -115,14 +115,7 @@ export default function CreatorRegistration({
         setIsSubmitting(true);
         try {
             await saveCreatorProfileFull(formData);
-            const hasBlobMedia =
-                (formData.avatar?.startsWith("blob:") ?? false) ||
-                (formData.preview?.startsWith("blob:") ?? false);
-            toast.success(
-                hasBlobMedia
-                    ? "Profile saved. Photo previews are local only until you upload to storage."
-                    : "Creator profile saved"
-            );
+            toast.success("Creator profile saved");
             setIsFilling(false);
             if (onComplete) onComplete();
             else router.push("/overview");

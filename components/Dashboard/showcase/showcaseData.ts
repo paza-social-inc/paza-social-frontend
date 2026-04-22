@@ -3,22 +3,54 @@
  * Aligned with SHOWCASE doc: About, Progress, Collaborators, Assets & Funding, Openings, Slots, Guardrails.
  */
 
-export const HARD_NO_OPTIONS = [
-  "Alcohol",
-  "Betting/Gambling",
-  "Politics",
-  "Adult/Sexual content",
-  "Tobacco/Nicotine/Vapes",
-  "Crypto/\"get rich\" schemes",
+import type { HardNoCategoryId, ProjectGuardrails } from "@/types/projects/projectTypes";
+
+/** Default guardrails for mock projects and UI fallbacks (matches prior mock behavior). */
+export const DEFAULT_PROJECT_GUARDRAILS: ProjectGuardrails = {
+  hardNo: ["alcohol", "gambling"],
+  creativeNonNegotiables: {
+    noScriptedLines: true,
+    noDancing: false,
+    noProfanity: true,
+    noMedicalClaims: true,
+    noPaidAds: false,
+    noRepostingToBrand: true,
+  },
+  brandDelayRule: "48h",
+  brandCancellationRule: "40%",
+  unauthorizedUsageCharge: true,
+};
+
+export const mockGuardrails = DEFAULT_PROJECT_GUARDRAILS;
+
+export const GUARDRAIL_HARD_NO_CATALOG: readonly {
+  id: HardNoCategoryId;
+  label: string;
+  hint: string;
+}[] = [
+  { id: "alcohol", label: "Alcohol", hint: "Beer, wine, spirits, RTDs" },
+  { id: "gambling", label: "Betting / gambling", hint: "Sportsbooks, casinos, prediction markets" },
+  { id: "politics", label: "Politics", hint: "Partisan campaigns, elections, lobbying" },
+  { id: "adult", label: "Adult / sexual content", hint: "Explicit or adult-themed promotions" },
+  { id: "tobacco", label: "Tobacco / nicotine / vapes", hint: "Smoking, vaping, oral nicotine" },
+  { id: "crypto", label: "Crypto / “get rich” schemes", hint: "Token promos, trading signals, HYIPs" },
 ] as const;
 
-export const CREATIVE_NON_NEGOTIABLES = [
-  "No scripted lines",
-  "No dancing",
-  "No profanity",
-  "No medical/health claims",
-  "No paid ads/whitelisting (brand boosting my content)",
-  "No reposting to brand pages",
+export const GUARDRAIL_CREATIVE_ITEMS: readonly {
+  key: keyof ProjectGuardrails["creativeNonNegotiables"];
+  label: string;
+  hint: string;
+}[] = [
+  { key: "noScriptedLines", label: "No scripted lines", hint: "Organic voice; no word-for-word ad reads" },
+  { key: "noDancing", label: "No dancing", hint: "Choreography or dance-forward formats" },
+  { key: "noProfanity", label: "No profanity", hint: "Keep language brand-safe" },
+  { key: "noMedicalClaims", label: "No medical / health claims", hint: "No cures, dosing, or clinical outcomes" },
+  {
+    key: "noPaidAds",
+    label: "No paid ads / whitelisting",
+    hint: "Brand may not boost your posts as ads without separate agreement",
+  },
+  { key: "noRepostingToBrand", label: "No reposting to brand pages", hint: "Content stays on your channels unless agreed" },
 ] as const;
 
 export const DELIVERABLES_OPTIONS = [
@@ -82,6 +114,7 @@ export const mockProject = {
   primaryFit: "Merchant",
   secondaryFit: "Culture",
   activeWindow: "Last 30d",
+  guardrails: DEFAULT_PROJECT_GUARDRAILS,
 };
 
 export const mockCreator = {
@@ -174,18 +207,3 @@ export const mockOpenings: MockOpening[] = [
     timeframe: "3 months",
   },
 ];
-
-export const mockGuardrails = {
-  hardNo: ["Alcohol", "Betting/Gambling"] as string[],
-  creativeNonNegotiables: {
-    noScriptedLines: true,
-    noDancing: false,
-    noProfanity: true,
-    noMedicalClaims: true,
-    noPaidAds: false,
-    noRepostingToBrand: true,
-  },
-  brandDelayRule: "48h",
-  brandCancellationRule: "40%",
-  unauthorizedUsageCharge: true,
-};

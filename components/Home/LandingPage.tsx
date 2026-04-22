@@ -499,10 +499,10 @@ function EditorialLabel({
 }) {
   return (
     <span className="inline-flex items-center gap-2 text-[#FF6B00] sm:gap-3">
-      <span className="flex gap-1" aria-hidden>
-        <span className="h-[17px] w-1.5 shrink-0 bg-[#FF6B00] sm:h-[21px] sm:w-2" />
-        <span className="h-[17px] w-1.5 shrink-0 bg-[#FF6B00] sm:h-[21px] sm:w-2" />
-      </span>
+      <span
+        className="h-[17px] w-1.5 shrink-0 bg-[#FF6B00] sm:h-[21px] sm:w-2"
+        aria-hidden
+      />
       <span
         className={cn(
           "font-normal tracking-normal text-[#FF6B00]",
@@ -816,6 +816,62 @@ function AccountTypeMockupCard({
   );
 }
 
+type WheelSteeredHorizontalScrollProps = {
+  className?: string;
+  children: ReactNode;
+};
+
+/**
+ * Maps vertical mouse wheel (and shift+wheel / dominant horizontal delta) to horizontal scroll.
+ * At the start/end of the strip, the event is not intercepted so the page can scroll normally.
+ * When fully scrolled right, wheel up is not mapped to horizontal (so the page can scroll up).
+ */
+function WheelSteeredHorizontalScroll({ className, children }: WheelSteeredHorizontalScrollProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      let delta = e.deltaY;
+      if (e.shiftKey) {
+        delta = e.deltaX;
+      } else if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        delta = e.deltaX;
+      }
+      if (delta === 0) return;
+
+      if (e.deltaMode === 1) delta *= 16;
+      else if (e.deltaMode === 2) delta *= el.clientHeight;
+
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+
+      const left = el.scrollLeft;
+      const atStart = left <= 0.5;
+      const atEnd = left >= max - 0.5;
+
+      if (delta > 0 && atEnd) return;
+      if (delta < 0 && atStart) return;
+      if (delta < 0 && atEnd) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      el.scrollBy({ left: delta, top: 0, behavior: "auto" });
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
+
 const HOW_PLATFORM_WORKS_STEPS = [
   {
     id: "01",
@@ -996,16 +1052,16 @@ function HowItWorksDesktopScrollDriver() {
   if (reduceMotion) {
     return (
       <div className="hidden touch-pan-x lg:block" role="region" aria-label="Platform workflow steps">
-        <div
+        <WheelSteeredHorizontalScroll
           className={cn(
             PAGE_PAD,
-            "flex gap-12 overflow-x-auto overflow-y-visible pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
+            "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
             "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
             "snap-x snap-mandatory scroll-smooth",
           )}
         >
           {panels}
-        </div>
+        </WheelSteeredHorizontalScroll>
       </div>
     );
   }
@@ -1075,10 +1131,10 @@ function HowItWorksSection() {
 
       <div className={cn("py-6 sm:py-8 md:py-10 lg:py-12", LANDING_PLATE)}>
       <div className="touch-pan-x lg:hidden" role="region" aria-label="Platform workflow steps">
-        <div
+        <WheelSteeredHorizontalScroll
           className={cn(
             PAGE_PAD,
-            "flex gap-12 overflow-x-auto overflow-y-visible pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
+            "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
             "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
             "snap-x snap-mandatory scroll-smooth",
           )}
@@ -1094,7 +1150,7 @@ function HowItWorksSection() {
             </HowItWorksStepPanel>
           ))}
           <div className="w-4 shrink-0 snap-end sm:w-8" aria-hidden />
-        </div>
+        </WheelSteeredHorizontalScroll>
       </div>
 
       <HowItWorksDesktopScrollDriver />

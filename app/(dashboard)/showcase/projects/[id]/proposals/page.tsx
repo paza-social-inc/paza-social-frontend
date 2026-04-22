@@ -10,6 +10,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { projectsApi } from "@/lib/data/projects";
 import {
   projectProposalsApi,
+  formatProposalTimeline,
   type CreatorProjectProposal,
 } from "@/lib/data/projectProposals";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,7 @@ export default function ShowcaseProjectProposalsPage() {
             const proposerName = p.proposer
               ? `${p.proposer.firstName} ${p.proposer.lastName}`.trim()
               : "—";
+            const timelineLabel = formatProposalTimeline(p);
             return (
               <Card
                 key={p.id}
@@ -211,9 +213,9 @@ export default function ShowcaseProjectProposalsPage() {
                         Fee: {p.fee}
                       </span>
                     )}
-                    {p.timeline && (
+                    {timelineLabel && (
                       <span className="rounded-md bg-muted px-2 py-1">
-                        {p.timeline}
+                        {timelineLabel}
                       </span>
                     )}
                   </div>

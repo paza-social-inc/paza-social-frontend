@@ -26,6 +26,9 @@ export interface CreatorProjectProposal {
   reason: string;
   fee: string | null;
   timeline: string | null;
+  /** ISO YYYY-MM-DD when API returns structured dates */
+  timelineStart?: string | null;
+  timelineEnd?: string | null;
   attachments: string[] | null;
   collaborators: string[] | null;
   status: string;
@@ -33,6 +36,17 @@ export interface CreatorProjectProposal {
   proposer?: CreatorProjectProposerLite;
   project_id?: number;
   proposer_id?: number;
+}
+
+/** Prefer structured dates; fall back to legacy `timeline` text. */
+export function formatProposalTimeline(p: Pick<CreatorProjectProposal, "timeline" | "timelineStart" | "timelineEnd">): string | null {
+  const a = (p.timelineStart ?? "").trim();
+  const b = (p.timelineEnd ?? "").trim();
+  if (a && b) return `${a} – ${b}`;
+  if (a) return `From ${a}`;
+  if (b) return `Until ${b}`;
+  const tl = (p.timeline ?? "").trim();
+  return tl || null;
 }
 
 /** Proposals you sent; includes project summary from GET /proposals/mine */
@@ -88,6 +102,8 @@ export const projectProposalsApi = {
       reason: string;
       fee?: string | null;
       timeline?: string | null;
+      timelineStart?: string | null;
+      timelineEnd?: string | null;
       attachments?: string[] | null;
       collaborators?: string[] | null;
     }
