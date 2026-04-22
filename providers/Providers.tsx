@@ -1,6 +1,5 @@
 "use client";
 
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, ThemeProviderProps } from "next-themes";
 import { Toaster } from "react-hot-toast";
@@ -15,7 +14,6 @@ export default function Providers({ children, ...props }: ThemeProviderProps) {
     return (
         <ThemeProvider {...props}>
             <QueryClientProvider client={queryClient}>
-                <TanStackDevtools />
                 {children}
             </QueryClientProvider>
             <Toaster position="top-center" toastOptions={{
