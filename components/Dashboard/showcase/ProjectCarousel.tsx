@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import {
   Carousel,
@@ -83,7 +83,7 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
       .filter(Boolean)
       .filter(looksLikeImageUrl);
     return cleaned.length > 0 ? cleaned : [FALLBACK_PROJECT_IMAGE];
-  }, [project.images, project]);
+  }, [project]);
   const tabs: { id: ShowcaseTabId; label: string }[] = [
     { id: "about", label: "About" },
     { id: "progress", label: "Progress" },

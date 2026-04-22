@@ -8,6 +8,8 @@ export interface AuthMeUser {
   /** Individual | Business | Creator | None */
   accountType?: string;
   isVerified?: boolean;
+  businessId?: number;
+  avatar?: string;
 }
 
 /**

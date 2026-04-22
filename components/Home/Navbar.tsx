@@ -145,48 +145,45 @@ export default function NavBar() {
         </Link>
       </motion.div>
 
-      {/* Center: primary links (final design) */}
-      <motion.div
-        variants={NAV_CONTAINER}
-        initial="hidden"
-        animate="show"
-        className={cn(
-          "absolute left-1/2 hidden min-w-0 -translate-x-1/2 md:block",
-          minimalMarketingNav ? "" : "",
-        )}
-      >
-        <nav aria-label="Primary" className="flex items-center gap-8 lg:gap-[33px]">
-          {navLinks.map((link) => (
-            <motion.div key={link.name} variants={NAV_ITEM} className="flex flex-col items-center gap-1.5">
-              <Link
-                href={link.hash ? `${link.href}${link.hash}` : link.href}
-                onClick={() => setActive(link.name)}
-                className={cn(
-                  "inline-flex shrink-0 items-center px-0 text-base font-semibold tracking-[0.05em] transition-colors touch-manipulation",
-                  isDarkMarketing && active === link.name && "text-[#FF6B00]",
-                  darkMarketingChrome && active !== link.name && "font-normal text-[#d9d9d9] hover:text-white",
-                  isDarkMarketing && !darkMarketingChrome && active !== link.name && "font-normal text-muted-foreground hover:text-foreground",
-                  !isDarkMarketing &&
+        {/* Center: primary links (Centered via flex-1) */}
+        <motion.div
+          variants={NAV_CONTAINER}
+          initial="hidden"
+          animate="show"
+          className="hidden flex-1 justify-center min-w-0 md:flex"
+        >
+          <nav aria-label="Primary" className="flex items-center gap-4 lg:gap-8">
+            {navLinks.map((link) => (
+              <motion.div key={link.name} variants={NAV_ITEM} className="flex flex-col items-center gap-1.5">
+                <Link
+                  href={link.hash ? `${link.href}${link.hash}` : link.href}
+                  onClick={() => setActive(link.name)}
+                  className={cn(
+                    "inline-flex shrink-0 items-center px-1 text-sm lg:text-base font-semibold tracking-[0.05em] transition-colors touch-manipulation",
+                    isDarkMarketing && active === link.name && "text-[#FF6B00]",
+                    darkMarketingChrome && active !== link.name && "font-normal text-[#d9d9d9] hover:text-white",
+                    isDarkMarketing && !darkMarketingChrome && active !== link.name && "font-normal text-muted-foreground hover:text-foreground",
+                    !isDarkMarketing &&
                     (active === link.name
                       ? "text-primary font-semibold"
                       : "text-muted-foreground hover:text-foreground"),
-                )}
-              >
-                {link.name}
-              </Link>
-              {isDarkMarketing && active === link.name && (
-                <span
-                  className={cn(
-                    "h-px w-12 max-w-full",
-                    darkMarketingChrome ? "bg-[#FF6B00]" : "bg-primary",
                   )}
-                  aria-hidden
-                />
-              )}
-            </motion.div>
-          ))}
-        </nav>
-      </motion.div>
+                >
+                  {link.name}
+                </Link>
+                {isDarkMarketing && active === link.name && (
+                  <span
+                    className={cn(
+                      "h-px w-8 lg:w-12 max-w-full",
+                      darkMarketingChrome ? "bg-[#FF6B00]" : "bg-primary",
+                    )}
+                    aria-hidden
+                  />
+                )}
+              </motion.div>
+            ))}
+          </nav>
+        </motion.div>
 
       {/* Right: Login, WhatsApp, Request a demo */}
       <motion.div

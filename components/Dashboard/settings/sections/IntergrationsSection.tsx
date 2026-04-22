@@ -1,92 +1,113 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import {
-    RiDropboxLine,
-    RiGithubLine,
-    RiGitlabLine,
+    RiFacebookCircleLine,
     RiInstagramLine,
-    RiNotionLine,
-    RiSlackLine,
+    RiLinkedinLine,
     RiTiktokLine,
+    RiTwitterXLine,
+    RiYoutubeLine,
+    RiLoader2Line,
 } from "@remixicon/react";
+import { getSocialAuthUrl, SocialPlatform } from "@/lib/data/socialVerification";
+import { useAuth } from "@/hooks/store/auth/useAuth";
+import toast from "react-hot-toast";
 
-
-const integrations = [
+const socialPlatforms: { name: string; id: SocialPlatform; icon: React.ReactNode; description: string }[] = [
     {
-        name: "Tiktok",
-        description: "Upload your files to Google Drive",
+        id: "youtube",
+        name: "YouTube",
+        description: "Verify your channel to enable reach monitoring",
+        icon: <RiYoutubeLine className="text-[#FF0000]" />,
+    },
+    {
+        id: "tiktok",
+        name: "TikTok",
+        description: "Connect your TikTok account for campaign insights",
         icon: <RiTiktokLine />,
-        enabled: true
     },
     {
-        name: "Slack",
-        description: "Post to a Slack channel",
-        icon: <RiSlackLine />,
-        enabled: true
-    },
-    {
-        name: "Notion",
-        description: "Retrieve notion note to your project",
-        icon: <RiNotionLine />,
-        enabled: false
-    },
-    {
+        id: "instagram",
         name: "Instagram",
-        description: "Create posts on Instagram",
-        icon: <RiInstagramLine />,
-        enabled: false
+        description: "Sync your professional Instagram account",
+        icon: <RiInstagramLine className="text-[#E4405F]" />,
     },
     {
-        name: "Dropbox",
-        description: "Exchange data with Dropbox",
-        icon: <RiDropboxLine />,
-        enabled: false
+        id: "facebook",
+        name: "Facebook",
+        description: "Connect your brand page",
+        icon: <RiFacebookCircleLine className="text-[#1877F2]" />,
     },
     {
-        name: "Github",
-        description: "Exchange files with a GitHub repository",
-        icon: <RiGithubLine />,
-        enabled: false
+        id: "linkedin",
+        name: "LinkedIn",
+        description: "Professional reach and networking verification",
+        icon: <RiLinkedinLine className="text-[#0A66C2]" />,
     },
     {
-        name: "Gitlab",
-        description: "Exchange files with a Gitlab repository",
-        icon: <RiGitlabLine />,
-        enabled: false
-    }
+        id: "x",
+        name: "X (Twitter)",
+        description: "Verify your X account identity",
+        icon: <RiTwitterXLine />,
+    },
 ];
 
-
-
 export function IntegrationsSection() {
+    const {} = useAuth();
+    const [loadingPlatform, setLoadingPlatform] = React.useState<string | null>(null);
+
+    const handleConnect = (platform: SocialPlatform) => {
+        setLoadingPlatform(platform);
+        try {
+            const url = getSocialAuthUrl(platform);
+            // Redirect to backend auth initiator
+            window.location.href = url;
+        } catch {
+            toast.error("Could not initiate verification");
+            setLoadingPlatform(null);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-semibold text-balance">Integration</h1>
+                <h1 className="text-2xl font-semibold text-balance">Social Verification</h1>
                 <p className="text-muted-foreground mt-1">
-                    Supercharge your workflow using these integration
+                    Connect your social accounts to verify your reach and unlock platform-linked features.
                 </p>
             </div>
 
-            <div className="space-y-4">
-                {integrations.map((integration) => (
-                    <Card key={integration.name}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {socialPlatforms.map((platform) => (
+                    <Card key={platform.id} className="overflow-hidden">
                         <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="text-2xl">{integration.icon}</div>
+                            <div className="flex items-start justify-between">
+                                <div className="flex gap-4">
+                                    <div className="text-3xl p-3 bg-muted rounded-xl">
+                                        {platform.icon}
+                                    </div>
                                     <div>
-                                        <h3 className="font-semibold">{integration.name}</h3>
-                                        <p className="text-muted-foreground text-sm">{integration.description}</p>
+                                        <h3 className="font-semibold text-lg">{platform.name}</h3>
+                                        <p className="text-muted-foreground text-sm leading-relaxed max-w-[200px]">
+                                            {platform.description}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                        Learn more
-                                    </Button>
-                                    <Switch defaultChecked={integration.enabled} />
-                                </div>
+                            </div>
+                            <div className="mt-6">
+                                <Button 
+                                    className="w-full h-11 rounded-xl" 
+                                    variant="outline"
+                                    onClick={() => handleConnect(platform.id)}
+                                    disabled={loadingPlatform !== null}
+                                >
+                                    {loadingPlatform === platform.id ? (
+                                        <RiLoader2Line className="animate-spin mr-2 h-4 w-4" />
+                                    ) : (
+                                        "Connect Account"
+                                    )}
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

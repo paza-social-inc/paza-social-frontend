@@ -246,10 +246,12 @@ export function CreatorProfileModal({
         {/* Cover image */}
         <div className="relative w-full aspect-21/9 min-h-[140px] bg-muted shrink-0">
           {coverUrl ? (
-            <img
+            <Image
               src={coverUrl}
               alt=""
-              className="object-cover w-full h-full"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 800px"
             />
           ) : (
             <div className="w-full h-full bg-muted" />
@@ -375,10 +377,12 @@ export function CreatorProfileModal({
                       key={i}
                       className="relative aspect-video rounded-xl overflow-hidden bg-muted"
                     >
-                      <img
+                      <Image
                         src={src}
                         alt=""
-                        className="object-cover w-full h-full"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 33vw, 250px"
                       />
                     </div>
                   ))}
@@ -419,7 +423,7 @@ export function CreatorProfileModal({
                     >
                       <div className="relative w-24 sm:w-28 shrink-0 aspect-video rounded-lg overflow-hidden bg-muted">
                         {thumb ? (
-                          <img src={thumb} alt="" className="object-cover w-full h-full" />
+                          <Image src={thumb} alt="" fill className="object-cover" sizes="120px" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground px-1 text-center">
                             No media
@@ -662,7 +666,7 @@ export function CreatorProfileModal({
                 >
                   <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                     {thumb ? (
-                      <img src={thumb} alt="" className="h-full w-full object-cover" />
+                      <Image src={thumb} alt="" fill className="h-full w-full object-cover" sizes="80px" />
                     ) : null}
                   </div>
                   <div className="min-w-0 flex-1 py-0.5">

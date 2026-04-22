@@ -14,6 +14,7 @@ import {
 import { Job } from '@/types';
 import { MoreVertical } from 'lucide-react';
 import { RiCameraLine, RiMoneyDollarCircleLine, RiMedalLine, RiTimeLine, RiTeamLine, RiMapPinLine, RiGlobeLine } from '@remixicon/react';
+import Image from "next/image";
 
 interface JobProps extends Job {
     onClick: () => void;
@@ -49,9 +50,8 @@ const JobCard = ({
         location,
         experience,
         years,
-        age,
-        category,
         priority,
+        age,
     } = values ?? {};
 
     const collaborators = Array.isArray(collaboratorsProp) ? collaboratorsProp : [];
@@ -132,10 +132,12 @@ const JobCard = ({
         >
             <CardHeader className="p-0">
                 <div className="relative h-48 overflow-hidden">
-                    <img
+                    <Image
                         src={imageUrl}
-                        alt={title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        alt={title || "Job image"}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        unoptimized
                     />
                     {isOwner && (onEdit || onDelete) && (
                         <div className="absolute right-2 top-2 z-20">

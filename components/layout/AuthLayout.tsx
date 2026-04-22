@@ -1,4 +1,5 @@
 import Image, { ImageProps } from "next/image";
+import Link from "next/link";
 import Footer from "../Home/Footer";
 
 interface AuthlayoutProps {
@@ -35,7 +36,15 @@ export default function Authlayout({
                     </div>
                 )}
 
-                <div className="flex flex-col gap-4 p-6 md:p-10">
+                <div className="flex flex-col gap-4 p-6 md:p-10 relative">
+                    <div className="absolute top-6 left-6 md:top-10 md:left-10 z-20">
+                        <Link
+                            href="/"
+                            className="text-2xl font-extrabold tracking-tight hover:text-primary transition-colors"
+                        >
+                            PAZA
+                        </Link>
+                    </div>
                     <div className="flex flex-1 items-center justify-center">
                         <div className={`w-full ${isNone ? "max-w-2xl" : "max-w-md"}`}>{children}</div>
                     </div>

@@ -46,6 +46,7 @@ import {
   escrowPaymentsApi,
   type EscrowListItem,
 } from "@/lib/data/escrowPayments";
+import EscrowDetailsModal from "@/components/Dashboard/payments/EscrowDetailsModal";
 
 function personName(p?: { firstName?: string; lastName?: string; email?: string }): string {
   const n = [p?.firstName, p?.lastName].filter(Boolean).join(" ").trim();
@@ -149,6 +150,8 @@ export default function PaymentsPage() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentDialogTab, setPaymentDialogTab] = useState<DepositTransferTab>("deposit");
   const [depositSuccessFromRedirect, setDepositSuccessFromRedirect] = useState(false);
+  const [selectedEscrowId, setSelectedEscrowId] = useState<number | null>(null);
+  const [escrowDetailsOpen, setEscrowDetailsOpen] = useState(false);
 
   const effectiveToken =
     token ?? (typeof window !== "undefined" ? localStorage.getItem("token") : null);
@@ -194,7 +197,7 @@ export default function PaymentsPage() {
 
   const walletKes = walletData?.balanceKes ?? 0;
 
-  const allEscrows = escrowListResult?.escrows ?? [];
+  const allEscrows = useMemo(() => escrowListResult?.escrows ?? [], [escrowListResult?.escrows]);
 
   const statsRows = useMemo(
     () => buildStatsChartRows(allEscrows, period),
@@ -558,7 +561,11 @@ export default function PaymentsPage() {
                       return (
                         <li
                           key={tx.id}
-                          className="grid grid-cols-1 gap-3 py-4 sm:grid-cols-[minmax(0,1.4fr)_auto_auto_auto] sm:items-center sm:gap-4"
+                          className="grid grid-cols-1 gap-3 py-4 sm:grid-cols-[minmax(0,1.4fr)_auto_auto_auto] sm:items-center sm:gap-4 cursor-pointer hover:bg-muted/30 transition-colors rounded-lg px-2"
+                          onClick={() => {
+                            setSelectedEscrowId(tx.id);
+                            setEscrowDetailsOpen(true);
+                          }}
                         >
                           <div className="flex min-w-0 items-center gap-3">
                             <div
@@ -758,6 +765,13 @@ export default function PaymentsPage() {
         onTransferSuccess={() => {
           void queryClient.invalidateQueries({ queryKey: ["payments-wallet"] });
         }}
+      />
+
+      <EscrowDetailsModal
+        escrowId={selectedEscrowId}
+        open={escrowDetailsOpen}
+        onOpenChange={setEscrowDetailsOpen}
+        viewerUserId={numericUserId}
       />
     </div>
   );

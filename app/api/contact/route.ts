@@ -12,7 +12,7 @@ export type ContactBody = {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ContactBody;
-    const { firstName, lastName, email, message } = body;
+    const { email, message } = body;
 
     if (!email?.trim() || !message?.trim()) {
       return NextResponse.json(

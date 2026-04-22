@@ -271,6 +271,17 @@ export function normalizeCampaign(raw: unknown): Campaign {
   o.goalDetails = normalizedGoalDetails.length > 0 ? normalizedGoalDetails : fallbackGoalDetails;
   o.goals = (o.goalDetails as Array<{ goal: string }>).map((g) => g.goal);
 
+  // Normalize Milestones
+  if (Array.isArray(o.milestones)) {
+    o.milestones = o.milestones.map((m) => {
+      if (m == null || typeof m !== "object") return m;
+      const rec = { ...(m as Record<string, unknown>) };
+      if (!rec.startDate && rec.start) rec.startDate = rec.start;
+      if (!rec.dueDate && rec.end) rec.dueDate = rec.end;
+      return rec;
+    });
+  }
+
   return o as unknown as Campaign;
 }
 
@@ -326,28 +337,25 @@ export const campaignApi = {
     return response.data;
   },
 
-  // Add milestone
   addMilestone: async (campaignId: number, milestone: Record<string, unknown>) => {
     const response = await pazaApi.post<ApiResponse<Campaign>>(
-      `/api/campaigns/${campaignId}/milestone`,
+      `/api/campaigns/${campaignId}/milestones`,
       milestone
     );
     return normalizeCampaign(response.data.data);
   },
 
-  // Update milestone
   updateMilestone: async (campaignId: number, milestoneId: number, milestone: Record<string, unknown>) => {
     const response = await pazaApi.put<ApiResponse<Campaign>>(
-      `/api/campaigns/${campaignId}/milestone/${milestoneId}`,
+      `/api/campaigns/${campaignId}/milestones/${milestoneId}`,
       milestone
     );
     return normalizeCampaign(response.data.data);
   },
 
-  // Delete milestone
   deleteMilestone: async (campaignId: number, milestoneId: number) => {
     const response = await pazaApi.delete<ApiResponse<void>>(
-      `/api/campaigns/${campaignId}/milestone/${milestoneId}`
+      `/api/campaigns/${campaignId}/milestones/${milestoneId}`
     );
     return response.data;
   },
@@ -500,5 +508,15 @@ export const campaignApi = {
       { linkedCampaignId: lid }
     );
     return normalizeCampaign(response.data.data);
+  },
+
+  /**
+   * Get all campaigns created by or associated with the current user.
+   * GET /api/campaigns/mine
+   */
+  listMyCampaigns: async (): Promise<Campaign[]> => {
+    const response = await pazaApi.get<ApiResponse<Campaign[]>>("/api/campaigns/mine");
+    const rows = response.data?.data;
+    return normalizeCampaignList(Array.isArray(rows) ? rows : []);
   },
 };

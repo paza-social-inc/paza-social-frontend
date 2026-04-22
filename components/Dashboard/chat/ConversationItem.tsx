@@ -42,9 +42,16 @@ export function ConversationItem({
                             {formatTimestamp(conversation.timestamp)}
                         </span>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                        {conversation.lastMessage}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm text-muted-foreground truncate flex-1">
+                            {conversation.lastMessage}
+                        </p>
+                        {conversation.unreadCount && conversation.unreadCount > 0 ? (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0 shadow-sm animate-in fade-in zoom-in duration-300">
+                                {conversation.unreadCount > 9 ? "9+" : conversation.unreadCount}
+                            </span>
+                        ) : null}
+                    </div>
                 </div>
             </div>
         </motion.button>

@@ -104,120 +104,143 @@ function PazaSplashHero() {
     <>
       {/* Fixed plate: stays in the viewport until scroll passes the spacer below; clips overflow */}
       <section className={heroPlate} aria-label="Paza introduction">
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <Image
-          src={FIGMA_HERO_BG}
-          alt=""
-          fill
-          unoptimized
-          className={cn("object-cover object-center", !docIsDark && "opacity-35")}
-          sizes="100vw"
-          priority
-        />
-        {!docIsDark && (
-          <div className="absolute inset-0 bg-gradient-to-b from-zinc-100 via-zinc-100/95 to-zinc-100" aria-hidden />
-        )}
-      </div>
-
-      {/* Mobile-first column layout; lg+ switches to absolute Figma frame */}
-      <div
-        className={cn(
-          "relative z-10 mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col items-stretch overflow-hidden px-4 pb-24 pt-[min(22vh,6.5rem)] sm:px-6 sm:pb-28 sm:pt-[min(24vh,7.5rem)]",
-          "lg:hidden",
-        )}
-      >
-        <MaskedReveal delay={0.06} className="block w-full max-w-[min(100%,349px)] self-start">
-          <p className={heroCopyClass}>
-            Collaborate with creators, communities, individuals, or brands that perfectly align with your
-            essence and goals.
-          </p>
-        </MaskedReveal>
-        <div className="relative mx-auto mt-8 w-full max-w-[min(780px,calc(100vw-2rem))] sm:mt-12" style={{ aspectRatio: "780 / 518" }}>
+        <div className="pointer-events-none absolute inset-0 z-0">
           <Image
-            src={FIGMA_HERO_CENTER_IMG}
+            src={FIGMA_HERO_BG}
             alt=""
             fill
             unoptimized
-            className={cn("object-cover object-center grayscale", !docIsDark && "opacity-90")}
+            className={cn("object-cover object-center", !docIsDark && "opacity-35")}
             sizes="100vw"
             priority
           />
-        </div>
-        <h1
-          className={cn(heroDisplayType, "mx-auto mt-3 w-full max-w-[min(1066px,calc(100vw-32px))] sm:mt-4")}
-          style={{ fontSize: "clamp(3rem, 14vw, 8rem)" }}
-        >
-          PAZA
-        </h1>
-        <div
-          className={cn(
-            heroScrollRow,
-            "mt-auto pb-8 pt-12 text-[15px] sm:pb-10 sm:pt-16 sm:text-[16px]",
+          {!docIsDark && (
+            <div className="absolute inset-0 bg-gradient-to-b from-zinc-100 via-zinc-100/95 to-zinc-100" aria-hidden />
           )}
-        >
-          <span className="whitespace-pre">Scroll Down </span>
-          <Mouse className="h-[19px] w-[13px] shrink-0" strokeWidth={1.25} aria-hidden />
         </div>
-      </div>
 
-      {/* lg+: absolute-layered hero (same content order as mobile: copy → image → PAZA → scroll) */}
-      <div className="relative z-10 mx-auto hidden h-full w-full max-w-[1440px] lg:block">
+        {/* Mobile-first column layout; lg+ switches to absolute Figma frame */}
         <div
           className={cn(
-            "absolute left-0 z-[2] w-full max-w-[1440px] pl-4 pr-3 sm:pl-6 md:pl-10 lg:pl-12 xl:pl-[60px]",
-            "top-[min(22vh,11rem)] sm:top-[min(24vh,12rem)] lg:top-[min(22vh,13rem)]",
+            "relative z-10 mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col items-stretch overflow-hidden px-4 pb-24 pt-[min(22vh,6.5rem)] sm:px-6 sm:pb-28 sm:pt-[min(24vh,7.5rem)]",
+            "lg:hidden",
           )}
         >
-          <MaskedReveal delay={0.06} className="block w-full max-w-[349px]">
+          <MaskedReveal delay={0.06} className="block w-full max-w-[min(100%,349px)] self-start">
             <p className={heroCopyClass}>
-              Collaborate with creators, communities, individuals, or brands that perfectly align with
-              your essence and goals.
+              Collaborate with creators, communities, individuals, or brands that perfectly align with your
+              essence and goals.
             </p>
           </MaskedReveal>
-        </div>
-
-        <div
-          className="absolute left-1/2 z-[1] w-[min(780px,calc(100%-32px))] -translate-x-1/2"
-          style={{ top: `${HERO_TOP_IMG_PCT}%` }}
-        >
-          <div className="relative w-full overflow-hidden" style={{ aspectRatio: "780 / 518" }}>
+          <div className="relative mx-auto mt-8 w-full max-w-[min(780px,calc(100vw-2rem))] sm:mt-12" style={{ aspectRatio: "780 / 518" }}>
             <Image
               src={FIGMA_HERO_CENTER_IMG}
               alt=""
               fill
               unoptimized
               className={cn("object-cover object-center grayscale", !docIsDark && "opacity-90")}
-              sizes="780px"
+              sizes="100vw"
               priority
             />
           </div>
+          <h1
+            className={cn(heroDisplayType, "mx-auto mt-3 w-full max-w-[min(1066px,calc(100vw-32px))] sm:mt-4")}
+            style={{ fontSize: "clamp(3rem, 14vw, 8rem)" }}
+          >
+            PAZA
+          </h1>
+          <div
+            className={cn(
+              heroScrollRow,
+              "mt-auto pb-6 sm:pb-8 pt-8 text-[15px] sm:text-[16px]",
+            )}
+          >
+            <span className="whitespace-pre">Scroll Down </span>
+            <Mouse className="h-[19px] w-[13px] shrink-0" strokeWidth={1.25} aria-hidden />
+          </div>
+
+          {/* Hero Actions for Mobile */}
+          {/* <div className="mt-4 flex flex-col gap-3">
+            <Button asChild className="h-12 w-full text-sm font-semibold uppercase tracking-wider">
+              <Link href={SIGNUP_HREF}>Sign Up Now</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-12 w-full text-sm font-semibold uppercase tracking-wider bg-transparent border-neutral-400 dark:border-white/20">
+              <Link href="/login">Login</Link>
+            </Button>
+          </div> */}
         </div>
 
-        <h1
-          className={cn(
-            heroDisplayType,
-            "pointer-events-none absolute left-1/2 z-[3] w-[min(1066px,calc(100vw-24px))] -translate-x-1/2 select-none whitespace-nowrap",
-          )}
-          style={{
-            top: `${HERO_TOP_PAZA_PCT}%`,
-            fontSize: "min(400px, calc((100vw - 32px) * 0.278))",
-          }}
-        >
-          PAZA
-        </h1>
+        {/* lg+: absolute-layered hero (same content order as mobile: copy → image → PAZA → scroll) */}
+        <div className="relative z-10 mx-auto hidden h-full w-full max-w-[1440px] lg:block">
+          <div
+            className={cn(
+              "absolute left-0 z-[2] w-full max-w-[1440px] pl-4 pr-3 sm:pl-6 md:pl-10 lg:pl-12 xl:pl-[60px]",
+              "top-[min(22vh,11rem)] sm:top-[min(24vh,12rem)] lg:top-[min(22vh,13rem)]",
+            )}
+          >
+            <MaskedReveal delay={0.06} className="block w-full max-w-[349px]">
+              <div className="space-y-8">
+                <p className={heroCopyClass}>
+                  Collaborate with creators, communities, individuals, or brands that perfectly align with
+                  your essence and goals.
+                </p>
+                {/* <div className="flex items-center gap-4">
+                  <Button asChild className="h-11 rounded-none px-8 text-[12px] font-semibold uppercase tracking-wider shadow-none">
+                    <Link href={SIGNUP_HREF}>Sign Up</Link>
+                  </Button>
+                  <Button asChild variant="ghost" className={cn(
+                    "h-11 px-6 text-[12px] font-semibold uppercase tracking-wider hover:bg-white/5",
+                    docIsDark ? "text-white" : "text-neutral-900"
+                  )}>
+                    <Link href="/login">Login</Link>
+                  </Button>
+                </div> */}
+              </div>
+            </MaskedReveal>
+          </div>
 
-        <div
-          className={cn(
-            heroScrollRow,
-            "absolute left-1/2 z-[4] flex -translate-x-1/2 gap-2.5 text-[16px]",
-          )}
-          style={{ top: `${HERO_TOP_SCROLL_PCT}%` }}
-        >
-          <span className="whitespace-pre">Scroll Down </span>
-          <Mouse className="h-[19px] w-[13px] shrink-0" strokeWidth={1.25} aria-hidden />
+          <div
+            className="absolute left-1/2 z-[1] w-[min(780px,calc(100%-32px))] -translate-x-1/2"
+            style={{ top: `${HERO_TOP_IMG_PCT}%` }}
+          >
+            <div className="relative w-full overflow-hidden" style={{ aspectRatio: "780 / 518" }}>
+              <Image
+                src={FIGMA_HERO_CENTER_IMG}
+                alt=""
+                fill
+                unoptimized
+                className={cn("object-cover object-center grayscale", !docIsDark && "opacity-90")}
+                sizes="780px"
+                priority
+              />
+            </div>
+          </div>
+
+          <h1
+            className={cn(
+              heroDisplayType,
+              "pointer-events-none absolute left-1/2 z-[3] w-[min(1066px,calc(100vw-24px))] -translate-x-1/2 select-none whitespace-nowrap",
+            )}
+            style={{
+              top: `${HERO_TOP_PAZA_PCT}%`,
+              fontSize: "min(400px, calc((100vw - 32px) * 0.278))",
+            }}
+          >
+            PAZA
+          </h1>
+
+          <div
+            className={cn(
+              heroScrollRow,
+              "absolute left-1/2 z-[4] flex -translate-x-1/2 gap-2.5 text-[16px]",
+            )}
+            style={{ top: `${HERO_TOP_SCROLL_PCT}%` }}
+          >
+            <span className="whitespace-pre">Scroll Down </span>
+            <Mouse className="h-[19px] w-[13px] shrink-0" strokeWidth={1.25} aria-hidden />
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
       {/* One viewport of scroll height so the fixed hero reads “pinned” until you scroll past */}
       <div className="h-dvh min-h-dvh w-full shrink-0" aria-hidden />
     </>
@@ -531,18 +554,18 @@ const editorialCtaLabelOnBlack =
 function EditorialRuleCta(
   props:
     | {
-        align: EditorialRuleAlign;
-        children: ReactNode;
-        href: string;
-        /** White label + rule on black (Our Services footer). */
-        invert?: boolean;
-      }
+      align: EditorialRuleAlign;
+      children: ReactNode;
+      href: string;
+      /** White label + rule on black (Our Services footer). */
+      invert?: boolean;
+    }
     | {
-        align: EditorialRuleAlign;
-        children: ReactNode;
-        onClick: () => void;
-        invert?: boolean;
-      },
+      align: EditorialRuleAlign;
+      children: ReactNode;
+      onClick: () => void;
+      invert?: boolean;
+    },
 ) {
   const { align, children } = props;
   const invert = "invert" in props && props.invert;
@@ -1153,23 +1176,23 @@ function HowItWorksSection() {
         </WheelSteeredHorizontalScroll>
       </div>
 
-      <HowItWorksDesktopScrollDriver />
+        <HowItWorksDesktopScrollDriver />
 
-      <div className={PAGE}>
-        <div className="mt-6 flex flex-col items-center gap-2.5 sm:mt-8 sm:gap-3 md:mt-10 md:items-end">
-          <EditorialRuleCta align="end" href={SIGNUP_HREF}>
-            <>
-              Start your journey
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
-            </>
-          </EditorialRuleCta>
-          <p className="max-w-sm text-center text-[11px] leading-relaxed text-neutral-900/75 md:text-right dark:text-white/80">
-            Start today and see how your vision can shape the world
-          </p>
+        <div className={PAGE}>
+          <div className="mt-6 flex flex-col items-center gap-2.5 sm:mt-8 sm:gap-3 md:mt-10 md:items-end">
+            <EditorialRuleCta align="end" href={SIGNUP_HREF}>
+              <>
+                Start your journey
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
+              </>
+            </EditorialRuleCta>
+            <p className="max-w-sm text-center text-[11px] leading-relaxed text-neutral-900/75 md:text-right dark:text-white/80">
+              Start today and see how your vision can shape the world
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-6 h-px w-full bg-border sm:mt-8 md:mt-10 dark:bg-white/10" aria-hidden />
+        <div className="mt-6 h-px w-full bg-border sm:mt-8 md:mt-10 dark:bg-white/10" aria-hidden />
       </div>
     </section>
   );

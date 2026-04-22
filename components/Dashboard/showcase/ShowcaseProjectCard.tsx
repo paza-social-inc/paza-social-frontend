@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -45,10 +46,12 @@ export function ShowcaseProjectCard({
     >
       {project.imageUrl && (
         <div className="relative w-full aspect-video bg-muted">
-          <img
+          <Image
             src={project.imageUrl}
             alt=""
-            className="object-cover w-full h-full"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
       )}

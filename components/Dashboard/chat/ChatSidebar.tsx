@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Settings, MessageSquare } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConversationItem } from "./ConversationItem";
@@ -14,6 +14,7 @@ export interface Conversation {
     avatar: string;
     lastMessage: string;
     timestamp: Date;
+    unreadCount?: number;
 }
 
 interface ChatSidebarProps {
