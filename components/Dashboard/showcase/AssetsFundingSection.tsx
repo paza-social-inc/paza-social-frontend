@@ -177,27 +177,6 @@ export function AssetsFundingSection({ projectId, initial, canEdit }: Props) {
 
   return (
     <div className="space-y-6">
-      {canEdit && (
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button
-            type="button"
-            size="sm"
-            disabled={saveMutation.isPending}
-            onClick={() => saveMutation.mutate(draft)}
-            className="touch-manipulation"
-          >
-            {saveMutation.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Saving…
-              </>
-            ) : (
-              "Save"
-            )}
-          </Button>
-        </div>
-      )}
-
       <Card className="border-border bg-card">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Is there IP here?</CardTitle>
@@ -512,6 +491,27 @@ export function AssetsFundingSection({ projectId, initial, canEdit }: Props) {
             </Card>
           </>
         )}
+
+      {canEdit && (
+        <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+          <Button
+            type="button"
+            size="sm"
+            disabled={saveMutation.isPending}
+            onClick={() => saveMutation.mutate(draft)}
+            className="touch-manipulation"
+          >
+            {saveMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Saving…
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -205,7 +205,10 @@ export function ProposalDetailsModal({
     },
   });
 
-  const handleAccept = () => mutation.mutate("accepted");
+  const handleAccept = () => {
+    onOpenChange(false);
+    mutation.mutate("accepted");
+  };
   const handleReject = () => mutation.mutate("rejected");
 
   return (

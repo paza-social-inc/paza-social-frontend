@@ -27,6 +27,21 @@ export function parseCoreValuesToArray(raw: string): string[] {
         .filter(Boolean);
 }
 
+async function uploadImageFile(file: File): Promise<string> {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await pazaApi.post("/api/uploads/image", form, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+    const url = res?.data?.data?.url;
+    if (typeof url !== "string" || !url) {
+        throw new Error("Upload succeeded but no file URL was returned.");
+    }
+    return url;
+}
+
 /**
  * Maps onboarding state to the body accepted by
  * `PUT /api/brands/:businessId/profile/full` (see brand.service `allowedFields`).
@@ -83,6 +98,9 @@ export async function saveBrandProfileFull(
     data: BrandOnboardingFormState
 ): Promise<unknown> {
     const payload = buildBrandProfilePayload(data);
+    if (data.profilePicture instanceof File) {
+        payload.logo = await uploadImageFile(data.profilePicture);
+    }
     const res = await pazaApi.put(`/api/brands/${businessId}/profile/full`, payload);
     return res.data;
 }

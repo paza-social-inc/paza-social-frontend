@@ -76,7 +76,7 @@ function QaPostCard({
                 <span className="ml-2 text-amber-600 dark:text-amber-400">(hidden)</span>
               ) : null}
             </p>
-            <p className="mt-1.5 text-sm text-foreground whitespace-pre-wrap break-words">
+            <p className="mt-1.5 text-sm text-foreground whitespace-pre-wrap wrap-break-word">
               {post.body ?? "—"}
             </p>
           </div>
@@ -256,11 +256,18 @@ export function ProjectQaSection({ projectId, enabled, isOwner, isTeamMember, is
   });
 
   const uid = user?.id != null ? Number(user.id) : NaN;
-  const canStartQuestion =
-    user &&
-    !isOwner &&
-    (isPublic || isTeamMember) &&
-    Number.isFinite(uid);
+  const normalizedAccountType = String(
+    (user as { accountType?: string; account?: { accountType?: string } } | null)?.accountType ??
+      (user as { accountType?: string; account?: { accountType?: string } } | null)?.account?.accountType ??
+      ""
+  )
+    .trim()
+    .toLowerCase();
+  const isCreatorOrBrandAccount =
+    normalizedAccountType === "creator" ||
+    normalizedAccountType === "brand" ||
+    normalizedAccountType === "business";
+  const canStartQuestion = Boolean(user) && Number.isFinite(uid) && isCreatorOrBrandAccount;
 
   /** Server enforces thread access; any signed-in user may attempt a reply. */
   const canReply = Boolean(user);
@@ -391,15 +398,9 @@ export function ProjectQaSection({ projectId, enabled, isOwner, isTeamMember, is
           </form>
         )}
 
-        {!canStartQuestion && isOwner && (
+        {!canStartQuestion && (
           <p className="text-xs text-muted-foreground">
-            You can reply to questions from brands and collaborators. New top-level questions appear when someone else posts.
-          </p>
-        )}
-
-        {!canStartQuestion && !isOwner && !isPublic && !isTeamMember && (
-          <p className="text-xs text-muted-foreground">
-            Only project collaborators can start a thread on a private project. You can still reply in threads you&apos;re part of.
+            Only signed-in creator or brand/business accounts can start a new Q&amp;A thread.
           </p>
         )}
       </div>

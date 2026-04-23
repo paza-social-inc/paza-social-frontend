@@ -99,8 +99,15 @@ export function LoginForm({
                 </div>
                 <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <InputGroup>
-                        <InputGroupInput {...register("email")} id="email" type="email" placeholder="m@example.com" required />
+                    <InputGroup className="border-border bg-background dark:bg-input/30">
+                        <InputGroupInput
+                            {...register("email")}
+                            id="email"
+                            type="email"
+                            placeholder="m@example.com"
+                            className="bg-background text-foreground placeholder:text-muted-foreground dark:bg-transparent"
+                            required
+                        />
                         <InputGroupAddon align="inline-end" className="ps-3">
                             <RiMailLine />
                         </InputGroupAddon>
@@ -117,8 +124,14 @@ export function LoginForm({
                             Forgot your password?
                         </Link>
                     </div>
-                    <InputGroup>
-                        <InputGroupInput {...register("password")} id="password" type="password" required />
+                    <InputGroup className="border-border bg-background dark:bg-input/30">
+                        <InputGroupInput
+                            {...register("password")}
+                            id="password"
+                            type={showPass ? "text" : "password"}
+                            className="bg-background text-foreground placeholder:text-muted-foreground dark:bg-transparent"
+                            required
+                        />
                         <InputGroupAddon align="inline-end">
                             <InputGroupButton onClick={() => setShowPass(!showPass)}>
                                 {showPass ? <RiEyeLine /> : <RiEyeOffLine />}

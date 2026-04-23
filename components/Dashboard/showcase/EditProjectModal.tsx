@@ -5,11 +5,12 @@ import { useForm, type FieldErrors, type UseFormRegister } from "react-hook-form
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 
 import type { Project } from "@/types/projects/projectTypes";
 import { projectsApi } from "@/lib/data/projects";
+import { pazaApi } from "@/lib/axiosClients";
 import {
   Dialog,
   DialogContent,
@@ -95,6 +96,7 @@ export function EditProjectModal({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [campaignLink, setCampaignLink] = useState("");
+  const [mediaUploadPending, setMediaUploadPending] = useState(false);
 
   const isValidUrl = (s: string) => {
     try {
@@ -173,6 +175,62 @@ export function EditProjectModal({
     if (t && !tags.includes(t)) {
       setTags((prev) => [...prev, t]);
       setTagInput("");
+    }
+  };
+
+  const uploadMediaImage = async (file: File): Promise<string> => {
+    const form = new FormData();
+    form.append("file", file);
+    const endpoints = ["/api/uploads/image", "/api/uploads/file"];
+
+    for (const endpoint of endpoints) {
+      try {
+        const res = await pazaApi.post(endpoint, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        const url = res?.data?.data?.url;
+        if (typeof url === "string" && url.trim()) {
+          return url.trim();
+        }
+        throw new Error("Upload succeeded but no file URL was returned.");
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 404) {
+          // Try the next compatible upload endpoint only when route is missing.
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw new Error("Upload endpoint not available on this backend.");
+  };
+
+  const handleMediaFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    e.currentTarget.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+    try {
+      setMediaUploadPending(true);
+      const url = await uploadMediaImage(file);
+      // Prepend so the newly uploaded image becomes the primary preview/thumbnail.
+      setMediaUrls((prev) => [url, ...prev]);
+      toast.success("Project image uploaded");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ??
+        (err as Error)?.message ??
+        "Failed to upload image";
+      toast.error(msg);
+    } finally {
+      setMediaUploadPending(false);
     }
   };
 
@@ -267,6 +325,45 @@ export function EditProjectModal({
               addTag={addTag}
               collaboratorsHint="You can invite collaborators after saving from the project dashboard."
             />
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base sm:text-lg">Change project image</CardTitle>
+                <FieldDescription>
+                  Upload a new image and it will be added to project media as the first image.
+                </FieldDescription>
+              </CardHeader>
+              <CardContent>
+                <input
+                  id="edit-project-image-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleMediaFileUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11"
+                  disabled={mediaUploadPending}
+                  onClick={() =>
+                    document.getElementById("edit-project-image-upload")?.click()
+                  }
+                >
+                  {mediaUploadPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading…
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload image
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader className="pb-3">

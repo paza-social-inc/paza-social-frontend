@@ -109,7 +109,7 @@ export default function BrandOnboarding({
             const hasLocalPhoto = Boolean(formData.profilePicture);
             toast.success(
                 hasLocalPhoto
-                    ? "Brand profile saved. Add a hosted logo URL later if you want it on your public profile."
+                    ? "Brand profile and logo saved."
                     : "Brand profile saved"
             );
             if (onComplete) onComplete();

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   Carousel,
@@ -39,6 +39,16 @@ function looksLikeImageUrl(url: string): boolean {
 export function ProjectCarousel({ project: projectProp }: { project?: Project }) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<ShowcaseTabId>("about");
+  const normalizedAccountType = String(
+    (user as { accountType?: string; account?: { accountType?: string } } | null)?.accountType ??
+      (user as { accountType?: string; account?: { accountType?: string } } | null)?.account?.accountType ??
+      ""
+  )
+    .trim()
+    .toLowerCase();
+  const isBrandOrBusinessAccount =
+    normalizedAccountType === "brand" || normalizedAccountType === "business";
+  const isCreatorAccount = normalizedAccountType === "creator";
   const project = (projectProp ?? mockProject) as unknown as
     typeof mockProject & Project & Record<string, unknown>;
   const isOwner =
@@ -84,14 +94,42 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
       .filter(looksLikeImageUrl);
     return cleaned.length > 0 ? cleaned : [FALLBACK_PROJECT_IMAGE];
   }, [project]);
-  const tabs: { id: ShowcaseTabId; label: string }[] = [
-    { id: "about", label: "About" },
-    { id: "progress", label: "Progress" },
-    { id: "assets-funding", label: "Assets & Funding" },
-    { id: "slots", label: "Slots" },
-    { id: "guardrails", label: "Guardrails" },
-    { id: "qas", label: "Q&As" },
-  ];
+  /**
+   * Assets / Slots / Guardrails: owner can edit; accepted brand/business on the team can view only.
+   * Creator accounts who are not the project owner do not see these tabs.
+   */
+  const showAssetsSlotsGuardrailsTabs = useMemo(() => {
+    if (isOwner) return true;
+    if (isCreatorAccount && !isOwner) return false;
+    return isBrandOrBusinessAccount && isTeamMember;
+  }, [
+    isOwner,
+    isCreatorAccount,
+    isBrandOrBusinessAccount,
+    isTeamMember,
+  ]);
+
+  const tabs: { id: ShowcaseTabId; label: string }[] = useMemo(() => {
+    const baseTabs: { id: ShowcaseTabId; label: string }[] = [
+      { id: "about", label: "About" },
+      { id: "progress", label: "Progress" },
+    ];
+    if (showAssetsSlotsGuardrailsTabs) {
+      baseTabs.push(
+        { id: "assets-funding", label: "Assets & Funding" },
+        { id: "slots", label: "Slots" },
+        { id: "guardrails", label: "Guardrails" }
+      );
+    }
+    baseTabs.push({ id: "qas", label: "Q&As" });
+    return baseTabs;
+  }, [showAssetsSlotsGuardrailsTabs]);
+
+  useEffect(() => {
+    if (!tabs.some((t) => t.id === activeTab)) {
+      setActiveTab("about");
+    }
+  }, [tabs, activeTab]);
 
   return (
     <div className="flex flex-col w-full md:w-2/3 lg:w-3/4 min-w-0">
@@ -159,6 +197,14 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
           <AboutSection
             projectId={String(project.id ?? mockProject.id)}
             initial={aboutMerged}
+            initialMediaUrls={
+              (
+                project.mediaUrls ??
+                project.images ??
+                (project as { media_urls?: string[] }).media_urls ??
+                []
+              ).filter((u): u is string => typeof u === "string" && u.trim() !== "")
+            }
             canEdit={Boolean(isOwner)}
           />
         )}

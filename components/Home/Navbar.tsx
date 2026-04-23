@@ -68,8 +68,8 @@ export default function NavBar() {
    * Dark “film” nav only when `<html class="dark">` is present — tied to the DOM so it never
    * lags behind `setTheme` (next-themes can update the class before React re-renders `useTheme`).
    */
-  // Keep About mobile nav consistent with Services/Home chrome to avoid low-contrast controls.
-  const darkMarketingChrome = (isDarkMarketing && docIsDark) || isAbout;
+  // Only use dark chrome when the active marketing page is actually in dark theme.
+  const darkMarketingChrome = isDarkMarketing && docIsDark;
 
   useEffect(() => {
     if (path === "/") setActive("Home");

@@ -102,16 +102,12 @@ function formatDateLabel(iso: string | undefined): string {
 }
 
 function ProgressSummaryCard({
-  target,
-  achieved,
   percent,
   completed,
   status,
   onStatusChange,
   canEditStatus,
 }: {
-  target: string;
-  achieved: string;
   percent: number;
   completed: boolean;
   status: string;
@@ -122,7 +118,7 @@ function ProgressSummaryCard({
     <div
       className={cn(
         "rounded-xl border border-border overflow-hidden",
-        "bg-[#2C2C2C] dark:bg-[#2C2C2C] text-foreground"
+        "bg-card dark:bg-[#2C2C2C] text-foreground"
       )}
     >
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 p-4 sm:p-5">
@@ -166,21 +162,6 @@ function ProgressSummaryCard({
             ) : (
               <span className="text-sm font-medium">{status}</span>
             )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-6 sm:gap-8 min-w-0 flex-1">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Target
-            </p>
-            <p className="text-sm text-foreground mt-0.5">{target || "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Achieved
-            </p>
-            <p className="text-sm text-foreground mt-0.5">{achieved || "—"}</p>
           </div>
         </div>
 
@@ -360,8 +341,6 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
       )}
 
       <ProgressSummaryCard
-        target={targetDisplay}
-        achieved={achievedDisplay}
         percent={statusUi === "Completed" ? 100 : percentDisplay}
         completed={completedDisplay}
         status={statusUi}

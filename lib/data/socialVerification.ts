@@ -1,7 +1,17 @@
 import { pazaApi, DEFAULT_API_URL } from "@/lib/axiosClients";
-import { getCookie } from "cookies-next";
 
 export type SocialPlatform = "youtube" | "facebook" | "instagram" | "tiktok" | "x" | "linkedin";
+
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  const localToken = window.localStorage.getItem("token");
+  if (localToken?.trim()) return localToken.trim();
+  const cookieToken = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("auth_token_paza="))
+    ?.split("=")[1];
+  return cookieToken ? decodeURIComponent(cookieToken) : null;
+}
 
 /**
  * Generates the absolute URL to initiate social verification.
@@ -10,12 +20,12 @@ export type SocialPlatform = "youtube" | "facebook" | "instagram" | "tiktok" | "
  */
 export function getSocialAuthUrl(platform: SocialPlatform): string {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
-  const token = getCookie("auth_token_paza");
+  const token = getAuthToken();
   
   // Construct the URL: [BASE]/api/social-verification/[PLATFORM]/auth?token=[JWT]
   const url = new URL(`/api/social-verification/${platform}/auth`, baseUrl);
   if (token) {
-    url.searchParams.append("token", token as string);
+    url.searchParams.append("token", token);
   }
   
   return url.toString();

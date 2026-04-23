@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +29,10 @@ import {
 import { cn } from "@/lib/utils";
 import { Paperclip, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { projectProposalsApi } from "@/lib/data/projectProposals";
+import {
+  projectProposalsApi,
+  type CreatorProjectProposalMine,
+} from "@/lib/data/projectProposals";
 
 type CollaborationKind = "support" | "task" | "campaign";
 
@@ -99,6 +102,28 @@ export function RequestCollaborateModal({
 
   const queryClient = useQueryClient();
   const projectIdNumber = Number(projectId);
+  const canFetchMine =
+    open &&
+    projectId.trim() !== "" &&
+    !Number.isNaN(projectIdNumber) &&
+    projectIdNumber > 0;
+
+  const { data: myProposals = [] } = useQuery({
+    queryKey: ["my-showcase-proposals"],
+    queryFn: () => projectProposalsApi.getMine(),
+    enabled: canFetchMine,
+  });
+
+  const existingProposalForProject = React.useMemo(() => {
+    if (!projectIdNumber || Number.isNaN(projectIdNumber)) return null;
+    const rows = myProposals as CreatorProjectProposalMine[];
+    return (
+      rows.find((p) => Number(p.project?.id ?? p.project_id) === projectIdNumber) ??
+      null
+    );
+  }, [myProposals, projectIdNumber]);
+
+  const alreadySubmitted = Boolean(existingProposalForProject);
 
   const fee = watch("fee");
   const attachments = watch("attachments");
@@ -181,15 +206,28 @@ export function RequestCollaborateModal({
 
         {/* Form must wrap the submit button — otherwise type="submit" does nothing */}
         <form
-          onSubmit={handleSubmit((data) => mutation.mutate(data))}
+          onSubmit={handleSubmit((data) => {
+            if (alreadySubmitted) return;
+            mutation.mutate(data);
+          })}
           className="flex flex-1 min-h-0 flex-col"
         >
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5 space-y-5">
+          {alreadySubmitted && (
+            <p className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+              You already submitted a proposal for this project. Only one proposal per account is
+              allowed
+              {existingProposalForProject?.status
+                ? ` (current status: ${String(existingProposalForProject.status).toLowerCase()}).`
+                : "."}
+            </p>
+          )}
           {/* Collaboration type */}
           <Field>
             <FieldLabel>Collaboration type</FieldLabel>
             <Select
               value={watch("collabType")}
+              disabled={alreadySubmitted}
               onValueChange={(v) =>
                 setValue("collabType", v, {
                   shouldValidate: true,
@@ -219,6 +257,7 @@ export function RequestCollaborateModal({
                 rows={4}
                 placeholder="Write a small description"
                 className="text-sm"
+                disabled={alreadySubmitted}
                 aria-invalid={!!errors.description}
               />
               {errors.description && (
@@ -406,7 +445,7 @@ export function RequestCollaborateModal({
               type="submit"
               size="sm"
               className="px-4 bg-orange-500 font-semibold text-black hover:bg-orange-600"
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || alreadySubmitted}
             >
               {mutation.isPending ? (
                 <>

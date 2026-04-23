@@ -209,6 +209,7 @@ import {
 import { CopyButton } from "@/components/ui/shadcn-io/copy-button";
 import { RiArrowRightSLine, RiSearch2Line } from "@remixicon/react";
 import {
+  ArrowLeft,
   CalendarDays,
   ChevronDown,
   Loader2,
@@ -226,7 +227,6 @@ import toast from "react-hot-toast";
 import FeedBackTab from "./feedBack";
 import CreateProjectForm from "@/components/Dashboard/showcase/CreateProjectForm";
 import { CampaignTasksBoard } from "./CampaignTasksBoard";
-import CampaignMilestoneBoard from "./CampaignMilestoneBoard";
 import { EditCampaignModal } from "./EditCampaignModal";
 import {
   CampaignTargetDeadlineModal,
@@ -237,7 +237,7 @@ import Image from "next/image";
 
 /** Active tab: thin orange outline + inset left bar (readable in dark mode). */
 const CAMPAIGN_TAB_TRIGGER_CLASS =
-  "relative flex-1 rounded-md border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-all " +
+  "relative shrink-0 whitespace-nowrap rounded-md border border-transparent px-3.5 py-2 text-xs font-medium text-muted-foreground transition-all sm:flex-1 sm:text-sm " +
   "data-[state=inactive]:opacity-75 " +
   "data-[state=active]:z-10 data-[state=active]:border-orange-500/90 data-[state=active]:!bg-orange-500/15 data-[state=active]:!text-foreground " +
   "data-[state=active]:font-semibold data-[state=active]:shadow-[inset_4px_0_0_0_rgb(249_115_22)] " +
@@ -1133,6 +1133,18 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
 
   return (
     <div className="space-y-4 pb-3">
+      <div className="px-3 pt-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="inline-flex items-center gap-1.5"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Return
+        </Button>
+      </div>
       {/* Hero — title, Open / Posted, rate (design: dark campaign header) */}
       <div className="relative min-h-[280px] w-full overflow-hidden border-b border-border md:min-h-[320px]">
         <Image
@@ -1200,12 +1212,9 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         {/* Left column */}
         <div className="lg:col-span-2 space-y-4">
           <Tabs defaultValue="overview">
-            <TabsList className="mb-2 flex h-12 w-full gap-1 rounded-lg border border-border bg-muted/50 p-1">
+            <TabsList className="mb-2 flex h-auto w-full gap-1 overflow-x-auto rounded-lg border border-border bg-muted/50 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <TabsTrigger value="overview" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
                 Overview
-              </TabsTrigger>
-              <TabsTrigger value="milestones" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
-                Milestones ({campaign.milestones?.length ?? 0})
               </TabsTrigger>
               <TabsTrigger value="tasks" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
                 Tasks ({campaignTasks.length})
@@ -1444,14 +1453,6 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                   />
                 )}
               </section>
-
-              <TabsContent value="milestones" className="mt-4">
-                <CampaignMilestoneBoard
-                  campaignId={campaign.id}
-                  milestones={campaign.milestones || []}
-                  viewerOwnsCampaign={viewerOwnsCampaign}
-                />
-              </TabsContent>
 
               {/* Jobs linked to this campaign (brand / business owners only — creators use projects, not job posts) */}
               {viewerOwnsCampaign && !isCreatorAccount && (

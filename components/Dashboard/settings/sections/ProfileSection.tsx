@@ -48,6 +48,20 @@ export function ProfileSection() {
 
     const creatorProfile = creatorProfileResult?.data;
     const brandProfile = brandProfileResult?.data;
+    const authMeWithMedia = authMe as (typeof authMe & { avatarUrl?: string; profilePhotoUrl?: string }) | null;
+    const creatorWithMedia = creatorProfile as (typeof creatorProfile & { avatarUrl?: string; profilePhotoUrl?: string }) | undefined;
+    const brandWithMedia = brandProfile as (typeof brandProfile & { logoUrl?: string; profilePhotoUrl?: string }) | undefined;
+    const profileImageSrc =
+        creatorWithMedia?.avatar ||
+        creatorWithMedia?.avatarUrl ||
+        creatorWithMedia?.profilePhotoUrl ||
+        brandWithMedia?.logo ||
+        brandWithMedia?.logoUrl ||
+        brandWithMedia?.profilePhotoUrl ||
+        authMeWithMedia?.avatar ||
+        authMeWithMedia?.avatarUrl ||
+        authMeWithMedia?.profilePhotoUrl ||
+        `https://api.dicebear.com/7.x/avataaars/svg?seed=${authMe?.email}`;
 
     // Form state
     const [formData, setFormData] = useState({
@@ -182,7 +196,7 @@ export function ProfileSection() {
                         <div className="flex items-center gap-4">
                             <div className="relative group">
                                 <Avatar className="h-20 w-20 border-2 border-background shadow-sm">
-                                    <AvatarImage src={creatorProfile?.avatar || brandProfile?.logo || authMe?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${authMe?.email}`} />
+                                    <AvatarImage src={profileImageSrc} />
                                     <AvatarFallback className="text-lg bg-orange-100 text-orange-700">
                                         {authMe?.firstName?.[0]}{authMe?.lastName?.[0]}
                                     </AvatarFallback>

@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2, Pencil, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { projectsApi } from "@/lib/data/projects";
+import { pazaApi } from "@/lib/axiosClients";
 import type { Project } from "@/types/projects/projectTypes";
 
 /** Prefer API `description`, then legacy/mock `aboutContent`. */
@@ -20,21 +21,30 @@ export function mergeAboutFromProject(project: Project & Record<string, unknown>
 type Props = {
   projectId: string;
   initial: string;
+  initialMediaUrls: string[];
   canEdit: boolean;
 };
 
-export function AboutSection({ projectId, initial, canEdit }: Props) {
+export function AboutSection({ projectId, initial, initialMediaUrls, canEdit }: Props) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(initial);
+  const [mediaUrls, setMediaUrls] = useState<string[]>(initialMediaUrls);
+  const [mediaUploadPending, setMediaUploadPending] = useState(false);
 
   useEffect(() => {
     setDraft(initial);
   }, [initial]);
+  useEffect(() => {
+    setMediaUrls(initialMediaUrls);
+  }, [initialMediaUrls]);
 
   const saveMutation = useMutation({
-    mutationFn: (description: string) =>
-      projectsApi.update(projectId, { description: description.trim() || "" }),
+    mutationFn: ({ description, nextMediaUrls }: { description: string; nextMediaUrls: string[] }) =>
+      projectsApi.update(projectId, {
+        description: description.trim() || "",
+        mediaUrls: nextMediaUrls,
+      }),
     onSuccess: () => {
       toast.success("About saved");
       setEditing(false);
@@ -51,12 +61,103 @@ export function AboutSection({ projectId, initial, canEdit }: Props) {
 
   const cancel = () => {
     setDraft(initial);
+    setMediaUrls(initialMediaUrls);
     setEditing(false);
+  };
+
+  const uploadMediaImage = async (file: File): Promise<string> => {
+    const form = new FormData();
+    form.append("file", file);
+    const endpoints = ["/api/uploads/image", "/api/uploads/file"];
+
+    for (const endpoint of endpoints) {
+      try {
+        const res = await pazaApi.post(endpoint, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        const url = res?.data?.data?.url;
+        if (typeof url === "string" && url.trim()) {
+          return url.trim();
+        }
+        throw new Error("Upload succeeded but no file URL was returned.");
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 404) {
+          // Try the next compatible upload endpoint only when route is missing.
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw new Error("Upload endpoint not available on this backend.");
+  };
+
+  const handleMediaFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.currentTarget.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+    try {
+      setMediaUploadPending(true);
+      const url = await uploadMediaImage(file);
+      // Make latest upload the primary project image.
+      setMediaUrls((prev) => [url, ...prev]);
+      toast.success("Project image uploaded");
+    } catch (err: unknown) {
+      const msg =
+        String((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "").trim() ||
+        (err as Error)?.message ||
+        "Failed to upload image";
+      toast.error(msg);
+    } finally {
+      setMediaUploadPending(false);
+    }
   };
 
   if (editing && canEdit) {
     return (
       <div className="space-y-4">
+        <div className="rounded-lg border border-border p-3">
+          <p className="mb-2 text-xs text-muted-foreground">Project image</p>
+          {mediaUrls[0] ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={mediaUrls[0]}
+              alt="Project primary"
+              className="mb-3 h-36 w-full rounded-md object-cover"
+            />
+          ) : null}
+          <input
+            id="about-project-image-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleMediaFileUpload}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={mediaUploadPending}
+            onClick={() => document.getElementById("about-project-image-upload")?.click()}
+          >
+            {mediaUploadPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading…
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Change image
+              </>
+            )}
+          </Button>
+        </div>
         <Textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -71,8 +172,8 @@ export function AboutSection({ projectId, initial, canEdit }: Props) {
           <Button
             type="button"
             size="sm"
-            onClick={() => saveMutation.mutate(draft)}
-            disabled={saveMutation.isPending}
+            onClick={() => saveMutation.mutate({ description: draft, nextMediaUrls: mediaUrls })}
+            disabled={saveMutation.isPending || mediaUploadPending}
           >
             {saveMutation.isPending ? (
               <>

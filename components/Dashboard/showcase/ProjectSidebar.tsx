@@ -51,6 +51,13 @@ export function ProjectSidebar({
   projectTitle?: string;
 }) {
   const { user } = useAuth();
+  const normalizedAccountType = String(
+    user?.accountType ?? (user as { account?: { accountType?: string } } | null)?.account?.accountType ?? ""
+  )
+    .trim()
+    .toLowerCase();
+  const isBrandOrBusinessAccount =
+    normalizedAccountType === "brand" || normalizedAccountType === "business";
   const [showAboutCreator, setShowAboutCreator] = useState(false);
   const profileCreator = creator ?? mockCreator;
   const [openingsListOpen, setOpeningsListOpen] = useState(false);
@@ -102,7 +109,7 @@ export function ProjectSidebar({
   });
 
   const { data: myProposals = [] } = useQuery({
-    queryKey: ["my-showcase-proposals", projectIdNumber],
+    queryKey: ["my-showcase-proposals"],
     queryFn: () => projectProposalsApi.getMine(),
     enabled: canFetchProposals && !isOwnProject,
   });
@@ -117,6 +124,10 @@ export function ProjectSidebar({
 
   const hasAcceptedProposal =
     String(myProposalForProject?.status ?? "").toLowerCase() === "accepted";
+  const hasSubmittedProposal = Boolean(myProposalForProject);
+  const myProposalStatusLabel = String(
+    myProposalForProject?.status ?? ""
+  ).toLowerCase();
 
   const resolvedProjectTitle = projectTitle ?? project?.title ?? "Project";
   const resolvedShortDescription = project?.description ?? "—";
@@ -249,7 +260,7 @@ export function ProjectSidebar({
         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
           Actions
         </p>
-        {!isOwnProject && !hasAcceptedProposal && (
+        {!isOwnProject && !hasAcceptedProposal && !hasSubmittedProposal && (
         <div className="flex flex-col sm:flex-row gap-2">
           <Button
             className="flex-1 bg-primary text-primary-foreground hover:opacity-90 h-10 touch-manipulation rounded-lg"
@@ -266,6 +277,15 @@ export function ProjectSidebar({
             Decline
           </Button>
         </div>
+        )}
+        {!isOwnProject && !hasAcceptedProposal && hasSubmittedProposal && (
+          <p className="text-xs text-muted-foreground rounded-lg border border-border bg-muted/20 px-3 py-2">
+            You already sent a proposal for this project
+            {myProposalStatusLabel
+              ? ` (${myProposalStatusLabel}).`
+              : "."}{" "}
+            Only one proposal per account is allowed.
+          </p>
         )}
 
         {isOwnProject && (
@@ -348,6 +368,7 @@ export function ProjectSidebar({
             </Button>
           ))}
         </div>
+        {!isBrandOrBusinessAccount && (
         <div className="pt-1">
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <div className="inline-flex items-center gap-2">
@@ -365,7 +386,7 @@ export function ProjectSidebar({
                   onClick={() => setCreateOpeningModalOpen(true)}
                   className="text-xs text-orange-500 font-medium hover:underline touch-manipulation"
                 >
-                  Add
+                  Add Opening
                 </button>
               )}
               <button
@@ -373,7 +394,7 @@ export function ProjectSidebar({
                 onClick={() => setOpeningsListOpen(true)}
                 className="inline-flex items-center gap-1 text-xs text-orange-500 font-medium hover:underline touch-manipulation"
               >
-                View
+                View Opening
                 <span
                   className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground"
                   aria-label={`${openingsCount} openings`}
@@ -427,6 +448,7 @@ export function ProjectSidebar({
             }}
           />
         </div>
+        )}
       </div>
 
       {/* Block 3: Team & interest */}
