@@ -127,6 +127,30 @@ export default function ProductManager({ businessId, initialProducts, onUpdate }
                                     </Select>
                                 </div>
                             </div>
+                            <div className="space-y-3">
+                                <Label>Sales Channels</Label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {["retail", "online", "subscription", "B2B", "in-store only"].map(ch => (
+                                        <div key={ch} className="flex items-center space-x-2">
+                                            <input 
+                                                type="checkbox" 
+                                                id={`ch-${ch}`}
+                                                checked={newProduct.channel?.includes(ch)}
+                                                onChange={(e) => {
+                                                    const current = newProduct.channel || [];
+                                                    if (e.target.checked) {
+                                                        setNewProduct(p => ({ ...p, channel: [...current, ch] }));
+                                                    } else {
+                                                        setNewProduct(p => ({ ...p, channel: current.filter(v => v !== ch) }));
+                                                    }
+                                                }}
+                                                className="rounded border-muted"
+                                            />
+                                            <Label htmlFor={`ch-${ch}`} className="text-sm font-normal capitalize cursor-pointer">{ch}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

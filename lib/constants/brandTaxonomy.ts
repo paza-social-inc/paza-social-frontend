@@ -236,3 +236,18 @@ export const MEASUREMENT_SOURCES = [
     "Short link / UTM",
     "Not measured",
 ];
+
+// ─── IP DECLARATION ENUMS ───────────────────────────────────────────────────
+
+export const IP_TERRITORIES = [
+    { value: "kenya", label: "Kenya" },
+    { value: "africa", label: "Africa (All regions)" },
+    { value: "global", label: "Global / Worldwide" },
+];
+
+export const IP_DURATIONS = [
+    { value: "30d", label: "30 Days" },
+    { value: "90d", label: "90 Days" },
+    { value: "1y", label: "1 Year" },
+    { value: "perpetual", label: "Perpetual / Ongoing" },
+];

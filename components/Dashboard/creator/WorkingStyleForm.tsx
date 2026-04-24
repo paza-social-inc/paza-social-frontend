@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { RiAddLine, RiCloseLine, RiLoader2Line, RiSettings4Line } from "@remixicon/react";
 import { CreatorProfile, updateWorkingStyle } from "@/lib/data/creator";
+import { AVAILABILITY_TYPES, PERSONALITY_TAGS } from "@/lib/constants/creatorTaxonomy";
 import toast from "react-hot-toast";
 
 export default function WorkingStyleForm({ initialData, onSuccess }: { initialData: Partial<CreatorProfile>, onSuccess?: (newData: CreatorProfile) => void }) {
@@ -66,18 +67,18 @@ export default function WorkingStyleForm({ initialData, onSuccess }: { initialDa
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Current Availability</Label>
+                            <Label>Working Availability Type</Label>
                             <Select 
-                                onValueChange={(val: string) => setValue("availability", val)}
-                                defaultValue={initialData.availability}
+                                onValueChange={(val: any) => setValue("availabilityType", val)}
+                                defaultValue={initialData.availabilityType}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Available">Available for Work</SelectItem>
-                                    <SelectItem value="Limited">Limited Availability</SelectItem>
-                                    <SelectItem value="Busy">Currently Busy</SelectItem>
+                                    {AVAILABILITY_TYPES.map(at => (
+                                        <SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -100,23 +101,24 @@ export default function WorkingStyleForm({ initialData, onSuccess }: { initialDa
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <Label>Engagement Types</Label>
-                        <div className="flex gap-2">
-                            <Input 
-                                value={tagInputs.engagement}
-                                onChange={(e) => setTagInputs(p => ({ ...p, engagement: e.target.value }))}
-                                placeholder="e.g. Long-term, Once-off, Exclusive"
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag("engagementType", "engagement"))}
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={() => addTag("engagementType", "engagement")}>
-                                <RiAddLine />
-                            </Button>
-                        </div>
+                    <div className="space-y-4 border-t pt-6">
+                        <Label>Personality Traits <span className="text-muted-foreground font-normal">(Select all that apply)</span></Label>
                         <div className="flex flex-wrap gap-2">
-                            {engagementTypes.map(t => (
-                                <Badge key={t} variant="secondary" className="gap-1">
-                                    {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => removeTag("engagementType", t)} />
+                            {PERSONALITY_TAGS.map(tag => (
+                                <Badge
+                                    key={tag}
+                                    variant={personalityTags.includes(tag) ? "default" : "outline"}
+                                    className="cursor-pointer py-1.5 px-3 text-sm transition-all"
+                                    onClick={() => {
+                                        if (personalityTags.includes(tag)) {
+                                            setValue("personalityTags", personalityTags.filter(v => v !== tag));
+                                        } else {
+                                            setValue("personalityTags", [...personalityTags, tag]);
+                                        }
+                                    }}
+                                >
+                                    {tag}
+                                    {personalityTags.includes(tag) && <RiCloseLine className="ml-1 h-3.5 w-3.5" />}
                                 </Badge>
                             ))}
                         </div>
@@ -150,28 +152,6 @@ export default function WorkingStyleForm({ initialData, onSuccess }: { initialDa
                             {...register("equipmentAndSoftware")} 
                             placeholder="e.g. Sony A7IV, Davinci Resolve, DJI Mavic" 
                         />
-                    </div>
-
-                    <div className="space-y-3">
-                        <Label>Personality Traits</Label>
-                        <div className="flex gap-2">
-                            <Input 
-                                value={tagInputs.personality}
-                                onChange={(e) => setTagInputs(p => ({ ...p, personality: e.target.value }))}
-                                placeholder="e.g. Introverted, Detail-oriented, Witty"
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag("personalityTags", "personality"))}
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={() => addTag("personalityTags", "personality")}>
-                                <RiAddLine />
-                            </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {personalityTags.map(t => (
-                                <Badge key={t} variant="secondary" className="gap-1 border-primary/20">
-                                    {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => removeTag("personalityTags", t)} />
-                                </Badge>
-                            ))}
-                        </div>
                     </div>
 
                     <div className="flex justify-end pt-4">

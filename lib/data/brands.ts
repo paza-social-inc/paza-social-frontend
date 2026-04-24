@@ -10,12 +10,12 @@ export interface ApiResponse<T> {
 export interface BrandProfile {
   id: number;
   businessId: number;
-  // ── Identity
-  brandname?: string;
+  // ── Identity + Compliance
+  brandname?: string; // Legal name
   displayName?: string;
   website?: string;
-  industry?: string;
   primaryContactChannel?: string;
+  industry?: string;
   subcategory?: string[];
   restrictedCategory?: boolean;
   operatingRegions?: Array<{ country: string; city: string }>;
@@ -26,16 +26,16 @@ export interface BrandProfile {
   // ── Narrative
   tagline?: string;
   description?: string;
-  knownFor?: string[];
+  knownFor?: string[]; // 1-3 tags
   narrativePrompts?: string;
-  disallowedAdjacency?: string[];
-  contextualAnchor?: string[];
-  identitySignal?: string[];
-  emotionalOutcome?: string;
+  disallowedAdjacency?: string[]; // Guardrails
+  contextualAnchor?: string[]; // Up to 2
+  identitySignal?: string[]; // Up to 2
+  emotionalOutcome?: string; // Select 1
   jobStatementSituation?: string;
   jobStatementProgress?: string;
   jobStatementOutcome?: string;
-  // ── Voice & Tone
+  // ── Voice & Tone (Philosophical Alignment)
   collaborationStyle?: string[];
   idealBuyerProfile?: string;
   toneEmotional?: string[];
@@ -76,44 +76,67 @@ export interface BrandPastProject {
   period?: string;
   description?: string;
   mediaLinks?: string[];
-  participationRole?: string;
+  participationRole?: "Sponsor" | "Co-creator" | "Content licensee" | "Distribution partner" | "IP owner";
   collaborators?: string;
+  // ── Commercial Evidence (Financials)
   paidSpend?: "yes" | "no" | "prefer_not";
-  spendTypes?: string[];
-  spendBand?: string;
-  outcomeTypes?: string[];
-  measurementSource?: string;
+  spendTypes?: string[]; // "Creator fees", "Media spend", etc.
+  spendBand?: "<$500" | "$500-$2k" | "$2k-$10k" | "$10k+";
+  outcomeTypes?: string[]; // "Awareness", "Traffic", etc.
+  measurementSource?: "Platform ads manager" | "CRM / sales system" | "Promo code" | "Short link / UTM" | "Not measured";
+}
+
+// ─── Normalization Helper ───────────────────────────────────────────────
+
+/**
+ * Normalizes backend responses that might come in different shapes.
+ * Handles both { success, data, message } and { message, profile/product/etc }
+ */
+function normalizeApiResponse<T>(res: any, key?: string): ApiResponse<T> {
+  // If it already fits the ApiResponse pattern perfectly
+  if (res && typeof res.success === 'boolean' && res.data !== undefined) {
+    return res as ApiResponse<T>;
+  }
+
+  // Fallback for legacy format: { message, profile: {...} } or { message, product: {...} }
+  const data = key ? res[key] : (res.profile || res.product || res.projects || res.data || res);
+  
+  return {
+    success: true, // If we got a response without an error field, assume success
+    data: data,
+    message: res.message
+  };
 }
 
 // ─── Profile Retrieval ───────────────────────────────────────────────────
 
 export async function getBrandProfile(businessId: number): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.get<ApiResponse<BrandProfile>>(`/api/brands/${businessId}/profile`);
-  return response.data;
+  const response = await pazaApi.get<any>(`/api/brands/${businessId}/profile`);
+  return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
 // ─── Identity + Narrative ────────────────────────────────────────────────
 
 export async function updateBrandIdentity(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.patch<ApiResponse<BrandProfile>>(`/api/brands/${businessId}/profile/identity`, data);
-  return response.data;
+  const response = await pazaApi.patch<any>(`/api/brands/${businessId}/profile/identity`, data);
+  return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
 export async function updateBrandNarrative(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.patch<ApiResponse<BrandProfile>>(`/api/brands/${businessId}/profile/narrative`, data);
-  return response.data;
+  const response = await pazaApi.patch<any>(`/api/brands/${businessId}/profile/narrative`, data);
+  return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
 // ─── Products ────────────────────────────────────────────────────────────
 
 export async function addBrandProduct(businessId: number, data: Omit<BrandProduct, 'id'>): Promise<ApiResponse<BrandProduct>> {
-  const response = await pazaApi.post<ApiResponse<BrandProduct>>(`/api/brands/${businessId}/products`, data);
-  return response.data;
+  const response = await pazaApi.post<any>(`/api/brands/${businessId}/products`, data);
+  return normalizeApiResponse<BrandProduct>(response.data, 'product');
 }
 
 export async function removeBrandProduct(businessId: number, productId: number): Promise<ApiResponse<void>> {
-  const response = await pazaApi.delete<ApiResponse<void>>(`/api/brands/${businessId}/products/${productId}`);
-  return response.data;
+  const response = await pazaApi.delete<any>(`/api/brands/${businessId}/products/${productId}`);
+  return normalizeApiResponse<void>(response.data);
 }
 
 // ─── IP Declaration ──────────────────────────────────────────────────────
@@ -128,25 +151,25 @@ export interface IpDeclarationPayload {
 }
 
 export async function submitIpDeclaration(businessId: number, data: IpDeclarationPayload): Promise<ApiResponse<void>> {
-  const response = await pazaApi.post<ApiResponse<void>>(`/api/brands/${businessId}/ip-declaration`, data);
-  return response.data;
+  const response = await pazaApi.post<any>(`/api/brands/${businessId}/ip-declaration`, data);
+  return normalizeApiResponse<void>(response.data);
 }
 
 // ─── Past Projects ─────────────────────────────────────────────────────────
 
 export async function addBrandPastProject(businessId: number, data: Omit<BrandPastProject, 'id'>): Promise<ApiResponse<BrandPastProject>> {
-  const response = await pazaApi.post<ApiResponse<BrandPastProject>>(`/api/brands/${businessId}/past-projects`, data);
-  return response.data;
+  const response = await pazaApi.post<any>(`/api/brands/${businessId}/past-projects`, data);
+  return normalizeApiResponse<BrandPastProject>(response.data, 'project');
 }
 
 export async function listBrandPastProjects(businessId: number): Promise<ApiResponse<BrandPastProject[]>> {
-  const response = await pazaApi.get<ApiResponse<BrandPastProject[]>>(`/api/brands/${businessId}/past-projects`);
-  return response.data;
+  const response = await pazaApi.get<any>(`/api/brands/${businessId}/past-projects`);
+  return normalizeApiResponse<BrandPastProject[]>(response.data, 'projects');
 }
 
 export async function removeBrandPastProject(businessId: number, projectId: number): Promise<ApiResponse<void>> {
-  const response = await pazaApi.delete<ApiResponse<void>>(`/api/brands/${businessId}/past-projects/${projectId}`);
-  return response.data;
+  const response = await pazaApi.delete<any>(`/api/brands/${businessId}/past-projects/${projectId}`);
+  return normalizeApiResponse<void>(response.data);
 }
 
 // ─── Media Uploads (Convenience wrappers if needed, otherwise use shared upload) ───
@@ -154,30 +177,30 @@ export async function removeBrandPastProject(businessId: number, projectId: numb
 export async function uploadBrandLogo(businessId: number, file: File): Promise<ApiResponse<{ logo: string }>> {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await pazaApi.post<ApiResponse<{ logo: string }>>(
+  const response = await pazaApi.post<any>(
     `/api/brands/${businessId}/profile/logo`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
   );
-  return response.data;
+  return normalizeApiResponse<{ logo: string }>(response.data);
 }
 
 export async function uploadBrandCoverImage(businessId: number, file: File): Promise<ApiResponse<{ coverImage: string }>> {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await pazaApi.post<ApiResponse<{ coverImage: string }>>(
+  const response = await pazaApi.post<any>(
     `/api/brands/${businessId}/profile/cover-image`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
   );
-  return response.data;
+  return normalizeApiResponse<{ coverImage: string }>(response.data);
 }
 
 // ─── Voice & Tone ────────────────────────────────────────────────────────
 
 export async function updateBrandVoice(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.patch<ApiResponse<BrandProfile>>(`/api/brands/${businessId}/profile/voice`, data);
-  return response.data;
+  const response = await pazaApi.patch<any>(`/api/brands/${businessId}/profile/voice`, data);
+  return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
 // ─── Past Project Media ──────────────────────────────────────────────────
@@ -189,10 +212,10 @@ export async function appendPastProjectMedia(
 ): Promise<ApiResponse<{ mediaLinks: string[] }>> {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
-  const response = await pazaApi.post<ApiResponse<{ mediaLinks: string[] }>>(
+  const response = await pazaApi.post<any>(
     `/api/brands/${businessId}/past-projects/${projectId}/media`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
   );
-  return response.data;
+  return normalizeApiResponse<{ mediaLinks: string[] }>(response.data);
 }

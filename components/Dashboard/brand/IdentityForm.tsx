@@ -13,14 +13,16 @@ import { RiAddLine, RiCloseLine, RiLoader2Line } from "@remixicon/react";
 import { BrandProfile, updateBrandIdentity } from "@/lib/data/brands";
 import { BRAND_INDUSTRIES, BRAND_SUBCATEGORIES_MAP } from "@/lib/constants/brandTaxonomy";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/store/auth/useAuth";
 
 interface IdentityFormProps {
     businessId: number;
-    initialData: Partial<BrandProfile>;
+    initialData?: Partial<BrandProfile>;
     onSuccess?: (newData: BrandProfile) => void;
 }
 
-export default function IdentityForm({ businessId, initialData, onSuccess }: IdentityFormProps) {
+export default function IdentityForm({ businessId, initialData = {}, onSuccess }: IdentityFormProps) {
     const { register, handleSubmit, setValue, watch } = useForm<Partial<BrandProfile>>({
         defaultValues: initialData,
     });
@@ -33,18 +35,42 @@ export default function IdentityForm({ businessId, initialData, onSuccess }: Ide
     // Get available subcategories based on selected industry
     const availableSubcategories = selectedIndustry ? (BRAND_SUBCATEGORIES_MAP[selectedIndustry] || []) : [];
 
+    const queryClient = useQueryClient();
+    const { token } = useAuth();
+
     const onSubmit = async (data: Partial<BrandProfile>) => {
         setIsSubmitting(true);
         try {
-            const res = await updateBrandIdentity(businessId, data);
+            let activeBusinessId = businessId;
+
+            // If businessId is 0 or missing, we need to bootstrap the business first
+            if (!activeBusinessId || activeBusinessId === 0) {
+                const { ensureBusinessId } = await import("@/lib/data/brandOnboarding");
+                activeBusinessId = await ensureBusinessId({
+                    companyName: data.brandname || "My Brand",
+                    website: data.website
+                });
+            }
+
+            const res = await updateBrandIdentity(activeBusinessId, data);
             if (res.success) {
-                toast.success("Brand identity updated successfully");
+                toast.success("Brand identity created successfully");
+                
+                // Session Bridge: Cache the businessId locally so we don't have to wait for a JWT refresh
+                if (activeBusinessId) {
+                    localStorage.setItem("paza_latest_business_id", String(activeBusinessId));
+                }
+
+                // Invalidate auth-me query
+                await queryClient.invalidateQueries({ queryKey: ["auth-me", token ?? null] });
+                
                 if (onSuccess) onSuccess(res.data);
             } else {
-                toast.error(res.message || "Failed to update identity");
+                toast.error(res.message || "Failed to initialize brand");
             }
-        } catch {
-            toast.error("An error occurred while saving");
+        } catch (err: any) {
+            console.error("Identity initialization failed:", err);
+            toast.error(err.response?.data?.message || "An error occurred while saving");
         } finally {
             setIsSubmitting(false);
         }
@@ -179,24 +205,32 @@ export default function IdentityForm({ businessId, initialData, onSuccess }: Ide
                                 <RiAddLine className="mr-1 h-4 w-4" /> Add Region
                             </Button>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {operatingRegions.map((region, idx) => (
-                                <div key={idx} className="flex gap-2 items-end">
-                                    <div className="flex-1 space-y-1">
+                                <div key={idx} className="flex flex-col sm:flex-row gap-3 items-end p-4 bg-muted/30 rounded-lg relative group">
+                                    <div className="w-full sm:flex-1 space-y-2">
+                                        <Label className="text-xs">Country</Label>
                                         <Input
-                                            placeholder="Country"
+                                            placeholder="e.g. Kenya"
                                             value={region.country}
                                             onChange={(e) => updateRegion(idx, "country", e.target.value)}
                                         />
                                     </div>
-                                    <div className="flex-1 space-y-1">
+                                    <div className="w-full sm:flex-1 space-y-2">
+                                        <Label className="text-xs">City (optional)</Label>
                                         <Input
-                                            placeholder="City (optional)"
+                                            placeholder="e.g. Nairobi"
                                             value={region.city}
                                             onChange={(e) => updateRegion(idx, "city", e.target.value)}
                                         />
                                     </div>
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeRegion(idx)}>
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => removeRegion(idx)}
+                                        className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm sm:static sm:h-10 sm:w-10 sm:bg-transparent sm:border-0 sm:shadow-none"
+                                    >
                                         <RiCloseLine className="h-4 w-4" />
                                     </Button>
                                 </div>

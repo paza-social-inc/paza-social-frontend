@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { RiAddLine, RiCloseLine, RiLoader2Line, RiMagicLine } from "@remixicon/react";
 import { BrandProfile, updateBrandNarrative } from "@/lib/data/brands";
-import { IDENTITY_SIGNALS } from "@/lib/constants/brandTaxonomy";
+import { IDENTITY_SIGNALS, EMOTIONAL_OUTCOMES, CONTEXTUAL_ANCHORS } from "@/lib/constants/brandTaxonomy";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import toast from "react-hot-toast";
 
 interface NarrativeFormProps {
@@ -117,22 +118,26 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
                         </div>
 
                         <div className="space-y-3">
-                            <Label>Contextual Anchors (Max 2)</Label>
-                            <div className="flex gap-2">
-                                <Input 
-                                    value={tagInputs.anchor}
-                                    onChange={(e) => setTagInputs(p => ({ ...p, anchor: e.target.value }))}
-                                    placeholder="Add anchor"
-                                    disabled={anchors.length >= 2}
-                                />
-                                <Button type="button" size="sm" variant="outline" onClick={() => addTag("contextualAnchor", "anchor", 2)}>
-                                    <RiAddLine />
-                                </Button>
-                            </div>
+                            <Label>Contextual Anchors <span className="text-muted-foreground font-normal">(max 2)</span></Label>
+                            <p className="text-xs text-muted-foreground">Situations where creators should feature your brand.</p>
                             <div className="flex flex-wrap gap-2">
-                                {anchors.map(t => (
-                                    <Badge key={t} variant="outline" className="gap-1">
-                                        {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => removeTag("contextualAnchor", t)} />
+                                {CONTEXTUAL_ANCHORS.map(anchor => (
+                                    <Badge
+                                        key={anchor}
+                                        variant={anchors.includes(anchor) ? "default" : "outline"}
+                                        className="cursor-pointer py-1.5 px-3 text-sm transition-all hover:scale-105"
+                                        onClick={() => {
+                                            if (anchors.includes(anchor)) {
+                                                setValue("contextualAnchor", anchors.filter((a: string) => a !== anchor));
+                                            } else if (anchors.length < 2) {
+                                                setValue("contextualAnchor", [...anchors, anchor]);
+                                            }
+                                        }}
+                                    >
+                                        {anchor}
+                                        {anchors.includes(anchor) && (
+                                            <RiCloseLine className="ml-1 h-3.5 w-3.5" />
+                                        )}
                                     </Badge>
                                 ))}
                             </div>
@@ -151,9 +156,9 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
                                     className="cursor-pointer py-1.5 px-3 text-sm transition-all hover:scale-105"
                                     onClick={() => {
                                         if (identitySignals.includes(signal)) {
-                                            setValue("identitySignal", identitySignals.filter((s: string) => s !== signal) as never);
+                                            setValue("identitySignal", identitySignals.filter((s: string) => s !== signal));
                                         } else if (identitySignals.length < 2) {
-                                            setValue("identitySignal", [...identitySignals, signal] as never);
+                                            setValue("identitySignal", [...identitySignals, signal]);
                                         }
                                     }}
                                 >
@@ -166,7 +171,7 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
                         </div>
                     </div>
 
-                    {/* Depth & Emotion */}
+                    {/* Strategic Narrative / Voice */}
                     <div className="space-y-4 border-t pt-6">
                         <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                             <RiMagicLine className="h-4 w-4" /> Strategic Narrative
@@ -177,29 +182,65 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
                             <Textarea 
                                 id="narrativePrompts" 
                                 {...register("narrativePrompts")} 
-                                placeholder="Instructions for creators on tone and hooks..."
+                                placeholder="Instructions for creators on tone, hooks, or specific stories to tell..."
+                                className="min-h-[120px]"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="emotionalOutcome">Desired Emotional Outcome</Label>
-                            <Input id="emotionalOutcome" {...register("emotionalOutcome")} placeholder="e.g. Empowered, Secure, Excited" />
+                            <Label htmlFor="emotionalOutcome">Desired Emotional Outcome (Select 1)</Label>
+                            <Select
+                                onValueChange={(val) => setValue("emotionalOutcome", val)}
+                                defaultValue={initialData.emotionalOutcome}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="What should the viewer feel?" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {EMOTIONAL_OUTCOMES.map(eo => (
+                                        <SelectItem key={eo} value={eo}>{eo}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-3">
-                            <Label>Disallowed Adjacency</Label>
+                            <Label>Disallowed Adjacency (Guardrails)</Label>
+                            <p className="text-xs text-muted-foreground mb-2">What topics or contexts should creators avoid when featuring your brand?</p>
+                            
+                            <div className="flex gap-4 mb-4">
+                                {["Politics", "Adult Content", "Profanity"].map(gate => (
+                                    <div key={gate} className="flex items-center space-x-2">
+                                        <input 
+                                            type="checkbox" 
+                                            id={`adj-${gate}`}
+                                            checked={disallowed.includes(gate)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setValue("disallowedAdjacency", [...disallowed, gate]);
+                                                } else {
+                                                    setValue("disallowedAdjacency", disallowed.filter(v => v !== gate));
+                                                }
+                                            }}
+                                            className="rounded border-muted checkbox-brand"
+                                        />
+                                        <Label htmlFor={`adj-${gate}`} className="text-sm cursor-pointer">{gate}</Label>
+                                    </div>
+                                ))}
+                            </div>
+
                             <div className="flex gap-2">
                                 <Input 
                                     value={tagInputs.disallowed}
                                     onChange={(e) => setTagInputs(p => ({ ...p, disallowed: e.target.value }))}
-                                    placeholder="Topics to avoid..."
+                                    placeholder="Add custom guardrail..."
                                 />
                                 <Button type="button" size="sm" variant="outline" onClick={() => addTag("disallowedAdjacency", "disallowed")}>
                                     <RiAddLine />
                                 </Button>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {disallowed.map(t => (
+                                {disallowed.filter(t => !["Politics", "Adult Content", "Profanity"].includes(t)).map(t => (
                                     <Badge key={t} variant="destructive" className="gap-1 bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20">
                                         {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => removeTag("disallowedAdjacency", t)} />
                                     </Badge>
@@ -215,16 +256,16 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="jobSituation">1. The Situation</Label>
-                                <Input id="jobSituation" {...register("jobStatementSituation")} placeholder="When..." />
+                                <Label htmlFor="jobSituation" className="text-xs text-primary/70 uppercase">1. When...</Label>
+                                <Input id="jobSituation" {...register("jobStatementSituation")} placeholder="e.g. Kids come home from school" className="bg-muted/30" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="jobProgress">2. The Progress</Label>
-                                <Input id="jobProgress" {...register("jobStatementProgress")} placeholder="I want to..." />
+                                <Label htmlFor="jobProgress" className="text-xs text-primary/70 uppercase">2. I want to...</Label>
+                                <Input id="jobProgress" {...register("jobStatementProgress")} placeholder="e.g. reduce germs fast" className="bg-muted/30" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="jobOutcome">3. The Outcome</Label>
-                                <Input id="jobOutcome" {...register("jobStatementOutcome")} placeholder="So that..." />
+                                <Label htmlFor="jobOutcome" className="text-xs text-primary/70 uppercase">3. So I can...</Label>
+                                <Input id="jobOutcome" {...register("jobStatementOutcome")} placeholder="e.g. feel I'm protecting my family" className="bg-muted/30" />
                             </div>
                         </div>
                     </div>

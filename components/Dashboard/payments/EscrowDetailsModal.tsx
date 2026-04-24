@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
+import { escrowPaymentsApi, type EscrowMilestonePayment } from "@/lib/data/escrowPayments";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import {
   RiAlertLine,
   RiPlayFill,
   RiSendPlane2Fill,
+  RiFlagLine,
 } from "@remixicon/react";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -29,6 +30,24 @@ interface EscrowDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   viewerUserId: number;
+}
+
+function milestoneStatusBadge(status: string) {
+  const s = status.toLowerCase();
+  switch (s) {
+    case "released":
+      return <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-0 text-[10px]">Released</Badge>;
+    case "delivered":
+      return <Badge className="bg-purple-500/20 text-purple-700 dark:text-purple-400 border-0 text-[10px]">Delivered</Badge>;
+    case "in_progress":
+      return <Badge className="bg-blue-500/20 text-blue-700 dark:text-blue-400 border-0 text-[10px]">In Progress</Badge>;
+    case "funded":
+      return <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 border-0 text-[10px]">Funded</Badge>;
+    case "disputed":
+      return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-400 border-0 text-[10px]">Disputed</Badge>;
+    default:
+      return <Badge variant="outline" className="text-[10px]">{status}</Badge>;
+  }
 }
 
 export default function EscrowDetailsModal({
@@ -45,12 +64,16 @@ export default function EscrowDetailsModal({
     enabled: !!escrowId && open,
   });
 
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["escrow-details", escrowId] });
+    queryClient.invalidateQueries({ queryKey: ["escrow-list-payments"] });
+    queryClient.invalidateQueries({ queryKey: ["escrow-stats"] });
+  };
+
   const mutationOptions = {
     onSuccess: () => {
       toast.success("Transaction updated");
-      queryClient.invalidateQueries({ queryKey: ["escrow-details", escrowId] });
-      queryClient.invalidateQueries({ queryKey: ["escrow-list-payments"] });
-      queryClient.invalidateQueries({ queryKey: ["escrow-stats"] });
+      invalidateAll();
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Action failed");
@@ -77,10 +100,34 @@ export default function EscrowDetailsModal({
     ...mutationOptions,
   });
 
+  const deliverMilestoneMutation = useMutation({
+    mutationFn: ({ escrowId: eid, mpId, note }: { escrowId: number; mpId: number; note?: string }) =>
+      escrowPaymentsApi.deliverMilestone(eid, mpId, note),
+    ...mutationOptions,
+  });
+
+  const releaseMilestoneMutation = useMutation({
+    mutationFn: ({ escrowId: eid, mpId }: { escrowId: number; mpId: number }) =>
+      escrowPaymentsApi.releaseMilestone(eid, mpId),
+    ...mutationOptions,
+  });
+
+  const verifyPaymentMutation = useMutation({
+    mutationFn: (id: number) => escrowPaymentsApi.verifyPayment(id),
+    onSuccess: () => {
+      toast.success("Payment verification initiated");
+      invalidateAll();
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Could not verify payment");
+    },
+  });
+
   if (!open || !escrowId) return null;
 
   const isBuyer = escrow?.buyer?.id === viewerUserId;
   const isSeller = escrow?.seller?.id === viewerUserId;
+  const hasMilestones = (escrow?.milestonePayments?.length ?? 0) > 0;
 
   const renderStatusInfo = (status: string) => {
     const s = status.toLowerCase();
@@ -127,7 +174,7 @@ export default function EscrowDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md border-border bg-card">
+      <DialogContent className="max-w-md border-border bg-card max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             Escrow Details
@@ -136,7 +183,9 @@ export default function EscrowDetailsModal({
             </Badge>
           </DialogTitle>
           <DialogDescription>
-            Transaction between buyer and seller.
+            {escrow?.campaignTitle
+              ? `Campaign: ${escrow.campaignTitle}`
+              : "Transaction between buyer and seller."}
           </DialogDescription>
         </DialogHeader>
 
@@ -201,10 +250,101 @@ export default function EscrowDetailsModal({
               </CardContent>
             </Card>
 
+            {/* Milestone Breakdown (Campaign-based escrows) */}
+            {hasMilestones && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <RiFlagLine className="h-4 w-4 text-orange-500" />
+                  <h4 className="text-sm font-semibold">Milestone Breakdown</h4>
+                </div>
+                <div className="space-y-2">
+                  {escrow.milestonePayments!.map((mp: EscrowMilestonePayment) => {
+                    const mpStatus = mp.status?.toLowerCase() ?? "pending";
+                    const canDeliver = isSeller && (mpStatus === "funded" || mpStatus === "in_progress");
+                    const canRelease = isBuyer && mpStatus === "delivered";
+
+                    return (
+                      <div
+                        key={mp.id}
+                        className="rounded-lg border border-border bg-card p-3 space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {mp.title || `Milestone #${mp.milestoneId}`}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Ksh {mp.amountKES.toLocaleString()}
+                            </p>
+                          </div>
+                          {milestoneStatusBadge(mp.status)}
+                        </div>
+
+                        {mp.deliveryNote && (
+                          <p className="text-xs text-muted-foreground italic border-l-2 border-purple-500/40 pl-2">
+                            {mp.deliveryNote}
+                          </p>
+                        )}
+
+                        {/* Milestone Actions */}
+                        <div className="flex gap-2 justify-end">
+                          {canDeliver && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs border-purple-500/40 text-purple-600 hover:bg-purple-500/10"
+                              disabled={deliverMilestoneMutation.isPending}
+                              onClick={() => {
+                                const note = prompt("Delivery note (optional):") || "";
+                                deliverMilestoneMutation.mutate({
+                                  escrowId: escrow.id,
+                                  mpId: mp.id,
+                                  note,
+                                });
+                              }}
+                            >
+                              {deliverMilestoneMutation.isPending ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : (
+                                <RiSendPlane2Fill className="h-3 w-3 mr-1" />
+                              )}
+                              Deliver
+                            </Button>
+                          )}
+                          {canRelease && (
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                              disabled={releaseMilestoneMutation.isPending}
+                              onClick={() => {
+                                if (confirm(`Release Ksh ${mp.amountKES.toLocaleString()} for this milestone?`)) {
+                                  releaseMilestoneMutation.mutate({
+                                    escrowId: escrow.id,
+                                    mpId: mp.id,
+                                  });
+                                }
+                              }}
+                            >
+                              {releaseMilestoneMutation.isPending ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : (
+                                <RiCheckDoubleLine className="h-3 w-3 mr-1" />
+                              )}
+                              Release
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Actions Block */}
             <div className="space-y-3 pt-2">
-              {/* Seller Actions */}
-              {isSeller && escrow.status === "funded" && (
+              {/* Seller Actions (non-milestone escrows) */}
+              {!hasMilestones && isSeller && escrow.status === "funded" && (
                 <Button 
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   onClick={() => startWorkMutation.mutate(escrow.id)}
@@ -215,7 +355,7 @@ export default function EscrowDetailsModal({
                 </Button>
               )}
 
-              {isSeller && escrow.status === "in_progress" && (
+              {!hasMilestones && isSeller && escrow.status === "in_progress" && (
                 <Button 
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={() => {
@@ -229,8 +369,8 @@ export default function EscrowDetailsModal({
                 </Button>
               )}
 
-              {/* Buyer Actions */}
-              {isBuyer && escrow.status === "delivered" && (
+              {/* Buyer Actions (non-milestone) */}
+              {!hasMilestones && isBuyer && escrow.status === "delivered" && (
                 <div className="flex flex-col gap-2">
                   <Button 
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -259,18 +399,19 @@ export default function EscrowDetailsModal({
                 </div>
               )}
 
-              {/* Generic Actions */}
+              {/* Pending Payment — verify or retry */}
               {escrow.status === "pending" && isBuyer && (
                 <Button 
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                  onClick={() => {
-                    // Logic to get payment URL and redirect
-                    toast.loading("Getting payment link...");
-                    // Assuming createFromProposal or similar logic for pending
-                  }}
+                  onClick={() => verifyPaymentMutation.mutate(escrow.id)}
+                  disabled={verifyPaymentMutation.isPending}
                 >
-                  <RiBankCardLine className="h-4 w-4 mr-2" />
-                  Complete Payment
+                  {verifyPaymentMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <RiBankCardLine className="h-4 w-4 mr-2" />
+                  )}
+                  Verify Payment
                 </Button>
               )}
             </div>

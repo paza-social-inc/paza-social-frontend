@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { RiAddLine, RiCloseLine, RiLoader2Line, RiShieldCheckLine, RiFileUploadLine } from "@remixicon/react";
 import { IpDeclarationPayload, submitIpDeclaration } from "@/lib/data/brands";
+import { IP_TERRITORIES, IP_DURATIONS } from "@/lib/constants/brandTaxonomy";
 import toast from "react-hot-toast";
 
 interface IpDeclarationFormProps {
@@ -119,46 +120,63 @@ export default function IpDeclarationForm({ businessId, isAlreadyEnabled, onSucc
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Territory</Label>
-                                <Input {...register("territory")} placeholder="e.g. Kenya, Global, EU" />
+                                <Select onValueChange={(val) => setValue("territory", val)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Territory" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {IP_TERRITORIES.map(t => (
+                                            <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label>Duration of Rights</Label>
-                                <Input {...register("duration")} placeholder="e.g. Perpetual, 5 years" />
+                                <Select onValueChange={(val) => setValue("duration", val)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Duration" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {IP_DURATIONS.map(d => (
+                                            <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 
                         <div className="space-y-3">
-                            <Label>Allowed Channels</Label>
-                            <div className="flex gap-2">
-                                <Input 
-                                    value={channelInput}
-                                    onChange={(e) => setChannelInput(e.target.value)}
-                                    placeholder="Add channel (e.g. Instagram, TikTok)"
-                                />
-                                <Button type="button" size="sm" variant="outline" onClick={addChannel}>
-                                    <RiAddLine />
-                                </Button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {channels.map(t => (
-                                    <Badge key={t} variant="secondary" className="gap-1">
-                                        {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => setValue("channels", channels.filter(c => c !== t))} />
-                                    </Badge>
+                            <Label>Rights Channels</Label>
+                            <div className="flex gap-4">
+                                {["Social", "Paid Ads", "TV/OOH"].map(ch => (
+                                    <div key={ch} className="flex items-center space-x-2">
+                                        <Checkbox 
+                                            id={`ip-ch-${ch}`}
+                                            checked={channels.includes(ch)}
+                                            onCheckedChange={(val) => {
+                                                if (val) setValue("channels", [...channels, ch]);
+                                                else setValue("channels", channels.filter(c => c !== ch));
+                                            }}
+                                        />
+                                        <Label htmlFor={`ip-ch-${ch}`} className="text-sm font-normal cursor-pointer">{ch}</Label>
+                                    </div>
                                 ))}
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-muted/50 p-4 rounded-lg space-y-4">
+                    <div className="bg-destructive/5 p-4 rounded-lg border border-destructive/10 space-y-4">
                         <div className="flex items-start gap-3">
                             <Checkbox 
                                 id="enforcement" 
                                 checked={watch("enforcementAccepted")}
                                 onCheckedChange={(val: boolean) => setValue("enforcementAccepted", val)}
                             />
-                            <Label htmlFor="enforcement" className="text-sm font-normal cursor-pointer leading-relaxed">
-                                I verify that the brand I am registering for is a legal entity and we own or represent the Intellectual Property (IP). 
-                                I agree to allow our IP to be used by creators for specifically assigned tasks and acknowledge that Paza acts as a facilitator.
+                            <Label htmlFor="enforcement" className="text-sm font-normal cursor-pointer leading-relaxed text-destructive/80 italic">
+                                I solemnly declare that we own or legally represent the IP assets described above.
+                                I understand that any misrepresentation of ownership leads to absolute takedown of all campaigns, 
+                                account suspension, and legal liability.
                             </Label>
                         </div>
                     </div>

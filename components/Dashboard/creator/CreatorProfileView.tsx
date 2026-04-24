@@ -9,6 +9,8 @@ import WorkingStyleForm from "./WorkingStyleForm";
 import CreatorCapabilitiesForm from "./CreatorCapabilitiesForm";
 import AudienceDemographicsForm from "./AudienceDemographicsForm";
 import CreatorPortfolioManager from "./CreatorPortfolioManager";
+import CreatorRoutineForm from "./CreatorRoutineForm";
+import CreatorAffinityForm from "./CreatorAffinityForm";
 import { RiLoader2Line, RiErrorWarningLine } from "@remixicon/react";
 
 export default function CreatorProfileView() {
@@ -62,10 +64,12 @@ export default function CreatorProfileView() {
     return (
         <div className="space-y-6">
             <Tabs defaultValue="narrative" className="w-full">
-                <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full h-auto gap-1 p-1 bg-muted/50">
+                <TabsList className="grid grid-cols-2 lg:grid-cols-7 w-full h-auto gap-1 p-1 bg-muted/50">
                     <TabsTrigger value="narrative" className="py-2">Story</TabsTrigger>
                     <TabsTrigger value="capabilities" className="py-2">Capabilities</TabsTrigger>
-                    <TabsTrigger value="working-style" className="py-2">Working Style</TabsTrigger>
+                    <TabsTrigger value="routine" className="py-2">Routine</TabsTrigger>
+                    <TabsTrigger value="affinities" className="py-2">Affinities</TabsTrigger>
+                    <TabsTrigger value="working-style" className="py-2">Style</TabsTrigger>
                     <TabsTrigger value="audience" className="py-2">Audience</TabsTrigger>
                     <TabsTrigger value="portfolio" className="py-2">Portfolio</TabsTrigger>
                 </TabsList>
@@ -80,6 +84,20 @@ export default function CreatorProfileView() {
                     
                     <TabsContent value="capabilities">
                         <CreatorCapabilitiesForm 
+                            initialData={profile} 
+                            onSuccess={(data) => setProfile(data)} 
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="routine">
+                        <CreatorRoutineForm 
+                            initialData={profile} 
+                            onSuccess={(data) => setProfile(data)} 
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="affinities">
+                        <CreatorAffinityForm 
                             initialData={profile} 
                             onSuccess={(data) => setProfile(data)} 
                         />
