@@ -76,10 +76,10 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
                                     <SelectValue placeholder="Level" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="DEVELOPING">Developing (Gaining momentum)</SelectItem>
-                                    <SelectItem value="PROFICIENT">Proficient (Reliable execution)</SelectItem>
-                                    <SelectItem value="ADVANCED">Advanced (High signal/quality)</SelectItem>
-                                    <SelectItem value="EXPERT">Expert (Industry benchmark)</SelectItem>
+                                    <SelectItem value="Developing">Developing (Gaining momentum)</SelectItem>
+                                    <SelectItem value="Proficient">Proficient (Reliable execution)</SelectItem>
+                                    <SelectItem value="Advanced">Advanced (High signal/quality)</SelectItem>
+                                    <SelectItem value="Expert">Expert (Industry benchmark)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -95,7 +95,7 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
                                 </SelectTrigger>
                                 <SelectContent>
                                     {ASSET_CLASSES.map(ac => (
-                                        <SelectItem key={ac} value={ac}>{ac}</SelectItem>
+                                        <SelectItem key={ac.value} value={ac.value}>{ac.label}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -107,16 +107,16 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
                         <div className="flex flex-wrap gap-2">
                             {DOMAIN_SHARDS.map(shard => (
                                 <Badge
-                                    key={shard}
-                                    variant={(watch("domainShards") || []).includes(shard) ? "default" : "outline"}
+                                    key={shard.value}
+                                    variant={(watch("domainShards") || []).includes(shard.value) ? "default" : "outline"}
                                     className="cursor-pointer py-1.5 px-3 text-[11px] transition-all"
                                     onClick={() => {
                                         const current = watch("domainShards") || [];
-                                        if (current.includes(shard)) setValue("domainShards", current.filter(s => s !== shard));
-                                        else if (current.length < 2) setValue("domainShards", [...current, shard]);
+                                        if (current.includes(shard.value)) setValue("domainShards", current.filter(s => s !== shard.value));
+                                        else if (current.length < 2) setValue("domainShards", [...current, shard.value]);
                                     }}
                                 >
-                                    {shard}
+                                    {shard.label}
                                 </Badge>
                             ))}
                         </div>
@@ -147,16 +147,16 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
                         <div className="flex flex-wrap gap-2">
                             {VALUE_PROPS.map(vp => (
                                 <Badge
-                                    key={vp}
-                                    variant={(watch("valueProp") || []).includes(vp) ? "default" : "outline"}
+                                    key={vp.value}
+                                    variant={(watch("valueProp") || []).includes(vp.value) ? "default" : "outline"}
                                     className="cursor-pointer py-1.5 px-3 text-xs border-primary/20"
                                     onClick={() => {
                                         const current = watch("valueProp") || [];
-                                        if (current.includes(vp)) setValue("valueProp", current.filter(v => v !== vp));
-                                        else if (current.length < 2) setValue("valueProp", [...current, vp]);
+                                        if (current.includes(vp.value)) setValue("valueProp", current.filter(v => v !== vp.value));
+                                        else if (current.length < 2) setValue("valueProp", [...current, vp.value]);
                                     }}
                                 >
-                                    {vp}
+                                    {vp.label}
                                 </Badge>
                             ))}
                         </div>

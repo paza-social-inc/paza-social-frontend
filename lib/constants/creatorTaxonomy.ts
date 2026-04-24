@@ -25,10 +25,10 @@ export const CREATOR_TONE_CATEGORIES = {
 // ─── 3. AVAILABILITY & PERSONALITY ─────────────────────────────────────────
 
 export const AVAILABILITY_TYPES = [
-    { value: "FIXED", label: "Fixed schedule – Full-time, set hours" },
-    { value: "FLEXIBLE", label: "Flexible hours – Part-time, rotating shifts" },
-    { value: "PROJECT_BASED", label: "Project-Based: Task-specific engagement" },
-    { value: "HYBRID", label: "Hybrid: Mix of fixed and flexible" },
+    { value: "Fixed schedule", label: "Fixed schedule – Full-time, set hours" },
+    { value: "Flexible hours", label: "Flexible hours – Part-time, rotating shifts" },
+    { value: "Project-Based", label: "Project-Based: Task-specific engagement" },
+    { value: "Hybrid", label: "Hybrid: Mix of fixed and flexible" },
 ];
 
 export const PERSONALITY_TAGS = [
@@ -61,35 +61,35 @@ export const CREATOR_TYPES = [
 ];
 
 export const DOMAIN_SHARDS = [
-    "Hustle & Money (SMEs, Finance, Business)",
-    "Style & Gaze (Fashion, Beauty, Design)",
-    "Culture & Friction (Pop Culture, Commentary, Issues)",
-    "Utility & Tech (Reviews, How-to, Gadgets)",
-    "Vitality & Flow (Health, Wellness, Performance)",
-    "Leisure & Vibes (Travel, Gaming, Music)",
-    "Knowledge & Guidance (Education, Coaching, Expertise)",
-    "Home & Life (Parenting, Home Living, Routine)",
-    "Meaning & Belief (Faith, Spirituality, Inner Life)",
+    { value: "Hustle & Money", label: "Hustle & Money (SMEs, Finance, Business)" },
+    { value: "Style & Gaze", label: "Style & Gaze (Fashion, Beauty, Design)" },
+    { value: "Culture & Friction", label: "Culture & Friction (Pop Culture, Commentary, Issues)" },
+    { value: "Utility & Tech", label: "Utility & Tech (Reviews, How-to, Gadgets)" },
+    { value: "Vitality & Flow", label: "Vitality & Flow (Health, Wellness, Performance)" },
+    { value: "Leisure & Vibes", label: "Leisure & Vibes (Travel, Gaming, Music)" },
+    { value: "Knowledge & Guidance", label: "Knowledge & Guidance (Education, Coaching, Expertise)" },
+    { value: "Home & Life", label: "Home & Life (Parenting, Home Living, Routine)" },
+    { value: "Meaning & Belief", label: "Meaning & Belief (Faith, Spirituality, Inner Life)" },
 ];
 
 export const ASSET_CLASSES = [
-    "Distribution Pipe (TikTok, IG, WhatsApp TV — One-to-Many)",
-    "Trust Network (WhatsApp Groups, Gated Circles — Many-to-Many)",
-    "Data / Intelligence Vault (Analysts, Research, Insights)",
-    "Content Franchise (Recurring Shows, Series)",
-    "IP Vault (Music, Catalogues, Formats)",
-    "Physical Presence (Events, Activations, IRL Footprint)",
+    { value: "Distribution Pipe", label: "Distribution Pipe (TikTok, IG, WhatsApp TV — One-to-Many)" },
+    { value: "Trust Network", label: "Trust Network (WhatsApp Groups, Gated Circles — Many-to-Many)" },
+    { value: "Data / Intelligence Vault", label: "Data / Intelligence Vault (Analysts, Research, Insights)" },
+    { value: "Content Franchise", label: "Content Franchise (Recurring Shows, Series)" },
+    { value: "IP Vault", label: "IP Vault (Music, Catalogues, Formats)" },
+    { value: "Physical Presence", label: "Physical Presence (Events, Activations, IRL Footprint)" },
 ];
 
 export const VALUE_PROPS = [
-    "Aesthetics (The Look)",
-    "Mood Stimulation",
-    "Intel (The News)",
-    "The Hit (The Vibe)",
-    "Growth (The Skill)",
-    "Mirroring (Status Modelling)",
-    "Problem Solution / Operational Efficiency",
-    "Communal Participation",
+    { value: "Aesthetics", label: "Aesthetics (The Look)" },
+    { value: "Mood Stimulation", label: "Mood Stimulation" },
+    { value: "Intel", label: "Intel (The News)" },
+    { value: "The Hit", label: "The Hit (The Vibe)" },
+    { value: "Growth", label: "Growth (The Skill)" },
+    { value: "Mirroring", label: "Mirroring (Status Modelling)" },
+    { value: "Problem Solution / Operational Efficiency", label: "Problem Solution / Operational Efficiency" },
+    { value: "Communal Participation", label: "Communal Participation" },
 ];
 
 // ─── 6. AUDIENCE ───────────────────────────────────────────────────────────

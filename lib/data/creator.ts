@@ -29,19 +29,19 @@ export interface CreatorProfile {
   languages?: string[];
   audienceDescription?: string;
   // ── 8. Behavioral Product Data
-  dayInLife?: string;
-  backpackEssentials?: string;
-  nostalgicFavorites?: string;
+  dailyRoutineText?: string;
+  dailyCarryText?: string;
+  nostalgicProductsText?: string;
   // ── 9. Brand Affinity & Loyalty
   dreamBrandCollaboration?: string;
-  alwaysRecommendProduct?: string;
+  alwaysRecommend?: string;
   // ── 10. Relational Intelligence
-  collaboratorsMeaningfulWork?: string;
-  tomorrowCollaboration?: string;
+  collabMindedPeople?: string;
+  dreamCollaborator?: string;
   // ── 11. Project Signature
-  meaningfulProjectDescription?: string;
-  primaryContentVerticals?: string[];
-  peopleComeToYouFor?: string[]; // Pick 2
+  meaningfulProject?: string;
+  primaryVerticals?: string[];
+  whatPeopleComeTo?: string[]; // Pick 2
   // Legacy/Relations
   locales?: { country: string; city: string }[];
   pastProjects?: CreatorPastProject[];
@@ -71,54 +71,91 @@ export interface CreatorPastProject {
 // ─── Profile Retrieval ───────────────────────────────────────────────────
 
 export async function getCreatorProfile(): Promise<ApiResponse<CreatorProfile>> {
-  const response = await pazaApi.get<ApiResponse<CreatorProfile>>("/api/creators/profile");
-  return response.data;
+  const response = await pazaApi.get<{ message: string; profile: CreatorProfile }>("/api/creators/profile");
+  // Wrap in standard ApiResponse for frontend consistency
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
 }
 
 // ─── Comprehensive Update ─────────────────────────────────────────────────
 
 export async function updateFullCreatorProfile(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
-  const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/full", data);
-  return response.data;
+  const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/full", data);
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
 }
 
 // ─── Section Updates ──────────────────────────────────────────────────────
 
 export async function updateNarrativeIdentity(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
-  const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/narrative", data);
-  return response.data;
+  const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/narrative", data);
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
 }
 
 export async function updateWorkingStyle(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
-  const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/working-style", data);
-  return response.data;
+  const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/working-style", data);
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
 }
 
 export async function updateCreativeCapabilities(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
-  const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/capabilities", data);
-  return response.data;
+  const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/capabilities", data);
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
 }
 
 export async function updateAudience(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
-  const response = await pazaApi.patch<ApiResponse<CreatorProfile>>("/api/creators/profile/audience", data);
-  return response.data;
+  const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/audience", data);
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
 }
 
 // ─── Past Projects ────────────────────────────────────────────────────────
 
 export async function addCreatorPastProject(data: Omit<CreatorPastProject, 'id'>): Promise<ApiResponse<CreatorPastProject>> {
-  const response = await pazaApi.post<ApiResponse<CreatorPastProject>>("/api/creators/past-projects", data);
-  return response.data;
+  const response = await pazaApi.post<{ message: string; project: CreatorPastProject }>("/api/creators/past-projects", data);
+  return {
+    success: !!response.data.project,
+    message: response.data.message,
+    data: response.data.project
+  };
 }
 
 export async function listCreatorPastProjects(): Promise<ApiResponse<CreatorPastProject[]>> {
-  const response = await pazaApi.get<ApiResponse<CreatorPastProject[]>>("/api/creators/past-projects");
-  return response.data;
+  const response = await pazaApi.get<{ message: string; projects: CreatorPastProject[] }>("/api/creators/past-projects");
+  return {
+    success: Array.isArray(response.data.projects),
+    message: response.data.message,
+    data: response.data.projects
+  };
 }
 
 export async function removeCreatorPastProject(projectId: number): Promise<ApiResponse<void>> {
-  const response = await pazaApi.delete<ApiResponse<void>>(`/api/creators/past-projects/${projectId}`);
-  return response.data;
+  const response = await pazaApi.delete<{ message: string }>(`/api/creators/past-projects/${projectId}`);
+  return {
+    success: response.status === 200 || response.status === 204,
+    message: response.data.message,
+    data: undefined
+  };
 }
 
 // ─── Media Uploads ─────────────────────────────────────────────────────────

@@ -130,6 +130,8 @@ export const CONTEXTUAL_ANCHORS = [
     "Transit/Car",
     "Gym/Active",
     "Social/Nightlife",
+    "Food",
+    "Drinks",
 ];
 
 // ─── IDENTITY SIGNALS ───────────────────────────────────────────────────────

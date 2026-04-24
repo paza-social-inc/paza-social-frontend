@@ -29,7 +29,8 @@ import {
     RiBriefcaseLine,
     RiNotification3Line,
     RiSettings3Line,
-    RiStore2Line
+    RiStore2Line,
+    RiUserStarLine
 } from "@remixicon/react";
 
 // Navigation structure
@@ -44,6 +45,12 @@ const navItems = [
         url: "/accounts/brand",
         icon: RiStore2Line,
         accountTypes: ["Business", "Brand"],
+    },
+    {
+        title: "Creator Profile",
+        url: "/profile",
+        icon: RiUserStarLine,
+        accountTypes: ["Creator", "Individual"],
     },
     {
         title: "Campaigns",
