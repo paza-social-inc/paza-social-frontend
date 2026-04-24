@@ -28,7 +28,9 @@ import {
     RiSpeakLine,
     RiBriefcaseLine,
     RiNotification3Line,
-    RiSettings3Line
+    RiSettings3Line,
+    RiStore2Line,
+    RiUserStarLine
 } from "@remixicon/react";
 
 // Navigation structure
@@ -39,15 +41,27 @@ const navItems = [
         icon: RiSlowDownLine,
     },
     {
+        title: "Brand Profile",
+        url: "/accounts/brand",
+        icon: RiStore2Line,
+        accountTypes: ["Business", "Brand"],
+    },
+    {
+        title: "Creator Profile",
+        url: "/profile",
+        icon: RiUserStarLine,
+        accountTypes: ["Creator", "Individual"],
+    },
+    {
         title: "Campaigns",
         url: "/campaigns",
         icon: RiSpeakLine,
     },
-    {
-        title: "Jobs",
-        url: "/jobs",
-        icon: RiBriefcaseLine,
-    },
+    // {
+    //     title: "Jobs",
+    //     url: "/jobs",
+    //     icon: RiBriefcaseLine,
+    // },
     {
         title: "Inbox",
         url: "/inbox",
@@ -58,11 +72,11 @@ const navItems = [
         url: "/tasks",
         icon: RiNavigationLine,
     },
-    {
-        title: "Notifications",
-        url: "/notifications",
-        icon: RiNotification3Line,
-    },
+    // {
+    //     title: "Notifications",
+    //     url: "/notifications",
+    //     icon: RiNotification3Line,
+    // },
     {
         title: "Payments",
         url: "/payments",
@@ -121,26 +135,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {navItems.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        className="group/menu-button group-data-[collapsible=icon]:px-[5px]! font-medium gap-3 [&>svg]:size-auto"
-                                        tooltip={item.title}
-                                        isActive={pathname.includes(item.url)}
-                                    >
-                                        <a href={item.url}>
-                                            {item.icon && (
-                                                <item.icon
-                                                    size={22}
-                                                    aria-hidden="true"
-                                                />
-                                            )}
-                                            <span>{item.title}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
+                            {navItems
+                                .filter((item) => {
+                                    if (!("accountTypes" in item)) return true;
+                                    const acct = authMeMatchesSession ? authMe?.accountType : undefined;
+                                    return (item as { accountTypes?: string[] }).accountTypes?.some(
+                                        (t) => acct?.toLowerCase() === t.toLowerCase()
+                                    );
+                                })
+                                .map((item) => (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton
+                                            asChild
+                                            className="group/menu-button group-data-[collapsible=icon]:px-[5px]! font-medium gap-3 [&>svg]:size-auto"
+                                            tooltip={item.title}
+                                            isActive={pathname.includes(item.url)}
+                                        >
+                                            <a href={item.url}>
+                                                {item.icon && (
+                                                    <item.icon
+                                                        size={22}
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                                <span>{item.title}</span>
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

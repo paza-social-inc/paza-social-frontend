@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { getCreatorProfile, CreatorProfile } from "@/lib/data/creator";
 import CreatorNarrativeForm from "./CreatorNarrativeForm";
@@ -9,28 +10,55 @@ import WorkingStyleForm from "./WorkingStyleForm";
 import CreatorCapabilitiesForm from "./CreatorCapabilitiesForm";
 import AudienceDemographicsForm from "./AudienceDemographicsForm";
 import CreatorPortfolioManager from "./CreatorPortfolioManager";
+import CreatorRoutineForm from "./CreatorRoutineForm";
+import CreatorAffinityForm from "./CreatorAffinityForm";
 import { RiLoader2Line, RiErrorWarningLine } from "@remixicon/react";
 
 export default function CreatorProfileView() {
     const { user } = useAuth();
     const [profile, setProfile] = useState<CreatorProfile | null>(null);
+    const [projects, setProjects] = useState<CreatorPastProject[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const creatorId = Number(user?.id);
 
     const loadProfile = useCallback(async () => {
-        if (!creatorId) return;
+        if (!creatorId) {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         try {
-            const res = await getCreatorProfile();
-            if (res.success) {
-                setProfile(res.data);
+            const { getCreatorProfile, listCreatorPastProjects } = await import("@/lib/data/creator");
+            
+            // Parallel fetch for speed
+            const [profileRes, projectsRes] = await Promise.all([
+                getCreatorProfile(),
+                listCreatorPastProjects()
+            ]);
+
+            if (profileRes.success) {
+                setProfile(profileRes.data);
             } else {
-                setError(res.message || "Failed to load creator profile");
+                // If it's a 404 or specifically 'not found', we'll allow onboarding
+                if (profileRes.message?.toLowerCase().includes("not found")) {
+                    setProfile(null);
+                } else {
+                    setError(profileRes.message || "Failed to load creator profile");
+                }
             }
-        } catch {
-            setError("Error fetching creator profile");
+
+            if (projectsRes.success) {
+                setProjects(projectsRes.data);
+            }
+        } catch (e: any) {
+            // Check for 404 in the catch block as well for robust error handling
+            if (e.response?.status === 404 || e.response?.data?.message?.toLowerCase().includes("not found")) {
+                setProfile(null);
+            } else {
+                setError("Error fetching creator profile data");
+            }
         } finally {
             setLoading(false);
         }
@@ -49,12 +77,15 @@ export default function CreatorProfileView() {
         );
     }
 
-    if (error || !profile) {
+    // We only show the error state if there's a real failure. 
+    // If profile is null, we proceed to allow onboarding/initialization.
+    if (error) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                 <RiErrorWarningLine className="h-12 w-12 text-destructive opacity-50" />
-                <h3 className="text-lg font-semibold">Creator Profile Not Found</h3>
-                <p className="text-muted-foreground max-w-sm">{error || "Please complete your onboarding to access the creator dashboard."}</p>
+                <h3 className="text-lg font-semibold">Profile Loading Error</h3>
+                <p className="text-muted-foreground max-w-sm">{error}</p>
+                <Button onClick={loadProfile} variant="outline" className="mt-2">Try Again</Button>
             </div>
         );
     }
@@ -62,46 +93,64 @@ export default function CreatorProfileView() {
     return (
         <div className="space-y-6">
             <Tabs defaultValue="narrative" className="w-full">
-                <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full h-auto gap-1 p-1 bg-muted/50">
-                    <TabsTrigger value="narrative" className="py-2">Story</TabsTrigger>
-                    <TabsTrigger value="capabilities" className="py-2">Capabilities</TabsTrigger>
-                    <TabsTrigger value="working-style" className="py-2">Working Style</TabsTrigger>
-                    <TabsTrigger value="audience" className="py-2">Audience</TabsTrigger>
-                    <TabsTrigger value="portfolio" className="py-2">Portfolio</TabsTrigger>
-                </TabsList>
+                <div className="overflow-x-auto no-scrollbar pb-1">
+                    <TabsList className="inline-flex min-w-full h-auto bg-transparent border-b rounded-none p-0 gap-4 md:gap-8 justify-start">
+                        <TabsTrigger value="narrative" className="tab-trigger">Story</TabsTrigger>
+                        <TabsTrigger value="capabilities" className="tab-trigger">Capabilities</TabsTrigger>
+                        <TabsTrigger value="routine" className="tab-trigger">Routine</TabsTrigger>
+                        <TabsTrigger value="affinities" className="tab-trigger">Affinities</TabsTrigger>
+                        <TabsTrigger value="working-style" className="tab-trigger">Style</TabsTrigger>
+                        <TabsTrigger value="audience" className="tab-trigger">Audience</TabsTrigger>
+                        <TabsTrigger value="portfolio" className="tab-trigger">Portfolio</TabsTrigger>
+                    </TabsList>
+                </div>
                 
                 <div className="mt-6">
                     <TabsContent value="narrative">
                         <CreatorNarrativeForm 
-                            initialData={profile} 
+                            initialData={profile || {}} 
                             onSuccess={(data) => setProfile(data)} 
                         />
                     </TabsContent>
                     
                     <TabsContent value="capabilities">
                         <CreatorCapabilitiesForm 
-                            initialData={profile} 
+                            initialData={profile || {}} 
+                            onSuccess={(data) => setProfile(data)} 
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="routine">
+                        <CreatorRoutineForm 
+                            initialData={profile || {}} 
+                            onSuccess={(data) => setProfile(data)} 
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="affinities">
+                        <CreatorAffinityForm 
+                            initialData={profile || {}} 
                             onSuccess={(data) => setProfile(data)} 
                         />
                     </TabsContent>
                     
                     <TabsContent value="working-style">
                         <WorkingStyleForm 
-                            initialData={profile} 
+                            initialData={profile || {}} 
                             onSuccess={(data) => setProfile(data)} 
                         />
                     </TabsContent>
                     
                     <TabsContent value="audience">
                         <AudienceDemographicsForm 
-                            initialData={profile} 
+                            initialData={profile || {}} 
                             onSuccess={(data) => setProfile(data)} 
                         />
                     </TabsContent>
 
                     <TabsContent value="portfolio">
                         <CreatorPortfolioManager 
-                            initialProjects={profile.pastProjects || []} 
+                            initialProjects={projects} 
                             onUpdate={loadProfile}
                         />
                     </TabsContent>

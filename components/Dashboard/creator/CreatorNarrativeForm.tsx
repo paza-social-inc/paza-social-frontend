@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RiAddLine, RiCloseLine, RiLoader2Line, RiSparklingLine } from "@remixicon/react";
+import { RiAddLine, RiCloseLine, RiLoader2Line, RiSparklingLine, RiPaletteLine } from "@remixicon/react";
 import { CreatorProfile, updateNarrativeIdentity } from "@/lib/data/creator";
+import { NARRATIVE_IDENTITY_TAGS, CREATOR_TONE_CATEGORIES } from "@/lib/constants/creatorTaxonomy";
 import toast from "react-hot-toast";
 
 export default function CreatorNarrativeForm({ initialData, onSuccess }: { initialData: Partial<CreatorProfile>, onSuccess?: (newData: CreatorProfile) => void }) {
@@ -56,49 +57,77 @@ export default function CreatorNarrativeForm({ initialData, onSuccess }: { initi
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="space-y-2">
-                        <Label>Origin Story</Label>
-                        <Textarea 
-                            {...register("originStory")} 
-                            placeholder="How did you start creating? What's your unique journey?"
-                            className="min-h-[120px]"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label>Purpose / Mission</Label>
-                            <Input {...register("purposeOrMission")} placeholder="What drives your content?" />
+                            <Label>Origin Story <span className="text-muted-foreground font-normal">(Max 250 characters)</span></Label>
+                            <Textarea 
+                                {...register("originStory")} 
+                                placeholder="What sparked your creative journey? How did you get started?"
+                                className="min-h-[120px]"
+                                maxLength={250}
+                            />
+                            <p className="text-xs text-muted-foreground text-right">{watch("originStory")?.length || 0}/250</p>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Long-term Goal</Label>
-                            <Input {...register("longTermGoal")} placeholder="Where do you see yourself in 5 years?" />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Content Style</Label>
-                        <Input {...register("contentStyle")} placeholder="e.g. Cinematic, Raw/Authentic, Educational" />
                     </div>
 
                     <div className="space-y-3">
-                        <Label>Vibe Keywords</Label>
-                        <div className="flex gap-2">
-                            <Input 
-                                value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
-                                placeholder="Add vibe (e.g. Energetic, Minimalist)"
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={addTag}>
-                                <RiAddLine />
-                            </Button>
-                        </div>
+                        <Label>Narrative Identity Tags</Label>
                         <div className="flex flex-wrap gap-2">
-                            {vibes.map(t => (
-                                <Badge key={t} variant="secondary" className="gap-1">
-                                    {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => setValue("originStoryTags", vibes.filter(v => v !== t))} />
+                            {NARRATIVE_IDENTITY_TAGS.map(tag => (
+                                <Badge
+                                    key={tag}
+                                    variant={vibes.includes(tag) ? "default" : "outline"}
+                                    className="cursor-pointer py-1.5 px-3 text-sm transition-all hover:scale-105"
+                                    onClick={() => {
+                                        if (vibes.includes(tag)) {
+                                            setValue("originStoryTags", vibes.filter(v => v !== tag));
+                                        } else {
+                                            setValue("originStoryTags", [...vibes, tag]);
+                                        }
+                                    }}
+                                >
+                                    {tag}
+                                    {vibes.includes(tag) && <RiCloseLine className="ml-1 h-3.5 w-3.5" />}
                                 </Badge>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Philosophical & Value Alignment (Tone) */}
+                    <div className="space-y-6 border-t pt-6">
+                        <div>
+                            <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <RiPaletteLine className="h-4 w-4" /> Personal Brand Voice & Tone
+                            </h3>
+                            <p className="text-xs text-muted-foreground mt-1">Select the tags that best describe your creative energy.</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {(Object.entries(CREATOR_TONE_CATEGORIES) as [keyof typeof CREATOR_TONE_CATEGORIES, string[]][]).map(([category, tags]) => (
+                                <div key={category} className="space-y-2">
+                                    <Label className="capitalize text-xs font-bold text-primary/70">{category} Tone</Label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {tags.map(tag => {
+                                            const field = `tone${category.charAt(0).toUpperCase() + category.slice(1)}` as keyof CreatorProfile;
+                                            const currentTags = (watch(field) as string[]) || [];
+                                            const isActive = currentTags.includes(tag);
+                                            
+                                            return (
+                                                <Badge
+                                                    key={tag}
+                                                    variant={isActive ? "default" : "secondary"}
+                                                    className="cursor-pointer text-[10px] px-2 py-0.5"
+                                                    onClick={() => {
+                                                        if (isActive) setValue(field, currentTags.filter(t => t !== tag) as any);
+                                                        else setValue(field, [...currentTags, tag] as any);
+                                                    }}
+                                                >
+                                                    {tag}
+                                                </Badge>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>

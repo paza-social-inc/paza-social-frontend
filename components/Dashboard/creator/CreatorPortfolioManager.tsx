@@ -8,8 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPlayCircleLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPlayCircleLine, RiCloseLine } from "@remixicon/react";
 import { CreatorPastProject, addCreatorPastProject, removeCreatorPastProject } from "@/lib/data/creator";
+import { 
+    PROJECT_ROLES_INDUSTRY, 
+    PROJECT_ROLES_BRAND, 
+    OUTCOME_TYPES, 
+    MEASUREMENT_SOURCES, 
+    REVENUE_BANDS 
+} from "@/lib/constants/creatorTaxonomy";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import toast from "react-hot-toast";
 
 export default function CreatorPortfolioManager({ initialProjects, onUpdate }: { initialProjects: CreatorPastProject[], onUpdate?: () => void }) {
@@ -108,8 +117,8 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                         <DialogHeader>
                             <DialogTitle>Add Creator Project</DialogTitle>
                         </DialogHeader>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                            <div className="space-y-4">
+                        <div className="space-y-6 py-4 overflow-y-auto max-h-[70vh]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Project Title</Label>
                                     <Input 
@@ -127,23 +136,85 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-4">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Description</Label>
-                                    <Textarea 
-                                        value={newProject.description}
-                                        onChange={(e) => setNewProject(p => ({ ...p, description: e.target.value }))}
-                                        className="h-[125px]"
-                                        placeholder="Campaign goals and your specific contribution..."
-                                    />
+                                    <Label>Industry Role</Label>
+                                    <Select 
+                                        onValueChange={(val) => setNewProject(p => ({ ...p, projectRoleIndustry: val }))}
+                                        defaultValue={newProject.projectRoleIndustry}
+                                    >
+                                        <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
+                                        <SelectContent>
+                                            {PROJECT_ROLES_INDUSTRY.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Spend Band</Label>
-                                    <Input 
-                                        value={newProject.spendBand}
-                                        onChange={(e) => setNewProject(p => ({ ...p, spendBand: e.target.value }))}
-                                        placeholder="e.g. $1k - $5k"
-                                    />
+                                    <Label>Brand Role (The Energy)</Label>
+                                    <Select 
+                                        onValueChange={(val) => setNewProject(p => ({ ...p, projectRoleBrand: val }))}
+                                        defaultValue={newProject.projectRoleBrand}
+                                    >
+                                        <SelectTrigger><SelectValue placeholder="Select Energy" /></SelectTrigger>
+                                        <SelectContent>
+                                            {PROJECT_ROLES_BRAND.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Description</Label>
+                                <Textarea 
+                                    value={newProject.description}
+                                    onChange={(e) => setNewProject(p => ({ ...p, description: e.target.value }))}
+                                    className="h-[80px]"
+                                    placeholder="Campaign goals and your specific contribution..."
+                                />
+                            </div>
+
+                            <div className="space-y-4 border-t pt-4">
+                                <h4 className="text-sm font-bold">Commercial Evidence</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Spend Band</Label>
+                                        <Select onValueChange={(val) => setNewProject(p => ({ ...p, spendBand: val }))}>
+                                            <SelectTrigger><SelectValue placeholder="Select range" /></SelectTrigger>
+                                            <SelectContent>
+                                                {REVENUE_BANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Measurement Source</Label>
+                                        <Select onValueChange={(val) => setNewProject(p => ({ ...p, measurementSource: val }))}>
+                                            <SelectTrigger><SelectValue placeholder="How was it measured?" /></SelectTrigger>
+                                            <SelectContent>
+                                                {MEASUREMENT_SOURCES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Outcome Types</Label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {OUTCOME_TYPES.map(o => (
+                                            <Badge
+                                                key={o}
+                                                variant={(newProject.outcomeTypes || []).includes(o) ? "default" : "outline"}
+                                                className="cursor-pointer text-[10px]"
+                                                onClick={() => {
+                                                    const current = newProject.outcomeTypes || [];
+                                                    if (current.includes(o)) setNewProject(p => ({ ...p, outcomeTypes: current.filter(x => x !== o) }));
+                                                    else setNewProject(p => ({ ...p, outcomeTypes: [...current, o] }));
+                                                }}
+                                            >
+                                                {o}
+                                            </Badge>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>

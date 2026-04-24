@@ -408,7 +408,7 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                     {/* Proposal List for Owners */}
                     {isJobOwner && (
                         <div className="mt-8 border-t border-border pt-8">
-                            <JobProposalsList jobId={parseInt(jobId, 10)} />
+                            <JobProposalsList jobId={parseInt(jobId, 10)} campaignId={jb.campaign?.id ?? jb.campaignId ?? jb.campaign_id ?? null} />
                         </div>
                     )}
                 </div>

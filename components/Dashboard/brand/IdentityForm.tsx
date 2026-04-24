@@ -11,50 +11,79 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { RiAddLine, RiCloseLine, RiLoader2Line } from "@remixicon/react";
 import { BrandProfile, updateBrandIdentity } from "@/lib/data/brands";
+import { BRAND_INDUSTRIES, BRAND_SUBCATEGORIES_MAP } from "@/lib/constants/brandTaxonomy";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/store/auth/useAuth";
 
 interface IdentityFormProps {
     businessId: number;
-    initialData: Partial<BrandProfile>;
+    initialData?: Partial<BrandProfile>;
     onSuccess?: (newData: BrandProfile) => void;
 }
 
-export default function IdentityForm({ businessId, initialData, onSuccess }: IdentityFormProps) {
+export default function IdentityForm({ businessId, initialData = {}, onSuccess }: IdentityFormProps) {
     const { register, handleSubmit, setValue, watch } = useForm<Partial<BrandProfile>>({
         defaultValues: initialData,
     });
 
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [tagInput, setTagInput] = React.useState("");
     const subcategories = watch("subcategory") || [];
     const operatingRegions = watch("operatingRegions") || [];
+    const selectedIndustry = watch("industry") || "";
+
+    // Get available subcategories based on selected industry
+    const availableSubcategories = selectedIndustry ? (BRAND_SUBCATEGORIES_MAP[selectedIndustry] || []) : [];
+
+    const queryClient = useQueryClient();
+    const { token } = useAuth();
 
     const onSubmit = async (data: Partial<BrandProfile>) => {
         setIsSubmitting(true);
         try {
-            const res = await updateBrandIdentity(businessId, data);
+            let activeBusinessId = businessId;
+
+            // If businessId is 0 or missing, we need to bootstrap the business first
+            if (!activeBusinessId || activeBusinessId === 0) {
+                const { ensureBusinessId } = await import("@/lib/data/brandOnboarding");
+                activeBusinessId = await ensureBusinessId({
+                    companyName: data.brandname || "My Brand",
+                    website: data.website
+                });
+            }
+
+            const res = await updateBrandIdentity(activeBusinessId, data);
             if (res.success) {
-                toast.success("Brand identity updated successfully");
+                toast.success("Brand identity created successfully");
+                
+                // Session Bridge: Cache the businessId locally so we don't have to wait for a JWT refresh
+                if (activeBusinessId) {
+                    localStorage.setItem("paza_latest_business_id", String(activeBusinessId));
+                }
+
+                // Invalidate auth-me query
+                await queryClient.invalidateQueries({ queryKey: ["auth-me", token ?? null] });
+                
                 if (onSuccess) onSuccess(res.data);
             } else {
-                toast.error(res.message || "Failed to update identity");
+                toast.error(res.message || "Failed to initialize brand");
             }
-        } catch {
-            toast.error("An error occurred while saving");
+        } catch (err: any) {
+            console.error("Identity initialization failed:", err);
+            toast.error(err.response?.data?.message || "An error occurred while saving");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const addSubcategory = () => {
-        if (tagInput.trim() && !subcategories.includes(tagInput.trim())) {
-            setValue("subcategory", [...subcategories, tagInput.trim()]);
-            setTagInput("");
+    const toggleSubcategory = (sub: string) => {
+        if (subcategories.includes(sub)) {
+            setValue("subcategory", subcategories.filter(t => t !== sub));
+        } else if (subcategories.length < 2) {
+            setValue("subcategory", [...subcategories, sub]);
+        } else {
+            toast.error("Maximum 2 subcategories allowed");
         }
-    };
-
-    const removeSubcategory = (tag: string) => {
-        setValue("subcategory", subcategories.filter(t => t !== tag));
     };
 
     const addRegion = () => {
@@ -75,7 +104,7 @@ export default function IdentityForm({ businessId, initialData, onSuccess }: Ide
         <Card>
             <CardHeader>
                 <CardTitle>Brand Identity</CardTitle>
-                <CardDescription>Manage your brand&apos;s display identity and categories.</CardDescription>
+                <CardDescription>Manage your brand&apos;s display identity, industry, and categories.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -90,56 +119,80 @@ export default function IdentityForm({ businessId, initialData, onSuccess }: Ide
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="website">Website</Label>
+                            <Input id="website" {...register("website")} placeholder="https://yourbrand.com" type="url" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Primary Contact Channel</Label>
+                            <Select
+                                onValueChange={(val) => setValue("primaryContactChannel", val)}
+                                defaultValue={initialData.primaryContactChannel}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select channel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="email">Email</SelectItem>
+                                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                                    <SelectItem value="phone">Phone Call</SelectItem>
+                                    <SelectItem value="linkedin">LinkedIn DM</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    {/* Industry */}
                     <div className="space-y-2">
-                        <Label>Primary Contact Channel</Label>
-                        <Select 
-                            onValueChange={(val) => setValue("primaryContactChannel", val)}
-                            defaultValue={initialData.primaryContactChannel}
+                        <Label>Industry</Label>
+                        <Select
+                            onValueChange={(val) => {
+                                setValue("industry", val);
+                                // Reset subcategories when industry changes
+                                setValue("subcategory", []);
+                            }}
+                            defaultValue={initialData.industry}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select channel" />
+                                <SelectValue placeholder="Select your industry" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="email">Email</SelectItem>
-                                <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                                <SelectItem value="phone">Phone Call</SelectItem>
-                                <SelectItem value="linkedin">LinkedIn DM</SelectItem>
+                                {BRAND_INDUSTRIES.map((ind) => (
+                                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
 
-                    <div className="space-y-3">
-                        <Label>Subcategories</Label>
-                        <div className="flex gap-2">
-                            <Input 
-                                value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
-                                placeholder="Add category (e.g. Fashion, Tech)"
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSubcategory())}
-                            />
-                            <Button type="button" variant="outline" onClick={addSubcategory}>
-                                <RiAddLine className="h-4 w-4" />
-                            </Button>
+                    {/* Subcategories — shown when industry is selected */}
+                    {selectedIndustry && availableSubcategories.length > 0 && (
+                        <div className="space-y-3">
+                            <Label>Subcategories <span className="text-muted-foreground font-normal">(select up to 2)</span></Label>
+                            <div className="flex flex-wrap gap-2">
+                                {availableSubcategories.map(sub => (
+                                    <Badge
+                                        key={sub}
+                                        variant={subcategories.includes(sub) ? "default" : "outline"}
+                                        className="cursor-pointer py-1.5 px-3 text-sm transition-all hover:scale-105"
+                                        onClick={() => toggleSubcategory(sub)}
+                                    >
+                                        {sub}
+                                        {subcategories.includes(sub) && (
+                                            <RiCloseLine className="ml-1 h-3.5 w-3.5" />
+                                        )}
+                                    </Badge>
+                                ))}
+                            </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {subcategories.map(tag => (
-                                <Badge key={tag} variant="secondary" className="gap-1 px-3 py-1">
-                                    {tag}
-                                    <RiCloseLine 
-                                        className="h-3 w-3 cursor-pointer hover:text-destructive" 
-                                        onClick={() => removeSubcategory(tag)}
-                                    />
-                                </Badge>
-                            ))}
-                        </div>
-                    </div>
+                    )}
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="space-y-0.5">
                             <Label>Restricted Category</Label>
                             <p className="text-sm text-muted-foreground">Is your brand in a regulated industry (e.g. Alcohol, Fintech)?</p>
                         </div>
-                        <Switch 
+                        <Switch
                             checked={watch("restrictedCategory")}
                             onCheckedChange={(val) => setValue("restrictedCategory", val)}
                         />
@@ -152,24 +205,32 @@ export default function IdentityForm({ businessId, initialData, onSuccess }: Ide
                                 <RiAddLine className="mr-1 h-4 w-4" /> Add Region
                             </Button>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {operatingRegions.map((region, idx) => (
-                                <div key={idx} className="flex gap-2 items-end">
-                                    <div className="flex-1 space-y-1">
-                                        <Input 
-                                            placeholder="Country" 
+                                <div key={idx} className="flex flex-col sm:flex-row gap-3 items-end p-4 bg-muted/30 rounded-lg relative group">
+                                    <div className="w-full sm:flex-1 space-y-2">
+                                        <Label className="text-xs">Country</Label>
+                                        <Input
+                                            placeholder="e.g. Kenya"
                                             value={region.country}
                                             onChange={(e) => updateRegion(idx, "country", e.target.value)}
                                         />
                                     </div>
-                                    <div className="flex-1 space-y-1">
-                                        <Input 
-                                            placeholder="City (optional)" 
+                                    <div className="w-full sm:flex-1 space-y-2">
+                                        <Label className="text-xs">City (optional)</Label>
+                                        <Input
+                                            placeholder="e.g. Nairobi"
                                             value={region.city}
                                             onChange={(e) => updateRegion(idx, "city", e.target.value)}
                                         />
                                     </div>
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeRegion(idx)}>
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => removeRegion(idx)}
+                                        className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm sm:static sm:h-10 sm:w-10 sm:bg-transparent sm:border-0 sm:shadow-none"
+                                    >
                                         <RiCloseLine className="h-4 w-4" />
                                     </Button>
                                 </div>

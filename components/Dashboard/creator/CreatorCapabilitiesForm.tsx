@@ -8,8 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RiAddLine, RiCloseLine, RiLoader2Line, RiCompassLine } from "@remixicon/react";
+import { RiAddLine, RiCloseLine, RiLoader2Line, RiCompassLine, RiShieldUserLine, RiNodeTree } from "@remixicon/react";
 import { CreatorProfile, updateCreativeCapabilities } from "@/lib/data/creator";
+import { 
+    SKILL_LEVELS, 
+    CREATOR_TYPES, 
+    DOMAIN_SHARDS, 
+    ASSET_CLASSES, 
+    VALUE_PROPS 
+} from "@/lib/constants/creatorTaxonomy";
 import toast from "react-hot-toast";
 
 export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { initialData: Partial<CreatorProfile>, onSuccess?: (newData: CreatorProfile) => void }) {
@@ -58,7 +65,7 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label>Professional Skill Level</Label>
                             <Select 
@@ -69,71 +76,87 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
                                     <SelectValue placeholder="Level" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="DEVELOPING">Beginner / Aspiring</SelectItem>
-                                    <SelectItem value="PROFICIENT">Intermediate / Growing</SelectItem>
-                                    <SelectItem value="ADVANCED">Expert / Pro</SelectItem>
-                                    <SelectItem value="EXPERT">Veteran / Established</SelectItem>
+                                    <SelectItem value="Developing">Developing (Gaining momentum)</SelectItem>
+                                    <SelectItem value="Proficient">Proficient (Reliable execution)</SelectItem>
+                                    <SelectItem value="Advanced">Advanced (High signal/quality)</SelectItem>
+                                    <SelectItem value="Expert">Expert (Industry benchmark)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
+
                         <div className="space-y-2">
-                            <Label>Creator Type</Label>
+                            <Label>Primary Asset Class <span className="text-muted-foreground font-normal">(Structure)</span></Label>
                             <Select 
-                                onValueChange={(val: string) => setValue("creatorType", [val])}
-                                defaultValue={initialData.creatorType?.[0]}
+                                onValueChange={(val: string) => setValue("assetClassPrimary", val)}
+                                defaultValue={initialData.assetClassPrimary}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Type" />
+                                    <SelectValue placeholder="Select asset structure" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Independent">Independent / Solo</SelectItem>
-                                    <SelectItem value="Agency">Agency / Creative Collective</SelectItem>
-                                    <SelectItem value="Curator">Content Curator</SelectItem>
-                                    <SelectItem value="UGC">UGC Creator</SelectItem>
+                                    {ASSET_CLASSES.map(ac => (
+                                        <SelectItem key={ac.value} value={ac.value}>{ac.label}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <Label>Domain Shards (Niches)</Label>
-                        <div className="flex gap-2">
-                            <Input 
-                                value={tagInputs.shards}
-                                onChange={(e) => setTagInputs(p => ({ ...p, shards: e.target.value }))}
-                                placeholder="Add niche (e.g. Sustainable Fashion, SaaS Demo)"
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag("domainShards", "shards"))}
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={() => addTag("domainShards", "shards")}>
-                                <RiAddLine />
-                            </Button>
-                        </div>
+                    <div className="space-y-4">
+                        <Label>Domain Shards (The Topics) <span className="text-muted-foreground font-normal">(Pick up to 2)</span></Label>
                         <div className="flex flex-wrap gap-2">
-                            {shards.map(t => (
-                                <Badge key={t} variant="secondary" className="gap-1">
-                                    {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => setValue("domainShards", shards.filter(v => v !== t))} />
+                            {DOMAIN_SHARDS.map(shard => (
+                                <Badge
+                                    key={shard.value}
+                                    variant={(watch("domainShards") || []).includes(shard.value) ? "default" : "outline"}
+                                    className="cursor-pointer py-1.5 px-3 text-[11px] transition-all"
+                                    onClick={() => {
+                                        const current = watch("domainShards") || [];
+                                        if (current.includes(shard.value)) setValue("domainShards", current.filter(s => s !== shard.value));
+                                        else if (current.length < 2) setValue("domainShards", [...current, shard.value]);
+                                    }}
+                                >
+                                    {shard.label}
                                 </Badge>
                             ))}
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <Label>Unique Value Props</Label>
-                        <div className="flex gap-2">
-                            <Input 
-                                value={tagInputs.props}
-                                onChange={(e) => setTagInputs(p => ({ ...p, props: e.target.value }))}
-                                placeholder="What makes you stand out?"
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag("valueProp", "props"))}
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={() => addTag("valueProp", "props")}>
-                                <RiAddLine />
-                            </Button>
-                        </div>
+                    <div className="space-y-4 border-t pt-6">
+                        <Label>Creator Types <span className="text-muted-foreground font-normal">(Pick up to 3)</span></Label>
                         <div className="flex flex-wrap gap-2">
-                            {valueProps.map(t => (
-                                <Badge key={t} variant="outline" className="gap-1 border-primary/20">
-                                    {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => setValue("valueProp", valueProps.filter(v => v !== t))} />
+                            {CREATOR_TYPES.map(ct => (
+                                <Badge
+                                    key={ct}
+                                    variant={(watch("creatorType") || []).includes(ct) ? "default" : "secondary"}
+                                    className="cursor-pointer py-1 px-2.5 text-xs transition-all"
+                                    onClick={() => {
+                                        const current = watch("creatorType") || [];
+                                        if (current.includes(ct)) setValue("creatorType", current.filter(t => t !== ct));
+                                        else if (current.length < 3) setValue("creatorType", [...current, ct]);
+                                    }}
+                                >
+                                    {ct}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 border-t pt-6">
+                        <Label>What People Come to You For <span className="text-muted-foreground font-normal">(Pick up to 2)</span></Label>
+                        <div className="flex flex-wrap gap-2">
+                            {VALUE_PROPS.map(vp => (
+                                <Badge
+                                    key={vp.value}
+                                    variant={(watch("valueProp") || []).includes(vp.value) ? "default" : "outline"}
+                                    className="cursor-pointer py-1.5 px-3 text-xs border-primary/20"
+                                    onClick={() => {
+                                        const current = watch("valueProp") || [];
+                                        if (current.includes(vp.value)) setValue("valueProp", current.filter(v => v !== vp.value));
+                                        else if (current.length < 2) setValue("valueProp", [...current, vp.value]);
+                                    }}
+                                >
+                                    {vp.label}
                                 </Badge>
                             ))}
                         </div>

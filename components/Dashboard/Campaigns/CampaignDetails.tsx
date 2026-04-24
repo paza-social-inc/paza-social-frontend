@@ -179,6 +179,7 @@ import { projectsApi } from "@/lib/data/projects";
 import { usersApi } from "@/lib/data/users";
 import { messagesApi } from "@/lib/data/messages";
 import { tasksApi } from "@/lib/data/tasks";
+import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { decodeJwtPayload, getAccountTypeFromPayload } from "@/lib/jwtPayload";
 import type { Job } from "@/types/jobs/jobTypes";
@@ -207,7 +208,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CopyButton } from "@/components/ui/shadcn-io/copy-button";
-import { RiArrowRightSLine, RiSearch2Line } from "@remixicon/react";
+import { RiArrowRightSLine, RiSearch2Line, RiMoneyDollarCircleLine, RiHandCoinLine, RiHistoryLine } from "@remixicon/react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -234,10 +235,11 @@ import {
 } from "./CampaignTargetDeadlineModal";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import EscrowDetailsModal from "@/components/Dashboard/payments/EscrowDetailsModal";
 
 /** Active tab: thin orange outline + inset left bar (readable in dark mode). */
 const CAMPAIGN_TAB_TRIGGER_CLASS =
-  "relative shrink-0 whitespace-nowrap rounded-md border border-transparent px-3.5 py-2 text-xs font-medium text-muted-foreground transition-all sm:flex-1 sm:text-sm " +
+  "relative shrink-0 whitespace-nowrap rounded-lg border border-transparent px-4 py-2.5 text-xs font-medium text-muted-foreground transition-all sm:flex-1 sm:text-sm " +
   "data-[state=inactive]:opacity-75 " +
   "data-[state=active]:z-10 data-[state=active]:border-orange-500/90 data-[state=active]:!bg-orange-500/15 data-[state=active]:!text-foreground " +
   "data-[state=active]:font-semibold data-[state=active]:shadow-[inset_4px_0_0_0_rgb(249_115_22)] " +
@@ -329,6 +331,8 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
   const [goalTargetModalOpen, setGoalTargetModalOpen] = useState(false);
   const budgetSectionRef = useRef<HTMLDivElement>(null);
   const [budgetBreakdownOpen, setBudgetBreakdownOpen] = useState(false);
+  const [selectedEscrowId, setSelectedEscrowId] = useState<number | null>(null);
+  const [escrowDetailsOpen, setEscrowDetailsOpen] = useState(false);
   const [editCampaignOpen, setEditCampaignOpen] = useState(false);
   const [addMemberQuery, setAddMemberQuery] = useState("");
   const [addInviteName, setAddInviteName] = useState("");
@@ -514,6 +518,60 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
       return cid != null && Number(cid) === campaignId;
     });
   }, [ownerJobs, campaignId]);
+
+  const { data: campaignEscrows = [] } = useQuery({
+    queryKey: ["campaign-escrows", campaignId],
+    queryFn: () => escrowPaymentsApi.getByCampaign(campaignId),
+    enabled: !!campaignId,
+  });
+
+  const hiredCreators = useMemo(() => {
+    // Collect all accepted proposals from all jobs linked to this campaign
+    const hired: Array<{ 
+      id: number; 
+      name: string; 
+      proposalTitle: string; 
+      budget: number; 
+      creatorId: number;
+      jobId: number;
+      escrow?: any;
+    }> = [];
+
+    jobsForCampaign.forEach(job => {
+      job.proposals?.forEach(p => {
+        if (p.status === "accepted") {
+          const creatorId = p.proposer?.id;
+          const escrow = campaignEscrows.find(e => e.seller?.id === Number(creatorId));
+          hired.push({
+            id: p.id!,
+            name: [p.proposer?.firstname, p.proposer?.lastname].filter(Boolean).join(" ") || "Creator",
+            proposalTitle: p.title || "Proposal",
+            budget: Number(p.proposedBudget || 0),
+            creatorId: Number(creatorId),
+            jobId: job.id!,
+            escrow
+          });
+        }
+      });
+    });
+    return hired;
+  }, [jobsForCampaign, campaignEscrows]);
+
+  const createEscrowMutation = useMutation({
+    mutationFn: ({ sellerId, milestoneIds }: { sellerId: number; milestoneIds?: number[] }) =>
+      escrowPaymentsApi.createFromCampaign(campaignId, sellerId, milestoneIds),
+    onSuccess: (data) => {
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      } else {
+        toast.success("Escrow created");
+        queryClient.invalidateQueries({ queryKey: ["campaign-escrows", campaignId] });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to create escrow");
+    },
+  });
 
   const jobRateLabel = useMemo(() => {
     const jobs = jobsForCampaign;
@@ -1208,7 +1266,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 px-3 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 px-2 pb-8 sm:px-4 lg:grid-cols-3 gap-6">
         {/* Left column */}
         <div className="lg:col-span-2 space-y-4">
           <Tabs defaultValue="overview">
@@ -1230,7 +1288,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                 <h2 className="mb-3 text-lg font-semibold tracking-tight text-foreground">
                   Campaign overview
                 </h2>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="rounded-xl border border-border bg-muted/30 p-4 dark:bg-zinc-900/70">
                     <p className="text-sm font-semibold text-foreground">Tasks</p>
                     <div className="mt-4 grid grid-cols-3 gap-2 text-center">
@@ -1399,7 +1457,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                     {normalizedGoals.length > 0 ? (
                       <div
                         className={cn(
-                          "mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2",
+                          "mt-4 grid grid-cols-1 gap-3 md:grid-cols-2",
                           normalizedGoals.length > 4 && "max-h-[21rem] overflow-y-auto pr-1"
                         )}
                       >
@@ -1425,7 +1483,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                             </div>
                             {viewerOwnsCampaign && editingGoalDetailIndex === index ? (
                               <div className="mt-3 space-y-2">
-                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                                   <Input
                                     type="number"
                                     inputMode="numeric"
@@ -1533,7 +1591,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                       No jobs linked to this campaign yet. Create a job to find creators.
                     </p>
                   ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       {jobsForCampaign.map((job) => {
                         const jid = job.id ?? (job._id ? Number(job._id) : undefined);
                         const title =
@@ -1601,6 +1659,100 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                       })}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Hired Creators Section */}
+              {viewerOwnsCampaign && !isCreatorAccount && hiredCreators.length > 0 && (
+                <div className="mt-8 space-y-4">
+                  <div className="flex flex-col gap-2">
+                    <h2 className="text-2xl font-bold tracking-tight">Hired Creators</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Creators with accepted proposals. Manage their escrow payments here.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {hiredCreators.map((hired) => {
+                      const hasEscrow = hired.escrow != null;
+                      const escrowStatus = hired.escrow?.status?.toLowerCase() || "none";
+                      
+                      return (
+                        <Card key={hired.id} className="border-border bg-card/80 dark:bg-zinc-900/60 transition-all hover:shadow-md">
+                          <CardContent className="p-4 space-y-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="h-10 w-10 shrink-0 rounded-full bg-orange-500/20 flex items-center justify-center font-bold text-orange-600">
+                                  {hired.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold truncate text-sm">{hired.name}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate">{hired.proposalTitle}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-bold">Ksh {hired.budget.toLocaleString()}</p>
+                                {hasEscrow ? (
+                                  <Badge className={cn(
+                                    "mt-1 text-[10px] uppercase font-bold",
+                                    escrowStatus === "funded" || escrowStatus === "released" ? "bg-emerald-500/20 text-emerald-600 border-emerald-500/30" : "bg-amber-500/20 text-amber-600 border-amber-500/30"
+                                  )} variant="outline">
+                                    {escrowStatus.replace("_", " ")}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="mt-1 text-[10px] uppercase opacity-60">No Escrow</Badge>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-1">
+                              {hasEscrow ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="flex-1 text-xs border-orange-500/40 text-orange-600 hover:bg-orange-500/10"
+                                  onClick={() => {
+                                    setSelectedEscrowId(hired.escrow.id);
+                                    setEscrowDetailsOpen(true);
+                                  }}
+                                >
+                                  <RiHistoryLine className="h-3.5 w-3.5 mr-1.5" />
+                                  Escrow Details
+                                </Button>
+                              ) : (
+                                <Button 
+                                  size="sm" 
+                                  className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  disabled={createEscrowMutation.isPending}
+                                  onClick={() => {
+                                    if (confirm(`Initialize escrow for ${hired.name} (Ksh ${hired.budget.toLocaleString()})?`)) {
+                                      createEscrowMutation.mutate({ sellerId: hired.creatorId });
+                                    }
+                                  }}
+                                >
+                                  {createEscrowMutation.isPending ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                                  ) : (
+                                    <RiHandCoinLine className="h-3.5 w-3.5 mr-1.5" />
+                                  )}
+                                  Fund Escrow
+                                </Button>
+                              )}
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-8 w-8 rounded-full p-0"
+                                asChild
+                              >
+                                <Link href={`/inbox?user=${hired.creatorId}`} title="Message Creator">
+                                  <MessageCircle className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -3112,6 +3264,12 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         open={editCampaignOpen}
         onOpenChange={setEditCampaignOpen}
         campaignId={campaignId}
+      />
+      <EscrowDetailsModal
+        escrowId={selectedEscrowId}
+        open={escrowDetailsOpen}
+        onOpenChange={setEscrowDetailsOpen}
+        viewerUserId={Number(viewerId)}
       />
     </div>
   );

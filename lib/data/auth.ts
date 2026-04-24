@@ -17,12 +17,13 @@ export interface AuthMeUser {
  * Uses /api/users/me first (reliable); falls back to /api/auth/me for older backends.
  */
 export async function fetchAuthMe(): Promise<AuthMeUser | null> {
+  const ts = Date.now();
   try {
-    const r = await pazaApi.get<{ message?: string; data: AuthMeUser }>("/api/users/me");
+    const r = await pazaApi.get<{ message?: string; data: AuthMeUser }>(`/api/users/me?t=${ts}`);
     return r.data?.data ?? null;
   } catch {
     try {
-      const r = await pazaApi.get<{ message?: string; data: AuthMeUser }>("/api/auth/me");
+      const r = await pazaApi.get<{ message?: string; data: AuthMeUser }>(`/api/auth/me?t=${ts}`);
       return r.data?.data ?? null;
     } catch {
       return null;

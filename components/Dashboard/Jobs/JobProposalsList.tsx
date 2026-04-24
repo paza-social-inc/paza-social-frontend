@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { jobsApi } from "@/lib/data/jobs";
-import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
 import { messagesApi } from "@/lib/data/messages";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,17 +13,21 @@ import {
   RiUser3Line,
   RiMoneyDollarCircleLine,
   RiFileListLine,
+  RiTeamLine,
 } from "@remixicon/react";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 interface JobProposalsListProps {
   jobId: number;
+  /** Campaign ID this job is linked to (if any). Used for post-accept navigation. */
+  campaignId?: number | null;
 }
 
-export default function JobProposalsList({ jobId }: JobProposalsListProps) {
+export default function JobProposalsList({ jobId, campaignId }: JobProposalsListProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [openingChatId, setOpeningChatId] = useState<string | null>(null);
@@ -42,27 +45,22 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
       toast.success(`Proposal ${updated.status || "updated"}`);
       queryClient.invalidateQueries({ queryKey: ["job-proposals", jobId] });
       queryClient.invalidateQueries({ queryKey: ["job-stats", jobId] });
-      
+
       if (updated.status?.toLowerCase() === "accepted") {
-        toast.success("Proposal accepted! You can now fund the escrow to start work.");
+        // Invalidate campaign queries so the creator appears as a member
+        if (campaignId) {
+          queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+          queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+          queryClient.invalidateQueries({ queryKey: ["campaign-available-team-members", campaignId] });
+        }
+        toast.success(
+          campaignId
+            ? "Proposal accepted! Creator added to your campaign. Fund the escrow from Campaign Details."
+            : "Proposal accepted!"
+        );
       }
     },
     onError: () => toast.error("Failed to update proposal status"),
-  });
-
-  const fundMutation = useMutation({
-    mutationFn: (proposalId: number) => escrowPaymentsApi.createFromProposal(proposalId),
-    onSuccess: (data) => {
-      if (data.paymentUrl) {
-        toast.success("Redirecting to payment...");
-        window.location.href = data.paymentUrl;
-      } else {
-        toast.error("Could not get payment URL");
-      }
-    },
-    onError: (err: { response?: { data?: { message?: string } } }) => {
-      toast.error(err.response?.data?.message || "Failed to initiate payment");
-    },
   });
 
   const openChatMutation = useMutation({
@@ -132,6 +130,7 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
           const pid = p.id;
           const proposerId = p.proposer?.id;
           const isPending = p.status?.toLowerCase() === "pending";
+          const isAccepted = p.status?.toLowerCase() === "accepted";
 
           return (
             <Card key={pid} className="overflow-hidden hover:shadow-md transition-shadow border-border">
@@ -214,7 +213,7 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
                           size="sm"
                           className="bg-emerald-600 hover:bg-emerald-700 text-white"
                           onClick={() => pid && updateStatusMutation.mutate({ proposalId: pid, status: "accepted" })}
-                          disabled={updateStatusMutation.isPending || fundMutation.isPending}
+                          disabled={updateStatusMutation.isPending}
                         >
                           <RiCheckLine className="h-4 w-4 mr-1.5" />
                           Accept Proposal
@@ -222,20 +221,26 @@ export default function JobProposalsList({ jobId }: JobProposalsListProps) {
                       </div>
                     )}
 
-                    {!isPending && p.status?.toLowerCase() === "accepted" && (
-                      <div className="flex justify-end pt-4">
-                        <Button
-                          className="bg-orange-500 hover:bg-orange-600 text-white"
-                          onClick={() => pid && fundMutation.mutate(pid)}
-                          disabled={fundMutation.isPending}
-                        >
-                          {fundMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          ) : (
-                            <RiMoneyDollarCircleLine className="h-4 w-4 mr-2" />
-                          )}
-                          Fund & Start Project
-                        </Button>
+                    {/* After acceptance: show campaign link instead of legacy fund button */}
+                    {isAccepted && (
+                      <div className="flex flex-wrap items-center gap-3 pt-4 justify-end">
+                        {campaignId ? (
+                          <Button
+                            size="sm"
+                            className="bg-orange-500 hover:bg-orange-600 text-white"
+                            asChild
+                          >
+                            <Link href={`/campaigns/${campaignId}`}>
+                              <RiTeamLine className="h-4 w-4 mr-2" />
+                              View Campaign & Fund Escrow
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-0 px-3 py-1.5">
+                            <RiCheckLine className="h-3.5 w-3.5 mr-1.5" />
+                            Creator Hired
+                          </Badge>
+                        )}
                       </div>
                     )}
                   </div>
