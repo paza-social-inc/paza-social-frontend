@@ -9,6 +9,9 @@ import NarrativeForm from "./NarrativeForm";
 import ProductManager from "./ProductManager";
 import IpDeclarationForm from "./IpDeclarationForm";
 import PastProjectsManager from "./PastProjectsManager";
+import BrandVoiceForm from "./BrandVoiceForm";
+import BrandPromptsForm from "./BrandPromptsForm";
+import BrandMediaUpload from "./BrandMediaUpload";
 import { RiLoader2Line, RiErrorWarningLine } from "@remixicon/react";
 
 export default function BrandProfileView() {
@@ -62,12 +65,15 @@ export default function BrandProfileView() {
     return (
         <div className="space-y-6">
             <Tabs defaultValue="identity" className="w-full">
-                <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full h-auto gap-1 p-1 bg-muted/50">
-                    <TabsTrigger value="identity" className="py-2">Identity</TabsTrigger>
-                    <TabsTrigger value="narrative" className="py-2">Narrative</TabsTrigger>
-                    <TabsTrigger value="portfolio" className="py-2">Portfolio</TabsTrigger>
-                    <TabsTrigger value="products" className="py-2">Products</TabsTrigger>
-                    <TabsTrigger value="protection" className="py-2">IP Protection</TabsTrigger>
+                <TabsList className="flex w-full h-auto gap-1 p-1 bg-muted/50 overflow-x-auto">
+                    <TabsTrigger value="identity" className="py-2 text-xs sm:text-sm whitespace-nowrap">Identity</TabsTrigger>
+                    <TabsTrigger value="media" className="py-2 text-xs sm:text-sm whitespace-nowrap">Media</TabsTrigger>
+                    <TabsTrigger value="narrative" className="py-2 text-xs sm:text-sm whitespace-nowrap">Narrative</TabsTrigger>
+                    <TabsTrigger value="voice" className="py-2 text-xs sm:text-sm whitespace-nowrap">Voice & Tone</TabsTrigger>
+                    <TabsTrigger value="prompts" className="py-2 text-xs sm:text-sm whitespace-nowrap">Prompts</TabsTrigger>
+                    <TabsTrigger value="portfolio" className="py-2 text-xs sm:text-sm whitespace-nowrap">Portfolio</TabsTrigger>
+                    <TabsTrigger value="products" className="py-2 text-xs sm:text-sm whitespace-nowrap">Products</TabsTrigger>
+                    <TabsTrigger value="protection" className="py-2 text-xs sm:text-sm whitespace-nowrap">IP Protection</TabsTrigger>
                 </TabsList>
                 
                 <div className="mt-6">
@@ -78,12 +84,37 @@ export default function BrandProfileView() {
                             onSuccess={(data) => setProfile(data)} 
                         />
                     </TabsContent>
+
+                    <TabsContent value="media">
+                        <BrandMediaUpload
+                            businessId={businessId}
+                            currentLogo={profile.logo}
+                            currentCover={profile.coverImage}
+                            onUpdate={(updates) => setProfile(prev => prev ? { ...prev, ...updates } : prev)}
+                        />
+                    </TabsContent>
                     
                     <TabsContent value="narrative">
                         <NarrativeForm 
                             businessId={businessId} 
                             initialData={profile} 
                             onSuccess={(data) => setProfile(data)} 
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="voice">
+                        <BrandVoiceForm
+                            businessId={businessId}
+                            initialData={profile}
+                            onSuccess={(data) => setProfile(data)}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="prompts">
+                        <BrandPromptsForm
+                            businessId={businessId}
+                            initialData={profile}
+                            onSuccess={(data) => setProfile(data)}
                         />
                     </TabsContent>
                     

@@ -10,25 +10,54 @@ export interface ApiResponse<T> {
 export interface BrandProfile {
   id: number;
   businessId: number;
+  // ── Identity
   brandname?: string;
   displayName?: string;
-  logo?: string;
-  coverImage?: string;
-  tagline?: string;
-  description?: string;
+  website?: string;
+  industry?: string;
   primaryContactChannel?: string;
   subcategory?: string[];
   restrictedCategory?: boolean;
   operatingRegions?: Array<{ country: string; city: string }>;
+  ipPublisherEnabled?: boolean;
+  // ── Media
+  logo?: string;
+  coverImage?: string;
+  // ── Narrative
+  tagline?: string;
+  description?: string;
   knownFor?: string[];
   narrativePrompts?: string;
   disallowedAdjacency?: string[];
   contextualAnchor?: string[];
+  identitySignal?: string[];
   emotionalOutcome?: string;
   jobStatementSituation?: string;
   jobStatementProgress?: string;
   jobStatementOutcome?: string;
-  ipPublisherEnabled?: boolean;
+  // ── Voice & Tone
+  collaborationStyle?: string[];
+  idealBuyerProfile?: string;
+  toneEmotional?: string[];
+  toneProfessional?: string[];
+  toneCultural?: string[];
+  toneLifestyle?: string[];
+  riskConstraints?: {
+    regulatedCategory?: boolean;
+    youthSensitive?: boolean;
+    politicalSensitivity?: boolean;
+    claimRestrictions?: boolean;
+    competitorExclusivity?: boolean;
+    usageRightsStrict?: boolean;
+  };
+  // ── Brand Prompts
+  admiredCreator?: string;
+  coCreationPartner?: string;
+  productBefore?: string;
+  productAfter?: string;
+  idealBuyerDescription?: string;
+  avoidedAssociation?: string;
+  // ── Relations
   products?: BrandProduct[];
   pastProjects?: BrandPastProject[];
 }
@@ -48,8 +77,12 @@ export interface BrandPastProject {
   description?: string;
   mediaLinks?: string[];
   participationRole?: string;
+  collaborators?: string;
   paidSpend?: "yes" | "no" | "prefer_not";
+  spendTypes?: string[];
   spendBand?: string;
+  outcomeTypes?: string[];
+  measurementSource?: string;
 }
 
 // ─── Profile Retrieval ───────────────────────────────────────────────────
@@ -134,6 +167,30 @@ export async function uploadBrandCoverImage(businessId: number, file: File): Pro
   formData.append("file", file);
   const response = await pazaApi.post<ApiResponse<{ coverImage: string }>>(
     `/api/brands/${businessId}/profile/cover-image`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return response.data;
+}
+
+// ─── Voice & Tone ────────────────────────────────────────────────────────
+
+export async function updateBrandVoice(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
+  const response = await pazaApi.patch<ApiResponse<BrandProfile>>(`/api/brands/${businessId}/profile/voice`, data);
+  return response.data;
+}
+
+// ─── Past Project Media ──────────────────────────────────────────────────
+
+export async function appendPastProjectMedia(
+  businessId: number,
+  projectId: number,
+  files: File[]
+): Promise<ApiResponse<{ mediaLinks: string[] }>> {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("files", file));
+  const response = await pazaApi.post<ApiResponse<{ mediaLinks: string[] }>>(
+    `/api/brands/${businessId}/past-projects/${projectId}/media`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
   );

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { RiAddLine, RiCloseLine, RiLoader2Line, RiMagicLine } from "@remixicon/react";
 import { BrandProfile, updateBrandNarrative } from "@/lib/data/brands";
+import { IDENTITY_SIGNALS } from "@/lib/constants/brandTaxonomy";
 import toast from "react-hot-toast";
 
 interface NarrativeFormProps {
@@ -33,6 +34,7 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
     const knownFor = watch("knownFor") || [];
     const disallowed = watch("disallowedAdjacency") || [];
     const anchors = watch("contextualAnchor") || [];
+    const identitySignals = watch("identitySignal") || [];
 
     const onSubmit = async (data: Partial<BrandProfile>) => {
         setIsSubmitting(true);
@@ -134,6 +136,33 @@ export default function NarrativeForm({ businessId, initialData, onSuccess }: Na
                                     </Badge>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Identity Signals */}
+                    <div className="space-y-3">
+                        <Label>Identity Signals <span className="text-muted-foreground font-normal">(max 2)</span></Label>
+                        <p className="text-xs text-muted-foreground">What identity does your brand project to the audience?</p>
+                        <div className="flex flex-wrap gap-2">
+                            {IDENTITY_SIGNALS.map(signal => (
+                                <Badge
+                                    key={signal}
+                                    variant={identitySignals.includes(signal) ? "default" : "outline"}
+                                    className="cursor-pointer py-1.5 px-3 text-sm transition-all hover:scale-105"
+                                    onClick={() => {
+                                        if (identitySignals.includes(signal)) {
+                                            setValue("identitySignal", identitySignals.filter((s: string) => s !== signal) as never);
+                                        } else if (identitySignals.length < 2) {
+                                            setValue("identitySignal", [...identitySignals, signal] as never);
+                                        }
+                                    }}
+                                >
+                                    {signal}
+                                    {identitySignals.includes(signal) && (
+                                        <RiCloseLine className="ml-1 h-3.5 w-3.5" />
+                                    )}
+                                </Badge>
+                            ))}
                         </div>
                     </div>
 
