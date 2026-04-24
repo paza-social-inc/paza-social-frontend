@@ -269,6 +269,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { campaignApi } from "@/lib/data/campaigns";
+import { projectProposalsApi } from "@/lib/data/projectProposals";
 import { Campaign } from "@/types/campaigns/campaignTypes";
 import CampaignCard from "./CampaignCard";
 import { Button } from "@/components/ui/button";
@@ -289,7 +290,7 @@ import { EditCampaignModal } from "./EditCampaignModal";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import {
   canManageCampaign as campaignManageableByUser,
-  canSeeCampaignInMyList,
+  canSeeCampaignOnDashboardForActor,
 } from "@/lib/campaignPermissions";
 import {
   decodeJwtPayload,
@@ -350,6 +351,28 @@ export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps
   const isCreatorAccount = accountType.toLowerCase() === "creator";
   const usePrimaryCreateJob = !isCreatorAccount;
 
+  const { data: mySentProposals = [] } = useQuery({
+    queryKey: ["my-showcase-proposals"],
+    queryFn: () => projectProposalsApi.getMine(),
+    enabled: !isCreatorAccount,
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+
+  const acceptedProposalCampaignIds = useMemo(() => {
+    const ids = new Set<number>();
+    if (isCreatorAccount) return ids;
+    for (const p of mySentProposals) {
+      if (String(p.status ?? "").toLowerCase() !== "accepted") continue;
+      if (!p.project?.id) continue;
+      const raw = p.project.campaign_id ?? p.project.campaignId;
+      if (raw == null || raw === "") continue;
+      const cid = Number(raw);
+      if (Number.isFinite(cid) && cid > 0) ids.add(Math.floor(cid));
+    }
+    return ids;
+  }, [mySentProposals, isCreatorAccount]);
+
   const handleCampaignPrimaryCta = (campaignId: number) => {
     if (isCreatorAccount) {
       setProjectWizardCampaignId(campaignId);
@@ -406,11 +429,13 @@ export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps
   const filteredAndSortedCampaigns = useMemo(() => {
     const filtered = campaigns.filter(c => {
       /**
-       * Owner/creator OR anyone on a campaign team (linked after invite/proposal accept).
-       * Without this, high-budget campaigns disappear for collaborators when the default
-       * budget slider cap is below the campaign budget.
+       * Creators: own campaign or team roster.
+       * Brands: own campaign, or campaign id tied to an accepted showcase proposal (project.campaign_id).
        */
-      const isMineOrCollaborator = canSeeCampaignInMyList(c, campaignActor);
+      const isMineOrCollaborator = canSeeCampaignOnDashboardForActor(c, campaignActor, {
+        isCreatorAccount,
+        acceptedProposalCampaignIds,
+      });
 
       const matchesSearch = !searchTerm ||
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -462,7 +487,18 @@ export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps
     });
 
     return filtered;
-  }, [campaigns, campaignActor, searchTerm, sortBy, selectedActive, selectedTeamNames, selectedMilestoneCategories, budgetRange]);
+  }, [
+    campaigns,
+    campaignActor,
+    isCreatorAccount,
+    acceptedProposalCampaignIds,
+    searchTerm,
+    sortBy,
+    selectedActive,
+    selectedTeamNames,
+    selectedMilestoneCategories,
+    budgetRange,
+  ]);
 
   const toggleFilter = (arr: string[], setArr: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
     if (arr.includes(value)) setArr(arr.filter(x => x !== value));

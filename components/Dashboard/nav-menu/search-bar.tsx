@@ -37,19 +37,21 @@ export default function SearchBar() {
         <>
             <button
                 type="button"
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-10 shrink-0 items-center justify-center rounded-md border px-0 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:ring-[3px] md:h-11 md:min-w-52 md:w-fit md:justify-start md:px-3 md:py-2"
+                className="border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-10 w-full min-w-0 items-center justify-start rounded-md border px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:ring-[3px] sm:h-11 sm:max-w-sm md:min-w-64 md:max-w-md"
                 onClick={() => setOpen(true)}
                 aria-label="Search"
             >
-                <span className="flex items-center md:grow">
+                <span className="flex min-w-0 grow items-center">
                     <SearchIcon
-                        className="text-muted-foreground/80 md:-ms-1 md:me-3"
+                        className="text-muted-foreground/80 me-2 shrink-0"
                         size={16}
                         aria-hidden="true"
                     />
-                    <span className="hidden font-normal text-muted-foreground/70 md:inline">Search</span>
+                    <span className="truncate font-normal text-muted-foreground/70">
+                        Search
+                    </span>
                 </span>
-                <kbd className="ml-3 hidden h-5 max-h-full items-center rounded border border-transparent bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70 md:ms-12 md:-me-1 md:inline-flex">
+                <kbd className="ml-2 hidden h-5 max-h-full items-center rounded border border-transparent bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70 md:inline-flex">
                     ⌘K
                 </kbd>
             </button>

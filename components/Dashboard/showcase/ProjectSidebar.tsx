@@ -472,14 +472,18 @@ export function ProjectSidebar({
             onOpenChange={setOpeningDetailOpen}
             opening={selectedOpening}
             applicants={openingApplicants}
-            onApply={(opening) => {
-              const oid = String(opening.id ?? opening._id ?? "").trim();
-              if (oid && myOpeningStatusMap[oid]) return;
-              setOpeningForApplication(opening);
-              setOpeningDetailOpen(false);
-              setOpeningsListOpen(false);
-              setApplyToOpeningOpen(true);
-            }}
+            onApply={
+              isOwnProject
+                ? undefined
+                : (opening) => {
+                    const oid = String(opening.id ?? opening._id ?? "").trim();
+                    if (oid && myOpeningStatusMap[oid]) return;
+                    setOpeningForApplication(opening);
+                    setOpeningDetailOpen(false);
+                    setOpeningsListOpen(false);
+                    setApplyToOpeningOpen(true);
+                  }
+            }
             myApplicationStatus={
               selectedOpening
                 ? myOpeningStatusMap[String(selectedOpening.id ?? selectedOpening._id ?? "").trim()] ?? null

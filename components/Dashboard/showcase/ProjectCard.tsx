@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +23,10 @@ import { toast } from "react-hot-toast";
 import { projectsApi } from "@/lib/data/projects";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { decodeJwtPayload, getAccountTypeFromPayload } from "@/lib/jwtPayload";
-import { resolveProjectThumbnail } from "@/lib/showcase/projectThumbnail";
+import {
+  resolveProjectThumbnail,
+  resolveProjectThumbnailCandidates,
+} from "@/lib/showcase/projectThumbnail";
 
 export interface ProjectCardProps {
   project: Project;
@@ -37,7 +41,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
   const { user, token } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
   const [makePublicOpen, setMakePublicOpen] = useState(false);
-  const [thumbFailed, setThumbFailed] = useState(false);
+  const [thumbIndex, setThumbIndex] = useState(0);
   const id = getProjectId(project);
 
   const isOwner = useMemo(() => {
@@ -79,10 +83,15 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
   const tasksReceivedCount = project.tasksReceivedCount ?? 0;
   const collaboratorsCount = project.collaboratorsCount ?? 0;
   const thumb = resolveProjectThumbnail(project);
+  const thumbCandidates = useMemo(() => {
+    const preferred = thumb ? [thumb] : [];
+    return Array.from(new Set([...preferred, ...resolveProjectThumbnailCandidates(project)]));
+  }, [project, thumb]);
+  const activeThumb = thumbCandidates[thumbIndex] ?? "";
 
   useEffect(() => {
-    setThumbFailed(false);
-  }, [id, thumb]);
+    setThumbIndex(0);
+  }, [id, thumb, thumbCandidates.length]);
   const isPublic = Boolean(project.isPublic);
 
   const queryClient = useQueryClient();
@@ -126,16 +135,19 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
     >
       <div className="relative">
         <div className="relative w-full aspect-16/10 bg-muted">
-          {thumb && !thumbFailed ? (
-            // Dynamic CDN/user URLs — avoid next/image remotePatterns maintenance
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={thumb}
+          {activeThumb ? (
+            <Image
+              src={activeThumb}
               alt={title}
-              className="absolute inset-0 h-full w-full object-cover"
-              loading="lazy"
-              decoding="async"
-              onError={() => setThumbFailed(true)}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+              onError={() => {
+                setThumbIndex((curr) => {
+                  if (curr + 1 < thumbCandidates.length) return curr + 1;
+                  return curr;
+                });
+              }}
             />
           ) : (
             <div className="absolute inset-0 bg-muted" aria-hidden />

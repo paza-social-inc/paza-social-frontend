@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/field";
 // Card components removed as they are unused
 import { projectsApi } from "@/lib/data/projects";
+import { uploadPublicFileUrl } from "@/lib/data/uploads";
 import { ArrowLeft, Loader2, Link as LinkIcon, X } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -66,6 +67,9 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
   const [goalInput, setGoalInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [collaboratorEmailInput, setCollaboratorEmailInput] = useState("");
+  const [collaboratorEmails, setCollaboratorEmails] = useState<string[]>([]);
+  const [collaboratorEmailError, setCollaboratorEmailError] = useState<string | null>(null);
   const [wizardStep, setWizardStep] = useState<number | null>(null);
   const [selectedCategory] = useState<string | null>(null);
   const [selectedSubCategory] = useState<string | null>(null);
@@ -78,6 +82,8 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
   const [objectiveTarget2, setObjectiveTarget2] = useState("");
   const [objectiveStart, setObjectiveStart] = useState("");
   const [objectiveEnd, setObjectiveEnd] = useState("");
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   const campaignIdFromQuery = searchParams.get("campaignId") ?? undefined;
   const campaignId = mode === "embedded"
@@ -98,6 +104,7 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
       return false;
     }
   };
+  const isValidEmail = (s: string) => z.string().email().safeParse(s).success;
 
   const {
     register,
@@ -110,13 +117,34 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
 
   const createMutation = useMutation({
     mutationFn: projectsApi.create,
-    onSuccess: (project) => {
+    onSuccess: async (project) => {
       toast.success("Project created successfully");
       queryClient.invalidateQueries({ queryKey: ["creator-projects"] });
       queryClient.refetchQueries({ queryKey: ["creator-projects"] });
       const p = project as { id?: string | number; _id?: string };
       const id = p?.id != null ? String(p.id) : p?._id ?? undefined;
       setCreatedProjectId(id);
+      if (id && collaboratorEmails.length > 0) {
+        const settled = await Promise.allSettled(
+          collaboratorEmails.map((email) =>
+            projectsApi.inviteMember(id, {
+              email,
+            })
+          )
+        );
+        const successCount = settled.filter((r) => r.status === "fulfilled").length;
+        const failedCount = settled.length - successCount;
+        if (successCount > 0) {
+          toast.success(
+            `${successCount} collaborator invite${successCount === 1 ? "" : "s"} sent`
+          );
+        }
+        if (failedCount > 0) {
+          toast.error(
+            `${failedCount} invite${failedCount === 1 ? "" : "s"} could not be sent`
+          );
+        }
+      }
       setWizardStep(5);
     },
     onError: (err: unknown) => {
@@ -153,6 +181,42 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
     if (t && !tags.includes(t)) {
       setTags((prev) => [...prev, t]);
       setTagInput("");
+    }
+  };
+  const addCollaboratorEmail = () => {
+    const email = collaboratorEmailInput.trim().toLowerCase();
+    if (!email) {
+      setCollaboratorEmailError(null);
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setCollaboratorEmailError("Please enter a valid email address");
+      return;
+    }
+    if (collaboratorEmails.includes(email)) {
+      setCollaboratorEmailError("This email has already been added");
+      return;
+    }
+    setCollaboratorEmailError(null);
+    setCollaboratorEmails((prev) => [...prev, email]);
+    setCollaboratorEmailInput("");
+  };
+  const handleFilesSelected = async (files: File[]) => {
+    if (!files.length) return;
+    setUploadingFiles(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) {
+        const url = await uploadPublicFileUrl(file);
+        uploaded.push(url);
+      }
+      setMediaUrls((prev) => [...prev, ...uploaded]);
+      toast.success("File upload complete");
+    } catch {
+      toast.error("Could not upload one or more files");
+    } finally {
+      setUploadingFiles(false);
+      setFileInputKey((k) => k + 1);
     }
   };
 
@@ -346,18 +410,56 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                       size="sm"
                       variant="outline"
                       className="border-orange-500 text-orange-300 hover:bg-orange-500/10"
+                      onClick={addCollaboratorEmail}
                     >
-                      Add team
+                      Add email
                     </Button>
                   </div>
 
                   <div className="space-y-3">
                     <Input
-                      placeholder="Search"
+                      value={collaboratorEmailInput}
+                      onChange={(e) => {
+                        setCollaboratorEmailInput(e.target.value);
+                        if (collaboratorEmailError) setCollaboratorEmailError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addCollaboratorEmail();
+                        }
+                      }}
+                      placeholder="Enter collaborator email"
                       className="h-11 bg-zinc-900/60 border-zinc-700"
                     />
+                    {collaboratorEmailError ? (
+                      <p className="text-xs text-destructive">{collaboratorEmailError}</p>
+                    ) : null}
+                    {collaboratorEmails.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {collaboratorEmails.map((email) => (
+                          <span
+                            key={email}
+                            className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200"
+                          >
+                            <span className="max-w-[190px] truncate">{email}</span>
+                            <button
+                              type="button"
+                              className="text-zinc-400 hover:text-red-400"
+                              onClick={() =>
+                                setCollaboratorEmails((prev) =>
+                                  prev.filter((item) => item !== email)
+                                )
+                              }
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                     <p className="text-xs text-muted-foreground">
-                      (Search and team selection coming soon – for now you can continue without adding collaborators.)
+                      Add by email now. Invites will be sent automatically after the project is created.
                     </p>
                   </div>
                 </div>
@@ -479,20 +581,58 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-center rounded-xl border border-dashed border-zinc-700 bg-black/40 px-6 py-16 text-center">
+                  <div
+                    className={cn(
+                      "flex items-center justify-center rounded-xl border border-dashed border-zinc-700 bg-black/40 px-6 py-16 text-center transition-colors",
+                      uploadingFiles && "opacity-80"
+                    )}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const files = Array.from(e.dataTransfer.files ?? []);
+                      void handleFilesSelected(files);
+                    }}
+                  >
                     <div>
                       <div className="mx-auto mb-4 h-10 w-10 rounded-full border border-zinc-600 flex items-center justify-center text-zinc-300">
                         ↑
                       </div>
                       <p className="text-sm font-medium">Drag And Drop</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        or <span className="text-orange-400">browse</span> your file to upload
+                        or{" "}
+                        <button
+                          type="button"
+                          className="text-orange-400 hover:underline"
+                          onClick={() => {
+                            const input = document.getElementById(
+                              "project-work-file-input"
+                            ) as HTMLInputElement | null;
+                            input?.click();
+                          }}
+                          disabled={uploadingFiles}
+                        >
+                          browse
+                        </button>{" "}
+                        your file to upload
                       </p>
+                      <input
+                        key={fileInputKey}
+                        id="project-work-file-input"
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files ?? []);
+                          void handleFilesSelected(files);
+                        }}
+                      />
                     </div>
                   </div>
 
                   <p className="text-xs text-center text-muted-foreground">
-                    PDF, JPG, DOCX or JPEG are allowed. Not more than 2GB.
+                    {uploadingFiles
+                      ? "Uploading files..."
+                      : "PDF, JPG, DOCX or JPEG are allowed. Not more than 2GB."}
                   </p>
 
                   <Field>
@@ -558,14 +698,14 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                   </Button>
                   <Button
                     type="button"
-                    disabled={createMutation.isPending}
+                    disabled={createMutation.isPending || uploadingFiles}
                     className="min-w-[160px] bg-orange-500 text-black hover:bg-orange-500/90"
                     onClick={() => handleSubmit(onSubmit)()}
                   >
-                    {createMutation.isPending ? (
+                    {createMutation.isPending || uploadingFiles ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Launching…
+                        {uploadingFiles ? "Uploading..." : "Launching…"}
                       </>
                     ) : (
                       "Launch Project"

@@ -28,6 +28,7 @@ import {
   ProjectFormSections,
   type ProjectFormBaseData,
 } from "./ProjectFormSections";
+import { resolveProjectThumbnail } from "@/lib/showcase/projectThumbnail";
 
 const schema = z.object({
   title: z
@@ -119,6 +120,16 @@ export function EditProjectModal({
 
   const registerBase = register as UseFormRegister<ProjectFormBaseData>;
   const errorsBase = errors as FieldErrors<ProjectFormBaseData>;
+
+  const previewImageUrl = (() => {
+    if (!project) return "";
+    const source = (projectFromApi ?? project) as Project;
+    return resolveProjectThumbnail({
+      ...source,
+      mediaUrls,
+      images: source.images,
+    });
+  })();
 
   useEffect(() => {
     if (!open || !project) return;
@@ -333,7 +344,15 @@ export function EditProjectModal({
                   Upload a new image and it will be added to project media as the first image.
                 </FieldDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
+                {previewImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={previewImageUrl}
+                    alt="Project primary"
+                    className="h-40 w-full rounded-md border border-border object-cover"
+                  />
+                ) : null}
                 <input
                   id="edit-project-image-upload"
                   type="file"

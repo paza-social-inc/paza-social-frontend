@@ -1,4 +1,5 @@
 import type { Campaign } from "@/types/campaigns/campaignTypes";
+import { parseCampaignId } from "@/lib/data/campaigns";
 
 export type CampaignActor = {
   /** Logged-in user id as string (e.g. from user.id or JWT userId). */
@@ -61,4 +62,25 @@ export function isUserOnCampaignTeam(campaign: Campaign, actor: CampaignActor): 
 /** Owner/manager OR roster member — campaigns list should always surface these (bypass facet filters). */
 export function canSeeCampaignInMyList(campaign: Campaign, actor: CampaignActor): boolean {
   return canManageCampaign(campaign, actor) || isUserOnCampaignTeam(campaign, actor);
+}
+
+/**
+ * Campaigns page / job picker:
+ * - **Creators** (`accountType === "creator"`): own campaign or on a team roster (`canSeeCampaignInMyList`).
+ * - **Everyone else** (brand, business, individual, etc.): **only** campaigns whose id is in
+ *   `acceptedProposalCampaignIds` — i.e. a showcase project you proposed on has status `accepted` and
+ *   `project.campaign_id` points at that campaign. No `getAll()` + owner/team heuristics (avoids false positives
+ *   from loose `createdby` / id matches in shared dev data).
+ */
+export function canSeeCampaignOnDashboardForActor(
+  campaign: Campaign,
+  actor: CampaignActor,
+  opts: { isCreatorAccount: boolean; acceptedProposalCampaignIds: Set<number> }
+): boolean {
+  if (opts.isCreatorAccount) {
+    return canSeeCampaignInMyList(campaign, actor);
+  }
+  const cid = parseCampaignId(campaign.id);
+  if (cid == null) return false;
+  return opts.acceptedProposalCampaignIds.has(cid);
 }
