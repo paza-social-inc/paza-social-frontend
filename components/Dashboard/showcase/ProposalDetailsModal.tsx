@@ -162,27 +162,30 @@ export function ProposalDetailsModal({
   );
 
   const pending =
-    !proposal ||
+    proposal != null &&
     String(proposal.status ?? "pending").toLowerCase() === "pending";
 
   const validProjectId = Number.isFinite(projectId) && projectId > 0;
 
   const mutation = useMutation({
-    mutationFn: async (status: CreatorProjectProposalStatusAction) => {
-      if (!proposal || !validProjectId) {
+    mutationFn: async (payload: {
+      proposalId: number;
+      status: CreatorProjectProposalStatusAction;
+    }) => {
+      if (!validProjectId) {
         throw new Error("Invalid proposal or project");
       }
-      return projectProposalsApi.updateStatus(projectId, proposal.id, status);
+      return projectProposalsApi.updateStatus(projectId, payload.proposalId, payload.status);
     },
-    onMutate: (status) => {
+    onMutate: ({ status }) => {
       setBusyAction(status);
     },
     onSettled: () => {
       setBusyAction(null);
     },
-    onSuccess: (_, status) => {
+    onSuccess: (_, vars) => {
       toast.success(
-        status === "accepted" ? "Proposal accepted" : "Proposal declined"
+        vars.status === "accepted" ? "Proposal accepted" : "Proposal declined"
       );
       onOpenChange(false);
       queryClient.invalidateQueries({
@@ -206,10 +209,13 @@ export function ProposalDetailsModal({
   });
 
   const handleAccept = () => {
-    onOpenChange(false);
-    mutation.mutate("accepted");
+    if (!proposal) return;
+    mutation.mutate({ proposalId: proposal.id, status: "accepted" });
   };
-  const handleReject = () => mutation.mutate("rejected");
+  const handleReject = () => {
+    if (!proposal) return;
+    mutation.mutate({ proposalId: proposal.id, status: "rejected" });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

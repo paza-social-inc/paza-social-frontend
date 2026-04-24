@@ -2,15 +2,21 @@
 
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { campaignApi, parseCampaignId } from "@/lib/data/campaigns";
+import { projectProposalsApi } from "@/lib/data/projectProposals";
 import type { Campaign } from "@/types/campaigns/campaignTypes";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/store/auth/useAuth";
-import { canManageCampaign } from "@/lib/campaignPermissions";
-import { decodeJwtPayload, getEmailFromPayload, getUserIdStringFromPayload } from "@/lib/jwtPayload";
+import { canSeeCampaignOnDashboardForActor } from "@/lib/campaignPermissions";
+import {
+  decodeJwtPayload,
+  getAccountTypeFromPayload,
+  getEmailFromPayload,
+  getUserIdStringFromPayload,
+} from "@/lib/jwtPayload";
 import { CreateCampaignModal } from "@/components/Dashboard/Campaigns/CreateCampaignModal";
 
 export interface SelectCampaignForJobModalProps {
@@ -43,90 +49,121 @@ export function SelectCampaignForJobModal({
     [currentUserId, currentUserEmail]
   );
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["campaigns", "for-job", "mine", currentUserId, currentUserEmail],
-    queryFn: async () => {
-      try {
-        return await campaignApi.getMine();
-      } catch {
-        const collected: Campaign[] = [];
-        if (currentUserId) {
-          const byId = await campaignApi.getByUser(currentUserId);
-          collected.push(...byId);
-        }
-        if (currentUserEmail) {
-          const byEmail = await campaignApi.getByUser(currentUserEmail);
-          collected.push(...byEmail);
-        }
-        const seen = new Set<number>();
-        return collected.filter((c) => {
-          const cid = parseCampaignId(c.id);
-          if (cid == null) return false;
-          if (seen.has(cid)) return false;
-          seen.add(cid);
-          return true;
-        });
-      }
-    },
+  const accountType = useMemo(() => {
+    const u = user as { accountType?: string; account?: { accountType?: string } } | null;
+    const direct = u?.accountType ?? u?.account?.accountType;
+    if (direct) return String(direct).trim();
+    return getAccountTypeFromPayload(tokenPayload);
+  }, [user, tokenPayload]);
+  const isCreatorAccount = accountType.toLowerCase() === "creator";
+
+  const { data: mySentProposals = [], isLoading: proposalsLoading } = useQuery({
+    queryKey: ["my-showcase-proposals"],
+    queryFn: () => projectProposalsApi.getMine(),
+    enabled: open && !isCreatorAccount,
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+
+  const acceptedProposalCampaignIds = useMemo(() => {
+    const ids = new Set<number>();
+    if (isCreatorAccount) return ids;
+    for (const p of mySentProposals) {
+      if (String(p.status ?? "").toLowerCase() !== "accepted") continue;
+      if (!p.project?.id) continue;
+      const raw = p.project.campaign_id ?? p.project.campaignId;
+      if (raw == null || raw === "") continue;
+      const cid = Number(raw);
+      if (Number.isFinite(cid) && cid > 0) ids.add(Math.floor(cid));
+    }
+    return ids;
+  }, [mySentProposals, isCreatorAccount]);
+
+  // Same source + visibility rules as `CampaignList`: GET all campaigns, then filter client-side.
+  const { data, isLoading: campaignsLoading, isError } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: () => campaignApi.getAll(),
     enabled: open,
     staleTime: 0,
   });
 
-  React.useEffect(() => {
-    if (open) void refetch();
-  }, [open, refetch]);
+  const listLoading = campaignsLoading || (open && !isCreatorAccount && proposalsLoading);
 
   const campaigns = useMemo(() => {
     const raw = ((data ?? []) as Campaign[]).filter((c) => parseCampaignId(c.id) != null);
-    // Match campaign list: only campaigns you can edit (same rules as CampaignList).
-    return raw.filter((c) => canManageCampaign(c, campaignActor));
-  }, [data, campaignActor]);
+    return raw.filter((c) =>
+      canSeeCampaignOnDashboardForActor(c, campaignActor, {
+        isCreatorAccount,
+        acceptedProposalCampaignIds,
+      })
+    );
+  }, [data, campaignActor, isCreatorAccount, acceptedProposalCampaignIds]);
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          showCloseButton={true}
+          showCloseButton={false}
           className={cn(
-            "max-w-[calc(100vw-2rem)] sm:max-w-xl max-h-[90dvh] overflow-hidden flex flex-col p-0 gap-0",
+            "max-w-[calc(100vw-2rem)] sm:max-w-xl max-h-[90dvh] overflow-hidden flex flex-col gap-0 p-0 sm:gap-0",
             "rounded-xl border-border bg-card"
           )}
           aria-describedby={undefined}
         >
-          <DialogTitle className="sr-only">Select your campaign</DialogTitle>
-
-          <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 shrink-0">
-            <h2 className="text-base sm:text-lg font-semibold">Select your campaign</h2>
+          <div className="flex min-h-14 shrink-0 items-center gap-3 border-b border-border px-4 py-3 sm:px-5">
+            <DialogTitle className="m-0 min-w-0 flex-1 text-left text-base font-semibold leading-snug text-foreground sm:text-lg">
+              Select your campaign
+            </DialogTitle>
             <Button
               type="button"
               size="sm"
               variant="outline"
-              className="h-8 px-3 text-xs"
+              className="h-9 shrink-0 px-3 text-xs"
               onClick={() => setCreateCampaignOpen(true)}
             >
               Add campaign
             </Button>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 space-y-4">
-            {isLoading && (
+            {listLoading && (
               <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Loading your campaigns…
               </div>
             )}
 
-            {isError && !isLoading && (
+            {isError && !listLoading && (
               <p className="text-sm text-destructive">
                 Unable to load your campaigns. Sign in and try again, or check your connection.
               </p>
             )}
 
-            {!isLoading && !isError && campaigns.length === 0 && (
+            {!listLoading && !isError && campaigns.length === 0 && (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  You don&apos;t have any campaigns yet, or none match your account. Create a campaign first, then
-                  create a task for it.
+                  {isCreatorAccount ? (
+                    <>
+                      No campaigns match your account (owner or team member). Create a campaign, or ask the campaign
+                      owner to add you to a team, then try again.
+                    </>
+                  ) : (
+                    <>
+                      No campaigns are linked to an accepted collaboration proposal yet. The showcase project must be
+                      linked to a campaign, and your proposal must be accepted, before it appears here.
+                    </>
+                  )}
                 </p>
                 <Button
                   type="button"
@@ -139,7 +176,7 @@ export function SelectCampaignForJobModal({
               </div>
             )}
 
-            {!isLoading &&
+            {!listLoading &&
               !isError &&
               campaigns.length > 0 && (
                 <ul className="space-y-3">

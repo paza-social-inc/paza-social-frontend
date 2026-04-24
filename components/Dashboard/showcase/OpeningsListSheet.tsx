@@ -117,11 +117,18 @@ export function OpeningsListSheet({
                 const myStatus = myOpeningStatuses[String(id)]?.toLowerCase();
 
                 return (
-                  <button
+                  <div
                     key={id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelectOpening(op)}
-                    className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 p-3 rounded-xl bg-muted/40 border border-border hover:bg-muted/60 transition-colors text-left touch-manipulation"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectOpening(op);
+                      }
+                    }}
+                    className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-xl bg-muted/40 border border-border hover:bg-muted/60 transition-colors text-left touch-manipulation cursor-pointer"
                   >
                     <div className="min-w-0">
                       <span className="font-medium text-foreground text-sm block">
@@ -149,10 +156,22 @@ export function OpeningsListSheet({
                         </span>
                       ) : null}
                     </div>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      Date Posted: {posted}
-                    </span>
-                  </button>
+                    <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        Date Posted: {posted}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectOpening(op);
+                        }}
+                        className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
           </div>

@@ -51,7 +51,7 @@ export function formatProposalTimeline(p: Pick<CreatorProjectProposal, "timeline
 
 /** Proposals you sent; includes project summary from GET /proposals/mine */
 export interface CreatorProjectProposalMine extends CreatorProjectProposal {
-  project?: { id: number; title?: string };
+  project?: { id: number; title?: string; campaign_id?: number | null; campaignId?: number | null };
 }
 
 export type CreatorProjectProposalStatusAction = "accepted" | "rejected";

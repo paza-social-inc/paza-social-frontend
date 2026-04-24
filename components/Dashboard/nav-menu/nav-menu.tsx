@@ -49,9 +49,9 @@ export default function NavMenu() {
                 </ul>
             </nav>
 
-            <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3 lg:gap-4">
+            <div className="flex w-full min-w-0 items-center gap-1.5 sm:gap-3 lg:w-auto lg:shrink-0 lg:gap-4">
                 <SearchBar />
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
                     <NotificationMenu />
                     <UserDropDown />
                 </div>

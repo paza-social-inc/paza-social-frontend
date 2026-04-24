@@ -7,7 +7,7 @@ import { Loader2, Pencil, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { projectsApi } from "@/lib/data/projects";
-import { pazaApi } from "@/lib/axiosClients";
+import { DEFAULT_API_URL, pazaApi } from "@/lib/axiosClients";
 import type { Project } from "@/types/projects/projectTypes";
 
 /** Prefer API `description`, then legacy/mock `aboutContent`. */
@@ -25,11 +25,41 @@ type Props = {
   canEdit: boolean;
 };
 
+function looksLikeImageUrl(url: string): boolean {
+  const v = String(url ?? "").trim();
+  if (!v) return false;
+  if (v.startsWith("blob:") || v.startsWith("data:image/")) return true;
+  try {
+    const u = new URL(v);
+    const path = u.pathname.toLowerCase();
+    return /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(path);
+  } catch {
+    return /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(v.toLowerCase());
+  }
+}
+
+function toAbsoluteUploadUrl(url: string): string {
+  const v = String(url ?? "").trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v) || v.startsWith("blob:") || v.startsWith("data:")) {
+    return v;
+  }
+  if (v.startsWith("/uploads/")) {
+    const base = (process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, "");
+    return `${base}${v}`;
+  }
+  return v;
+}
+
 export function AboutSection({ projectId, initial, initialMediaUrls, canEdit }: Props) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(initial);
   const [mediaUrls, setMediaUrls] = useState<string[]>(initialMediaUrls);
+  const primaryImageUrl = mediaUrls
+    .map((url) => toAbsoluteUploadUrl(url))
+    .find((url) => looksLikeImageUrl(url));
+
   const [mediaUploadPending, setMediaUploadPending] = useState(false);
 
   useEffect(() => {
@@ -123,10 +153,10 @@ export function AboutSection({ projectId, initial, initialMediaUrls, canEdit }: 
       <div className="space-y-4">
         <div className="rounded-lg border border-border p-3">
           <p className="mb-2 text-xs text-muted-foreground">Project image</p>
-          {mediaUrls[0] ? (
+          {primaryImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={mediaUrls[0]}
+              src={primaryImageUrl}
               alt="Project primary"
               className="mb-3 h-36 w-full rounded-md object-cover"
             />

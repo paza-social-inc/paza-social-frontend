@@ -2310,6 +2310,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                       type="button"
                       size="sm"
                       className="w-full bg-orange-500 text-white hover:bg-orange-600"
+                      disabled={!viewerOwnsCampaign}
                       onClick={() => setCreateTeamOpen(true)}
                     >
                       <Plus className="mr-2 h-4 w-4" />
@@ -2616,6 +2617,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         </DialogContent>
       </Dialog>
 
+      {viewerOwnsCampaign ? (
       <Dialog open={createTeamOpen} onOpenChange={setCreateTeamOpen}>
         <DialogContent className="max-w-md border-border bg-card">
           <DialogHeader className="space-y-1">
@@ -2878,6 +2880,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
           </div>
         </DialogContent>
       </Dialog>
+      ) : null}
 
       <Dialog
         open={editTeamOpen}
