@@ -38,25 +38,45 @@ export default function BrandProfileView() {
         }
     }, []);
 
-    const businessId = authMe?.businessId || (user as { businessId?: number })?.businessId || localBridgeId;
+    const [activeBusinessId, setActiveBusinessId] = useState<number | null>(null);
+    const businessIdFromSession = authMe?.businessId || (user as { businessId?: number })?.businessId || localBridgeId;
+
     const [profile, setProfile] = useState<BrandProfile | null>(null);
     const [projects, setProjects] = useState<BrandPastProject[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const loadProfile = React.useCallback(async () => {
-        if (!businessId) {
+        let currentId = businessIdFromSession;
+
+        // CRITICAL: If no businessId in session, try to discover it from the backend
+        if (!currentId) {
+            try {
+                const { ensureBusinessId } = await import("@/lib/data/brandOnboarding");
+                const discoveredId = await ensureBusinessId({});
+                if (discoveredId) {
+                    currentId = discoveredId;
+                    localStorage.setItem("paza_latest_business_id", String(discoveredId));
+                }
+            } catch (err) {
+                console.warn("Could not auto-discover businessId:", err);
+            }
+        }
+
+        setActiveBusinessId(currentId);
+
+        if (!currentId) {
             setLoading(false);
             return;
         }
+
         setLoading(true);
         try {
             const { getBrandProfile, listBrandPastProjects } = await import("@/lib/data/brands");
 
-            // Fetch both profile and projects in parallel for better performance
             const [profileRes, projectsRes] = await Promise.all([
-                getBrandProfile(businessId),
-                listBrandPastProjects(businessId)
+                getBrandProfile(currentId),
+                listBrandPastProjects(currentId)
             ]);
 
             if (profileRes.success) {
@@ -70,7 +90,6 @@ export default function BrandProfileView() {
             }
         } catch (err: unknown) {
             const e = err as { response?: { status?: number }; data?: { message?: string } };
-            // If the business doesn't exist in the DB, it's effectively a "new" brand onboarding case
             if (e.response?.status === 404 || (typeof e.data?.message === 'string' && e.data.message.includes("not found"))) {
                 setProfile(null);
             } else {
@@ -79,7 +98,7 @@ export default function BrandProfileView() {
         } finally {
             setLoading(false);
         }
-    }, [businessId]);
+    }, [businessIdFromSession]);
 
     useEffect(() => {
         loadProfile();
@@ -95,7 +114,7 @@ export default function BrandProfileView() {
     }
 
     // Handle case where user is a business but hasn't set up a brand/business entity yet
-    if (!businessId) {
+    if (!activeBusinessId) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
                 <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-muted/50 to-background shadow-2xl dark:from-zinc-900/50">
@@ -121,7 +140,7 @@ export default function BrandProfileView() {
                                 <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initial Identity</h4>
                             </div>
                             <IdentityForm
-                                businessId={businessId || 0}
+                                businessId={0}
                                 initialData={{}}
                                 onSuccess={() => {
                                     window.location.reload();
@@ -162,7 +181,7 @@ export default function BrandProfileView() {
                 <div className="mt-6">
                     <TabsContent value="identity">
                         <IdentityForm
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             initialData={profile}
                             onSuccess={(data) => setProfile(data)}
                         />
@@ -170,7 +189,7 @@ export default function BrandProfileView() {
 
                     <TabsContent value="media">
                         <BrandMediaUpload
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             currentLogo={profile.logo}
                             currentCover={profile.coverImage}
                             onUpdate={(updates) => setProfile(prev => prev ? { ...prev, ...updates } : prev)}
@@ -179,7 +198,7 @@ export default function BrandProfileView() {
 
                     <TabsContent value="narrative">
                         <NarrativeForm
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             initialData={profile}
                             onSuccess={(data) => setProfile(data)}
                         />
@@ -187,7 +206,7 @@ export default function BrandProfileView() {
 
                     <TabsContent value="voice">
                         <BrandVoiceForm
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             initialData={profile}
                             onSuccess={(data) => setProfile(data)}
                         />
@@ -195,7 +214,7 @@ export default function BrandProfileView() {
 
                     <TabsContent value="prompts">
                         <BrandPromptsForm
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             initialData={profile}
                             onSuccess={(data) => setProfile(data)}
                         />
@@ -203,7 +222,7 @@ export default function BrandProfileView() {
 
                     <TabsContent value="portfolio">
                         <PastProjectsManager
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             initialProjects={projects}
                             onUpdate={loadProfile}
                         />
@@ -211,14 +230,14 @@ export default function BrandProfileView() {
 
                     <TabsContent value="products">
                         <ProductManager
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             initialProducts={profile.products || []}
                         />
                     </TabsContent>
 
                     <TabsContent value="protection">
                         <IpDeclarationForm
-                            businessId={businessId}
+                            businessId={activeBusinessId}
                             isAlreadyEnabled={profile.ipPublisherEnabled}
                             onSuccess={loadProfile}
                         />

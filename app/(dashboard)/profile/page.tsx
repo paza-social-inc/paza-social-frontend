@@ -21,6 +21,9 @@ export default function ProfilePage() {
     const { user } = useAuth();
     const isBrand = user?.accountType === "Business" || user?.accountType === "Brand";
 
+    // If we're on the profile page, we might want to manually switch if we know a profile exists
+    const [forceView, setForceView] = React.useState<"creator" | "brand" | null>(null);
+
     return (
         <div className="bg-background min-h-screen flex relative">
             {/* Left Sidebar - Activity Feed - Hidden on mobile, sticky on desktop */}
@@ -86,11 +89,27 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                <div className="px-4 md:px-8 py-8">
-                    {isBrand ? (
-                        <BrandProfileView />
-                    ) : (
+                <div className="px-4 md:px-8 py-8 relative">
+                    {/* Role Helper for debugging session issues */}
+                    <div className="fixed bottom-4 right-4 z-50 flex gap-2 opacity-20 hover:opacity-100 transition-opacity">
+                        <button 
+                            onClick={() => setForceView("creator")}
+                            className="px-3 py-1 bg-zinc-800 text-[10px] text-white/50 rounded border border-white/5 hover:bg-zinc-700"
+                        >
+                            Show Creator
+                        </button>
+                        <button 
+                            onClick={() => setForceView("brand")}
+                            className="px-3 py-1 bg-zinc-800 text-[10px] text-white/50 rounded border border-white/5 hover:bg-zinc-700"
+                        >
+                            Show Brand
+                        </button>
+                    </div>
+
+                    {forceView === "creator" || (!forceView && !isBrand) ? (
                         <CreatorProfileView />
+                    ) : (
+                        <BrandProfileView />
                     )}
                 </div>
             </div>
