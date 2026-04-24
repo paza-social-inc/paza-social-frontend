@@ -18,6 +18,7 @@ export interface Notification {
   target: string;
   timestamp: string;
   unread: boolean;
+  href?: string;
 }
 
 interface ApiResponse<T> {
@@ -44,6 +45,16 @@ function mapApiItem(item: Record<string, unknown>): Notification {
 
   const unread = item.isRead !== true && item.read !== true;
 
+  const metadata = (item.metadata ?? null) as
+    | { path?: unknown; url?: unknown; href?: unknown }
+    | null;
+  const directPath =
+    (typeof metadata?.path === "string" && metadata.path.trim()) ||
+    (typeof metadata?.url === "string" && metadata.url.trim()) ||
+    (typeof metadata?.href === "string" && metadata.href.trim()) ||
+    (typeof item.path === "string" && String(item.path).trim()) ||
+    "";
+
   return {
     id: Number(item.id),
     user: title || "Notification",
@@ -51,6 +62,7 @@ function mapApiItem(item: Record<string, unknown>): Notification {
     target: "",
     timestamp: formatNotificationTime(created),
     unread: Boolean(unread),
+    href: directPath || undefined,
   };
 }
 

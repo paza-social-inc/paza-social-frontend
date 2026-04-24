@@ -43,3 +43,32 @@ export interface Opening {
   /** Filled when opening has applicant(s) */
   applicant?: { name?: string; email?: string; avatarUrl?: string };
 }
+
+/** Payload for applying to a specific opening */
+export interface ApplyToOpeningRequest {
+  coverLetter: string;
+  fee?: string | null;
+  timelineStart?: string | null;
+  timelineEnd?: string | null;
+  attachments?: string[] | null;
+}
+
+/** Opening application returned from API */
+export interface OpeningApplication {
+  id?: number | string;
+  openingId?: number | string;
+  status?: string;
+  coverLetter?: string;
+  fee?: string | null;
+  timelineStart?: string | null;
+  timelineEnd?: string | null;
+  attachments?: string[] | null;
+  createdAt?: string;
+}
+
+export interface MyOpeningApplication extends OpeningApplication {
+  openingId: number | string;
+  openingTitle?: string;
+  status: string;
+  updatedAt?: string;
+}

@@ -13,6 +13,7 @@ import {
 import { RiNotificationLine } from "@remixicon/react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 function Dot({ className }: { className?: string }) {
     return (
@@ -40,6 +41,7 @@ function formatChatTime(value?: string): string {
 }
 
 export default function NotificationMenu() {
+    const router = useRouter()
     const queryClient = useQueryClient()
     const { data: notifications = [], isLoading } = useQuery({
         queryKey: NOTIFICATIONS_QUERY_KEY,
@@ -83,6 +85,7 @@ export default function NotificationMenu() {
     const handleNotificationClick = (id: number) => {
         const notification = notifications.find((n) => n.id === id)
         if (notification?.unread) markOneReadMutation.mutate(id)
+        if (notification?.href) router.push(notification.href)
     }
 
     return (

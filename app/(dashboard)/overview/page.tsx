@@ -9,7 +9,10 @@ import Calendar from "@/components/Dashboard/tasks/Calendar";
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { RadialBarChart, RadialBar, PolarGrid, PolarRadiusAxis, Label } from "recharts";
 import { jobsApi } from "@/lib/data/jobs";
-import { useAuth } from "@/hooks/useAuth"; // Assuming you have an auth hook
+import { useAuth } from "@/hooks/store/auth/useAuth";
+import { tasksApi } from "@/lib/data/tasks";
+import { campaignApi } from "@/lib/data/campaigns";
+import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
 
 type Transaction = {
     id: string;
@@ -19,90 +22,122 @@ type Transaction = {
     type: "credit" | "debit";
 };
 
+type CampaignProgress = {
+    id: string;
+    name: string;
+    tasks: number;
+    percent: number;
+    fill: string;
+};
+
+function toAmount(raw: unknown): number {
+    if (typeof raw === "number") return Number.isFinite(raw) ? raw : 0;
+    const n = Number(String(raw ?? "").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+}
+
+function formatShortDate(iso?: string): string {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+}
+
 export default function OverviewPage() {
-    const { user } = useAuth(); // Get current user
+    const { user } = useAuth();
+    const numericUserId = user?.id ? Number(user.id) : NaN;
+    const hasNumericUserId = Number.isFinite(numericUserId);
 
-    // ✅ Fetch user's jobs
     const { data: jobsResponse, isLoading: jobsLoading } = useQuery({
-        queryKey: ['user-jobs', user?.id],
+        queryKey: ["user-jobs", numericUserId],
         queryFn: async () => {
-            if (!user?.id) return { data: [] };
-            const response = await jobsApi.getByOwner(user.id);
+            if (!hasNumericUserId) return { data: [] };
+            const response = await jobsApi.getByOwner(numericUserId);
             return { data: response };
         },
-        enabled: !!user?.id,
+        enabled: hasNumericUserId,
     });
 
-    // ✅ Fetch all jobs to count total proposals received
-    const { data: allJobsResponse } = useQuery({
-        queryKey: ['all-user-jobs-stats', user?.id],
-        queryFn: async () => {
-            if (!user?.id) return { data: [] };
-            const response = await jobsApi.getByOwner(user.id);
-            return { data: response };
-        },
-        enabled: !!user?.id,
+    const { data: tasks = [] } = useQuery({
+        queryKey: ["overview-tasks"],
+        queryFn: () => tasksApi.getMine(),
+        enabled: hasNumericUserId,
     });
 
-    // ✅ Calculate statistics from real data
+    const { data: campaigns = [] } = useQuery({
+        queryKey: ["overview-campaigns"],
+        queryFn: () => campaignApi.getMine(),
+        enabled: hasNumericUserId,
+    });
+
+    const { data: escrowStats } = useQuery({
+        queryKey: ["overview-escrow-stats"],
+        queryFn: () => escrowPaymentsApi.getStats(),
+        enabled: hasNumericUserId,
+    });
+
+    const { data: escrowList } = useQuery({
+        queryKey: ["overview-escrow-list"],
+        queryFn: () => escrowPaymentsApi.list(1, 30),
+        enabled: hasNumericUserId,
+    });
+
+    const jobs = jobsResponse?.data ?? [];
+    const escrows = escrowList?.escrows ?? [];
+
     const stats = {
-        totalJobs: jobsResponse?.data?.length || 0,
-        totalProposals: allJobsResponse?.data?.reduce((acc, job) => acc + (job.proposals?.length || 0), 0) || 0,
-        activeJobs: jobsResponse?.data?.filter(job => job.isActive)?.length || 0,
+        totalJobs: jobs.length,
+        totalProposals: jobs.reduce((acc, job) => acc + (job.proposals?.length || 0), 0),
+        activeJobs: jobs.filter((job) => job.isActive)?.length || 0,
     };
 
-    // Mock data (you can replace these with real API calls later)
-    const totalEarnings = 12850.75;
-    const totalSpending = 4230.4;
+    const totalEarnings = escrowStats ? Math.max(0, escrowStats.totalEarnedKobo / 100) : 0;
+    const totalSpending = escrows.reduce((sum, e) => {
+        if (e.buyer?.id !== numericUserId) return sum;
+        return sum + (e.totalAmountKES ?? 0);
+    }, 0);
 
-    const recentTransactions: Transaction[] = [
-        { id: "t1", title: "Brand payout - Summer Launch", date: "Oct 03, 2025", amount: 1800, type: "credit" },
-        { id: "t2", title: "Ad spend - Instagram Boost", date: "Oct 02, 2025", amount: 350, type: "debit" },
-        { id: "t3", title: "Brand payout - Back to School", date: "Sep 30, 2025", amount: 950, type: "credit" },
-        { id: "t4", title: "Platform fee", date: "Sep 27, 2025", amount: 49, type: "debit" },
-        { id: "t5", title: "Brand payout - Creator Collab", date: "Sep 24, 2025", amount: 620, type: "credit" },
-    ];
+    const recentTransactions: Transaction[] = escrows
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .slice(0, 8)
+        .map((e) => {
+            const isCredit = e.seller?.id === numericUserId;
+            const amount = isCredit ? (e.sellerAmountKES ?? e.totalAmountKES ?? 0) : (e.totalAmountKES ?? 0);
+            return {
+                id: String(e.id),
+                title: e.title?.trim() || `Escrow #${e.id}`,
+                date: formatShortDate(e.updatedAt),
+                amount: toAmount(amount),
+                type: isCredit ? "credit" : "debit",
+            };
+        });
 
-    const latestTask = {
-        title: "Submit final deliverables for Autumn Campaign",
-        due: "Oct 10, 2025",
-        status: "In Review",
-    };
+    const latestTaskRow = [...tasks]
+        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
+    const latestTask = latestTaskRow
+        ? {
+              title: latestTaskRow.title || "Untitled task",
+              due: formatShortDate(latestTaskRow.dueDate),
+              status: latestTaskRow.status || "Pending",
+          }
+        : { title: "No tasks yet", due: "—", status: "Pending" };
 
-    // ✅ Use real campaign data from jobs if available
+    const campaignRows: CampaignProgress[] =
+        campaigns.length > 0
+            ? campaigns.slice(0, 1).map((c) => {
+                  const milestones = c.milestones ?? [];
+                  const completed = milestones.filter((m) => m.status === "Completed").length;
+                  return {
+                      id: String(c.id),
+                      name: c.title || "Campaign",
+                      tasks: milestones.length,
+                      percent: milestones.length > 0 ? Math.round((completed / milestones.length) * 100) : 0,
+                      fill: "var(--color-primary)",
+                  };
+              })
+            : [{ id: "default", name: "No active campaigns", tasks: 0, percent: 0, fill: "var(--color-primary)" }];
 
-  // Around line 85, replace the campaigns definition:
-const campaigns = (jobsResponse?.data && jobsResponse.data.length > 0)
-    ? jobsResponse.data.slice(0, 1).map(job => {
-        const proposals = job.proposals ?? [];
-        return {
-        id: String(job.id ?? job._id ?? ""),
-        name: job.title,
-        tasks: proposals.length,
-        percent: proposals.length > 0
-            ? Math.round((proposals.filter(p => p.status === "completed").length / proposals.length) * 100)
-            : 0,
-        fill: "var(--color-primary)"
-    };
-    })
-    : [
-        { id: "default", name: "No active campaigns", tasks: 0, percent: 0, fill: "var(--color-primary)" },
-    ];
-    
-    // const campaigns = jobsResponse?.data?.slice(0, 1).map(job => ({
-    //     id: job.id.toString(),
-    //     name: job.title,
-    //     tasks: job.proposals?.length || 0,
-    //     percent: job.proposals?.length > 0 
-    //         ? Math.round((job.proposals.filter(p => p.status === 'completed').length / job.proposals.length) * 100)
-    //         : 0,
-    //     fill: "var(--color-primary)"
-    // })) || [
-    //     { id: "c1", name: "No active campaigns", tasks: 0, percent: 0, fill: "var(--color-primary)" },
-    // ];
-
-    // Loading state
-    if (jobsLoading) {
+    if (jobsLoading && hasNumericUserId) {
         return (
             <div className="h-screen flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -227,16 +262,16 @@ const campaigns = (jobsResponse?.data && jobsResponse.data.length > 0)
                     <CardHeader className="pb-0">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-sm text-white">
-                                {campaigns[0].name}
+                                {campaignRows[0].name}
                             </CardTitle>
                             <Badge className="bg-white/10 text-neutral-200">
-                                {campaigns[0].tasks} proposals
+                                {campaignRows[0].tasks} milestones
                             </Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="flex-1">
                         {(() => {
-                            const c = campaigns[0];
+                            const c = campaignRows[0];
                             const chartData = [{ key: "progress", value: c.percent, fill: c.fill }];
                             const chartConfig: ChartConfig = { 
                                 progress: { label: "Progress", color: "hsl(var(--chart-2))" } 
@@ -313,7 +348,9 @@ const campaigns = (jobsResponse?.data && jobsResponse.data.length > 0)
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="divide-y dark:divide-neutral-800 p-0">
-                            {recentTransactions.map((tx) => (
+                            {recentTransactions.length === 0 ? (
+                                <div className="px-4 py-6 text-sm text-muted-foreground">No transactions yet.</div>
+                            ) : recentTransactions.map((tx) => (
                                 <div key={tx.id} className="flex items-center justify-between px-4 py-3">
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 rounded-full dark:bg-neutral-800 bg-secondary shadow flex items-center justify-center">

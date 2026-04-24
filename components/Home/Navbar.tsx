@@ -289,14 +289,6 @@ export default function NavBar() {
                 >
                   Menu
                 </SheetTitle>
-                <p
-                  className={cn(
-                    "text-xs font-normal normal-case tracking-normal",
-                    darkMarketingChrome ? "text-zinc-400" : "text-muted-foreground",
-                  )}
-                >
-                  Navigate Paza on any screen size.
-                </p>
               </SheetHeader>
               <div className="mt-6 flex flex-col gap-1">
                 <p

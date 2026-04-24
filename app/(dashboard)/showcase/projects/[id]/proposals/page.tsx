@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { projectsApi } from "@/lib/data/projects";
 import {
@@ -39,6 +40,7 @@ function StatusBadge({ status }: { status?: string }) {
 export default function ShowcaseProjectProposalsPage() {
   const [detailProposal, setDetailProposal] =
     useState<CreatorProjectProposal | null>(null);
+  const queryClient = useQueryClient();
   const params = useParams();
   const id = params?.id as string | undefined;
   const projectIdNum = id ? Number(id) : NaN;
@@ -66,6 +68,27 @@ export default function ShowcaseProjectProposalsPage() {
 
   const forbidden =
     axios.isAxiosError(error) && error.response?.status === 403;
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ proposalId, status }: { proposalId: number; status: "accepted" | "rejected" }) =>
+      projectProposalsApi.updateStatus(projectIdNum, proposalId, status),
+    onSuccess: (_, vars) => {
+      toast.success(vars.status === "accepted" ? "Proposal accepted" : "Proposal declined");
+      queryClient.invalidateQueries({ queryKey: ["creator-project-proposals", projectIdNum] });
+      queryClient.invalidateQueries({ queryKey: ["creator-projects", String(projectIdNum)] });
+      queryClient.invalidateQueries({ queryKey: ["my-showcase-proposals"] });
+      if (detailProposal?.id === vars.proposalId) setDetailProposal(null);
+    },
+    onError: (err: unknown) => {
+      const msg =
+        axios.isAxiosError(err) &&
+        err.response?.data &&
+        typeof (err.response.data as { message?: string }).message === "string"
+          ? (err.response.data as { message: string }).message
+          : "Could not update proposal";
+      toast.error(msg);
+    },
+  });
 
   if (!validId) {
     return (
@@ -168,6 +191,10 @@ export default function ShowcaseProjectProposalsPage() {
               ? `${p.proposer.firstName} ${p.proposer.lastName}`.trim()
               : "—";
             const timelineLabel = formatProposalTimeline(p);
+            const pending = String(p.status ?? "pending").toLowerCase() === "pending";
+            const rowBusy =
+              updateStatusMutation.isPending &&
+              updateStatusMutation.variables?.proposalId === p.id;
             return (
               <Card
                 key={p.id}
@@ -223,6 +250,50 @@ export default function ShowcaseProjectProposalsPage() {
                     <p className="text-xs text-muted-foreground">
                       +{p.collaborators.length} collaborator(s) noted
                     </p>
+                  )}
+                  {pending && (
+                    <div
+                      className="mt-1 flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-red-400/60 text-red-400 hover:bg-red-500/10"
+                        disabled={rowBusy}
+                        onClick={() =>
+                          updateStatusMutation.mutate({
+                            proposalId: p.id,
+                            status: "rejected",
+                          })
+                        }
+                      >
+                        {rowBusy && updateStatusMutation.variables?.status === "rejected" ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Decline"
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 bg-orange-500 text-white hover:bg-orange-600"
+                        disabled={rowBusy}
+                        onClick={() =>
+                          updateStatusMutation.mutate({
+                            proposalId: p.id,
+                            status: "accepted",
+                          })
+                        }
+                      >
+                        {rowBusy && updateStatusMutation.variables?.status === "accepted" ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Accept"
+                        )}
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>

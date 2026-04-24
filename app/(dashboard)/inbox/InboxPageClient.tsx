@@ -18,6 +18,28 @@ const POLL_MESSAGES_MS = 5_000;
 const AVATAR_FALLBACK = (seed: string) =>
     `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
 
+function sanitizeConversationPreview(raw: string | null | undefined): string {
+    const input = String(raw ?? "").trim();
+    if (!input) return "No messages yet";
+    const inlineAttachment = /(.*?)(?:\s+)?Attachment:\s*([^\n]+?)(?:\s+https?:\/\/\S+)?$/i.exec(input);
+    if (inlineAttachment) {
+        const prefix = (inlineAttachment[1] ?? "").trim();
+        const label = (inlineAttachment[2] ?? "").trim() || "Attachment";
+        return prefix ? `${prefix} • Attachment: ${label}` : `Attachment: ${label}`;
+    }
+    const lines = input.split("\n").map((l) => l.trim()).filter(Boolean);
+    for (let i = 0; i < lines.length; i += 1) {
+        if (/^Attachment:\s*/i.test(lines[i])) {
+            const label = lines[i].replace(/^Attachment:\s*/i, "").trim() || "Attachment";
+            return `Attachment: ${label}`;
+        }
+    }
+    if (lines.some((l) => /^https?:\/\/\S+$/i.test(l))) {
+        return "Attachment";
+    }
+    return input;
+}
+
 function mapApiConversationToUI(api: ApiConversation, currentUserId: string): Conversation {
     const other = api.otherParticipant ?? (() => {
         const otherId = api.participants.find((p) => p !== currentUserId) ?? api.participants[0] ?? "";
@@ -27,7 +49,7 @@ function mapApiConversationToUI(api: ApiConversation, currentUserId: string): Co
         id: api._id,
         username: other.name ?? "User",
         avatar: other.avatar ?? AVATAR_FALLBACK(other.id),
-        lastMessage: api.lastMessage ?? "No messages yet",
+        lastMessage: sanitizeConversationPreview(api.lastMessage),
         timestamp: api.lastMessageAt ? new Date(api.lastMessageAt) : new Date(),
         unreadCount: api.unreadCount ?? 0,
     };

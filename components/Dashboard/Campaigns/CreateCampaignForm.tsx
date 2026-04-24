@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -17,11 +17,13 @@ import {
 } from "@/components/ui/field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { campaignApi } from "@/lib/data/campaigns";
+import { uploadPublicFileUrl } from "@/lib/data/uploads";
 import { CreateCampaignDto } from "@/types/campaigns/campaignTypes";
 import { useAuth } from "@/hooks/store/auth/useAuth";
-import { ArrowLeft, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, Link2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 const schema = z
   .object({
@@ -69,12 +71,28 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 export default function CreateCampaignForm() {
+  const attachmentInputId = "campaign-form-attachment-upload";
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [attachmentUrls, setAttachmentUrls] = useState<string[]>([]);
+  const [attachmentMeta, setAttachmentMeta] = useState<
+    Record<string, { name: string; isImage: boolean }>
+  >({});
   const [attachmentInputValue, setAttachmentInputValue] = useState("");
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const [attachmentUploadPending, setAttachmentUploadPending] = useState(false);
+  const attachmentFileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<
+    Array<{
+      id: string;
+      name: string;
+      previewUrl: string | null;
+      uploadedUrl?: string;
+      isImage: boolean;
+      status: "uploading" | "uploaded" | "failed";
+    }>
+  >([]);
 
   const isValidUrl = (s: string) => {
     try {
@@ -97,7 +115,86 @@ export default function CreateCampaignForm() {
     }
     setAttachmentError(null);
     setAttachmentUrls((prev) => [...prev, trimmed]);
+    setAttachmentMeta((prev) => ({
+      ...prev,
+      [trimmed]: {
+        name: (() => {
+          try {
+            const pathname = new URL(trimmed).pathname;
+            const last = pathname.split("/").filter(Boolean).pop();
+            return decodeURIComponent(last || "Link attachment");
+          } catch {
+            return "Link attachment";
+          }
+        })(),
+        isImage: /\.(png|jpe?g|gif|webp|svg)$/i.test(trimmed),
+      },
+    }));
     setAttachmentInputValue("");
+  };
+
+  const handleAttachmentFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.currentTarget.files;
+    if (!fileList?.length) return;
+    const selectedFiles = Array.from(fileList);
+    e.currentTarget.value = "";
+    setAttachmentUploadPending(true);
+    try {
+      const picked = selectedFiles.map((file, idx) => {
+        const isImage = file.type.startsWith("image/");
+        return {
+          id: `${Date.now()}-${idx}-${file.name}`,
+          name: file.name,
+          previewUrl: isImage ? URL.createObjectURL(file) : null,
+          isImage,
+          file,
+          status: "uploading" as const,
+        };
+      });
+      setPendingAttachments((prev) => [...prev, ...picked]);
+
+      const urls: string[] = [];
+      for (const item of picked) {
+        try {
+          const uploadedUrl = await uploadPublicFileUrl(item.file);
+          urls.push(uploadedUrl);
+          setAttachmentMeta((prev) => ({
+            ...prev,
+            [uploadedUrl]: {
+              name: item.name,
+              isImage: item.isImage,
+            },
+          }));
+          setPendingAttachments((prev) =>
+            prev.map((p) =>
+              p.id === item.id
+                ? { ...p, uploadedUrl, status: "uploaded" }
+                : p
+            )
+          );
+        } catch {
+          setPendingAttachments((prev) =>
+            prev.map((p) => (p.id === item.id ? { ...p, status: "failed" } : p))
+          );
+        }
+      }
+      setAttachmentUrls((prev) => [...prev, ...urls]);
+      setPendingAttachments((prev) => {
+        prev.forEach((p) => {
+          if (p.status === "uploaded" && p.previewUrl) URL.revokeObjectURL(p.previewUrl);
+        });
+        return prev.filter((p) => p.status !== "uploaded");
+      });
+      toast.success(urls.length === 1 ? "Attachment uploaded" : `${urls.length} attachments uploaded`);
+    } catch (err: unknown) {
+      const msg =
+        String((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "").trim() ||
+        (err as Error)?.message ||
+        "Failed to upload attachment";
+      toast.error(msg);
+    } finally {
+      setAttachmentUploadPending(false);
+    }
   };
 
   const {
@@ -245,7 +342,9 @@ export default function CreateCampaignForm() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base sm:text-lg">Attachments / media</CardTitle>
-              <FieldDescription>Add links to briefs, assets, or reference files (optional).</FieldDescription>
+              <FieldDescription>
+                Paste a public link, or upload images, videos, or documents (optional).
+              </FieldDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
@@ -264,38 +363,117 @@ export default function CreateCampaignForm() {
                     }
                   }}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="min-h-12 min-w-12 shrink-0 touch-manipulation"
-                  aria-label="Add link"
-                  onClick={() => addAttachmentUrl(attachmentInputValue)}
-                >
-                  <Upload className="h-5 w-5" />
-                </Button>
+                <input
+                  id={attachmentInputId}
+                  ref={attachmentFileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,video/mp4,video/quicktime,video/webm,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleAttachmentFiles}
+                />
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="min-h-12 min-w-12 touch-manipulation"
+                    aria-label="Add pasted URL to list"
+                    onClick={() => addAttachmentUrl(attachmentInputValue)}
+                  >
+                    <Link2 className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
+              <div className="mt-2">
+                <Input
+                  type="file"
+                  multiple
+                  className="min-h-11 border-border bg-background file:mr-3 file:rounded file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-xs"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,video/mp4,video/quicktime,video/webm,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleAttachmentFiles}
+                />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Selected files: {attachmentUrls.length + pendingAttachments.length}
+              </p>
               {attachmentError && (
                 <p className="mt-2 text-sm text-destructive" role="alert">
                   {attachmentError}
                 </p>
               )}
               {attachmentUrls.length > 0 && (
-                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                   {attachmentUrls.map((url, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2">
-                      <span className="truncate">{url}</span>
+                    <li key={i} className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/20 p-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        {attachmentMeta[url]?.isImage ? (
+                          <Image
+                            src={url}
+                            alt={attachmentMeta[url]?.name ?? "Attachment preview"}
+                            width={40}
+                            height={40}
+                            unoptimized
+                            className="h-10 w-10 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded border border-border text-xs">File</div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-foreground">{attachmentMeta[url]?.name ?? url}</p>
+                          <p className="truncate text-xs">{url}</p>
+                        </div>
+                      </div>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         className="shrink-0 text-destructive hover:text-destructive"
                         onClick={() =>
-                          setAttachmentUrls((prev) => prev.filter((_, j) => j !== i))
+                          {
+                            setAttachmentUrls((prev) => prev.filter((_, j) => j !== i));
+                            setAttachmentMeta((prev) => {
+                              const next = { ...prev };
+                              delete next[url];
+                              return next;
+                            });
+                          }
                         }
                       >
                         Remove
                       </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {pendingAttachments.length > 0 && (
+                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                  {pendingAttachments.map((item) => (
+                    <li key={item.id} className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/20 p-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        {item.isImage && item.previewUrl ? (
+                          <Image
+                            src={item.previewUrl}
+                            alt={item.name}
+                            width={40}
+                            height={40}
+                            unoptimized
+                            className="h-10 w-10 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded border border-border text-xs">File</div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-foreground">{item.name}</p>
+                          <p className="truncate text-xs">
+                            {item.status === "uploading"
+                              ? "Uploading..."
+                              : item.status === "uploaded"
+                                ? "Uploaded"
+                                : "Upload failed"}
+                          </p>
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>

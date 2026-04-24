@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,7 @@ export default function BrandOnboarding({
     const [formData, setFormData] = useState<BrandOnboardingFormState>(initialForm);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [authReady, setAuthReady] = useState(embedded);
+    const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
     const router = useRouter();
 
     const totalJourneySteps = STEPS.length;
@@ -89,6 +91,16 @@ export default function BrandOnboarding({
             cancelled = true;
         };
     }, [embedded, router]);
+
+    useEffect(() => {
+        if (!(formData.profilePicture instanceof File)) {
+            setProfilePreviewUrl(null);
+            return;
+        }
+        const url = URL.createObjectURL(formData.profilePicture);
+        setProfilePreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [formData.profilePicture]);
 
     const updateFormData = (field: keyof BrandOnboardingFormState, value: unknown) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -289,16 +301,29 @@ export default function BrandOnboarding({
                             </Label>
                             <div
                                 className={cn(
-                                    "mt-4 rounded-lg border-2 border-dashed p-8 text-center",
+                                    "mt-4 rounded-lg border-2 border-dashed p-6 text-center",
                                     embedded ? "border-zinc-600 bg-zinc-900/40" : "border-gray-300"
                                 )}
                             >
-                                <Upload
-                                    className={cn(
-                                        "mx-auto mb-4 h-12 w-12",
-                                        embedded ? "text-zinc-500" : "text-gray-400"
+                                <div className="mx-auto mb-4 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-zinc-700 bg-zinc-900/70">
+                                    {profilePreviewUrl ? (
+                                        <Image
+                                            src={profilePreviewUrl}
+                                            alt="Brand profile"
+                                            width={112}
+                                            height={112}
+                                            className="h-full w-full object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <Upload
+                                            className={cn(
+                                                "h-10 w-10",
+                                                embedded ? "text-zinc-500" : "text-gray-400"
+                                            )}
+                                        />
                                     )}
-                                />
+                                </div>
                                 <div className="space-y-2">
                                     <Label
                                         htmlFor="profile-upload"
@@ -307,20 +332,34 @@ export default function BrandOnboarding({
                                             embedded ? "text-orange-400" : "text-primary"
                                         )}
                                     >
-                                        Click to upload
+                                        {profilePreviewUrl ? "Change profile picture" : "Click to upload"}
                                     </Label>
                                     <p className={cn("text-sm", embedded ? "text-zinc-500" : "text-muted-foreground")}>
                                         PNG, JPG up to 10MB
                                     </p>
+                                    {formData.profilePicture ? (
+                                        <p className="text-xs text-emerald-400">{formData.profilePicture.name}</p>
+                                    ) : null}
                                 </div>
                                 <Input
                                     id="profile-upload"
                                     type="file"
                                     accept="image/*"
                                     className="hidden"
-                                    onChange={(e) =>
-                                        updateFormData("profilePicture", e.target.files?.[0] || null)
-                                    }
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0] || null;
+                                        if (!file) return;
+                                        if (!file.type.startsWith("image/")) {
+                                            toast.error("Please select an image file.");
+                                            return;
+                                        }
+                                        if (file.size > 10 * 1024 * 1024) {
+                                            toast.error("Image must be 10MB or less.");
+                                            return;
+                                        }
+                                        updateFormData("profilePicture", file);
+                                        toast.success("Profile image selected.");
+                                    }}
                                 />
                             </div>
                         </div>

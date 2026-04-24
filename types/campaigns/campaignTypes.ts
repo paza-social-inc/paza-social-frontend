@@ -50,6 +50,7 @@ export interface Campaign {
   id: number;
   title: string;
   description?: string;
+  attachments?: string[];
   goals?: string[];
   /** Structured goals with independent target + deadline per goal. */
   goalDetails?: CampaignGoalDetail[];

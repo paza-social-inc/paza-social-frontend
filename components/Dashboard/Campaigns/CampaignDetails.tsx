@@ -1312,6 +1312,68 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                     </button>
                   ) : null}
                 </div>
+                {Array.isArray(campaign.attachments) && campaign.attachments.length > 0 ? (
+                  <div className="mt-4 border-t border-border pt-4">
+                    <h3 className="mb-2 text-sm font-semibold text-foreground">Attachments</h3>
+                    <ul className="space-y-2">
+                      {campaign.attachments.map((url, idx) => {
+                        const safeUrl = String(url ?? "").trim();
+                        if (!safeUrl) return null;
+                        const isImage = /\.(png|jpe?g|gif|webp|svg)$/i.test(safeUrl);
+                        const fileName = (() => {
+                          try {
+                            const pathname = new URL(safeUrl).pathname;
+                            const last = pathname.split("/").filter(Boolean).pop();
+                            return decodeURIComponent(last || "Attachment");
+                          } catch {
+                            return "Attachment";
+                          }
+                        })();
+                        const displayName = (() => {
+                          const noExt = fileName.replace(/\.[^/.]+$/u, "");
+                          const withoutPrefix = noExt.replace(/^\d+-/u, "");
+                          return withoutPrefix.replace(/[_-]+/g, " ").trim() || fileName;
+                        })();
+                        const extLabel = fileName.split(".").pop()?.toUpperCase() ?? "FILE";
+                        return (
+                          <li
+                            key={`${safeUrl}-${idx}`}
+                            className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/20 p-2"
+                          >
+                            <div className="flex min-w-0 items-center gap-2">
+                              {isImage ? (
+                                <Image
+                                  src={safeUrl}
+                                  alt={fileName}
+                                  width={44}
+                                  height={44}
+                                  unoptimized
+                                  className="h-11 w-11 rounded object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-11 w-11 items-center justify-center rounded border border-border text-xs">
+                                  File
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="truncate text-sm text-foreground">{displayName}</p>
+                                <p className="truncate text-xs text-muted-foreground">{extLabel} document</p>
+                              </div>
+                            </div>
+                            <a
+                              href={safeUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs font-medium text-orange-500 hover:text-orange-400"
+                            >
+                              Open
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ) : null}
                 {showGoalsTargetSection && campaign != null && (
                   <div className="mt-4 border-t border-border pt-4">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

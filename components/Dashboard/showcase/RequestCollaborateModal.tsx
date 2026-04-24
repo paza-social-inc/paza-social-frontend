@@ -33,6 +33,7 @@ import {
   projectProposalsApi,
   type CreatorProjectProposalMine,
 } from "@/lib/data/projectProposals";
+import { usersApi } from "@/lib/data/users";
 
 type CollaborationKind = "support" | "task" | "campaign";
 
@@ -131,6 +132,20 @@ export function RequestCollaborateModal({
 
   const [fileInputKey, setFileInputKey] = useState(0);
   const fileInputId = "collab-file-input";
+  const [emailInput, setEmailInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  React.useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(searchQuery.trim()), 250);
+    return () => window.clearTimeout(t);
+  }, [searchQuery]);
+
+  const { data: searchResults = [], isFetching: searchingCreators } = useQuery({
+    queryKey: ["proposal-collaborators-search", debouncedSearch],
+    queryFn: () => usersApi.search(debouncedSearch),
+    enabled: open && debouncedSearch.length >= 2,
+  });
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
@@ -174,7 +189,31 @@ export function RequestCollaborateModal({
 
   const handleClose = () => {
     reset();
+    setEmailInput("");
+    setSearchQuery("");
+    setDebouncedSearch("");
     onOpenChange(false);
+  };
+
+  const addCollaborator = (value: string) => {
+    const v = value.trim();
+    if (!v) return;
+    const current = collaborators ?? [];
+    if (current.some((c) => c.toLowerCase() === v.toLowerCase())) return;
+    setValue("collaborators", [...current, v], {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
+  const handleAddByEmail = () => {
+    const email = emailInput.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email)) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    addCollaborator(email);
+    setEmailInput("");
   };
 
   return (
@@ -383,23 +422,76 @@ export function RequestCollaborateModal({
           {/* Collaborators */}
           <div className="space-y-2">
             <FieldLabel>Add collaborators (optional)</FieldLabel>
-            <input
-              type="text"
-              placeholder="Type a name or email and press Enter"
-              className="w-full rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  const value = (e.currentTarget.value || "").trim();
-                  if (!value) return;
-                  const current = collaborators ?? [];
-                  if (!current.includes(value)) {
-                    setValue("collaborators", [...current, value]);
-                  }
-                  e.currentTarget.value = "";
-                }
-              }}
-            />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1 min-w-0">
+                <Input
+                  type="email"
+                  placeholder="Add by email..."
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  className="min-h-10"
+                  autoComplete="email"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddByEmail();
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                className="shrink-0"
+                disabled={!emailInput.trim() || alreadySubmitted}
+                onClick={handleAddByEmail}
+              >
+                Add
+              </Button>
+            </div>
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search creators by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="min-h-10"
+                autoComplete="off"
+              />
+            </div>
+            {debouncedSearch.length >= 2 && (
+              <div className="max-h-40 overflow-auto rounded-md border border-border bg-card p-1 text-sm">
+                {searchingCreators ? (
+                  <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground text-xs">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Searching…
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <p className="px-2 py-3 text-xs text-muted-foreground text-center">No creators found</p>
+                ) : (
+                  searchResults.map((u) => {
+                    const email = String(u.email ?? "").trim().toLowerCase();
+                    const name = [u.firstname, u.lastname].filter(Boolean).join(" ").trim() || email || "Creator";
+                    if (!email) return null;
+                    const alreadyAdded = (collaborators ?? []).some(
+                      (c) => c.toLowerCase() === email
+                    );
+                    return (
+                      <button
+                        key={`${u.id ?? email}`}
+                        type="button"
+                        disabled={alreadyAdded || alreadySubmitted}
+                        className="flex w-full items-center justify-between gap-2 rounded px-2 py-2 text-left text-sm hover:bg-muted disabled:opacity-60"
+                        onClick={() => addCollaborator(email)}
+                      >
+                        <span className="truncate font-medium">{name}</span>
+                        <span className="truncate text-xs text-muted-foreground">{email}</span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            )}
             {(collaborators ?? []).length > 0 && (
               <div className="space-y-2 mt-1">
                 {(collaborators ?? []).map((name, idx) => (

@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Bell, CheckCheck, Clock } from "lucide-react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function NotificationsClient() {
+    const router = useRouter();
     const queryClient = useQueryClient();
     
     const { data: notifications = [], isLoading, isError } = useQuery({
@@ -34,8 +36,14 @@ export default function NotificationsClient() {
         },
     });
 
-    const handleMarkRead = (id: number) => {
-        markReadMutation.mutate(id);
+    const handleNotificationClick = (id: number) => {
+        const selected = notifications.find((n) => n.id === id);
+        if (selected?.unread) {
+            markReadMutation.mutate(id);
+        }
+        if (selected?.href) {
+            router.push(selected.href);
+        }
     };
 
     const handleMarkAllRead = () => {
@@ -117,7 +125,7 @@ export default function NotificationsClient() {
                         <Card 
                             key={n.id} 
                             className={`border-border transition-colors ${n.unread ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted/30'}`}
-                            onClick={() => n.unread && handleMarkRead(n.id)}
+                            onClick={() => handleNotificationClick(n.id)}
                         >
                             <CardContent className="p-4 flex items-start gap-4 cursor-pointer">
                                 <div className={`mt-1 p-2 rounded-full ${n.unread ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>

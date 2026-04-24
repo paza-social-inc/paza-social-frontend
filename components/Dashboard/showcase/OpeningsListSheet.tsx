@@ -21,6 +21,7 @@ export function OpeningsListSheet({
   projectDescription,
   projectCreatedAt,
   onSelectOpening,
+  myOpeningStatuses = {},
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,6 +30,7 @@ export function OpeningsListSheet({
   projectDescription?: string;
   projectCreatedAt?: string;
   onSelectOpening: (opening: Opening) => void;
+  myOpeningStatuses?: Record<string, string>;
 }) {
   const { data: openings = [], isLoading, isError } = useQuery({
     queryKey: ["openings", projectId],
@@ -112,6 +114,7 @@ export function OpeningsListSheet({
                 const posted = op.createdAt
                   ? new Date(op.createdAt).toLocaleDateString()
                   : "—";
+                const myStatus = myOpeningStatuses[String(id)]?.toLowerCase();
 
                 return (
                   <button
@@ -127,6 +130,24 @@ export function OpeningsListSheet({
                       {op.roleType && (
                         <span className="text-xs text-muted-foreground">{op.roleType}</span>
                       )}
+                      {myStatus ? (
+                        <span
+                          className={cn(
+                            "mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium",
+                            myStatus === "accepted"
+                              ? "bg-emerald-500/15 text-emerald-500"
+                              : myStatus === "rejected"
+                                ? "bg-destructive/15 text-destructive"
+                                : "bg-orange-500/15 text-orange-500"
+                          )}
+                        >
+                          {myStatus === "accepted"
+                            ? "Accepted"
+                            : myStatus === "rejected"
+                              ? "Rejected"
+                              : "Applied"}
+                        </span>
+                      ) : null}
                     </div>
                     <span className="text-xs text-muted-foreground shrink-0">
                       Date Posted: {posted}

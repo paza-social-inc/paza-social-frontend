@@ -79,22 +79,34 @@ const navItems = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const pathname = usePathname();
-    const { user } = useAuth();
+    const { user, token, isAuthenticated } = useAuth();
     const { data: authMe } = useQuery({
-        queryKey: ["auth-me"],
+        queryKey: ["auth-me", token ?? null],
         queryFn: fetchAuthMe,
+        enabled: Boolean(isAuthenticated && token),
         staleTime: 5 * 60 * 1000,
     });
 
+    // Guard against briefly showing a previous account from stale query cache.
+    const authMeMatchesSession =
+        !!authMe?.email &&
+        !!user?.email &&
+        authMe.email.trim().toLowerCase() === user.email.trim().toLowerCase();
+
     const displayName =
-        [authMe?.firstName, authMe?.lastName].filter(Boolean).join(" ").trim() ||
+        [authMeMatchesSession ? authMe?.firstName : null, authMeMatchesSession ? authMe?.lastName : null]
+            .filter(Boolean)
+            .join(" ")
+            .trim() ||
         [user?.firstname, user?.lastname].filter(Boolean).join(" ").trim() ||
         "User";
 
     const userData = {
         name: displayName,
-        email: authMe?.email ?? user?.email ?? "",
-        avatar: user?.avatar ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${authMe?.email ?? user?.email ?? "paza"}`,
+        email: (authMeMatchesSession ? authMe?.email : null) ?? user?.email ?? "",
+        avatar:
+            user?.avatar ??
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${(authMeMatchesSession ? authMe?.email : null) ?? user?.email ?? "paza"}`,
     };
 
     return (

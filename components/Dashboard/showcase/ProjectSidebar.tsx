@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,6 +17,7 @@ import { OpeningDetailSheet } from "./OpeningDetailSheet";
 import { CreateOpeningModal } from "./CreateOpeningModal";
 import { CollaboratorSearchSheet } from "./CollaboratorSearchSheet";
 import { RequestCollaborateModal } from "./RequestCollaborateModal";
+import { ApplyToOpeningModal } from "./ApplyToOpeningModal";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectTeamMember } from "@/types/projects/projectTypes";
 import type { Opening } from "@/types/openings";
@@ -30,6 +31,7 @@ import {
 import { ProposalDetailsModal } from "@/components/Dashboard/showcase/ProposalDetailsModal";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import type { OpeningApplicant } from "./OpeningDetailSheet";
+import toast from "react-hot-toast";
 
 const socialIcons = [
   { Icon: Facebook, href: "#", label: "Facebook" },
@@ -51,6 +53,7 @@ export function ProjectSidebar({
   projectTitle?: string;
 }) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const normalizedAccountType = String(
     user?.accountType ?? (user as { account?: { accountType?: string } } | null)?.account?.accountType ?? ""
   )
@@ -66,6 +69,8 @@ export function ProjectSidebar({
   const [collaboratorSearchOpen, setCollaboratorSearchOpen] = useState(false);
   const [createOpeningModalOpen, setCreateOpeningModalOpen] = useState(false);
   const [requestCollaborateOpen, setRequestCollaborateOpen] = useState(false);
+  const [applyToOpeningOpen, setApplyToOpeningOpen] = useState(false);
+  const [openingForApplication, setOpeningForApplication] = useState<Opening | null>(null);
   const [proposalDetailOpen, setProposalDetailOpen] = useState(false);
   const [selectedProposal, setSelectedProposal] =
     useState<CreatorProjectProposal | null>(null);
@@ -107,6 +112,11 @@ export function ProjectSidebar({
     queryFn: () => openingsApi.getByProjectId(String(projectIdNumber)),
     enabled: !Number.isNaN(projectIdNumber) && projectIdNumber > 0,
   });
+  const { data: myOpeningApplications = [] } = useQuery({
+    queryKey: ["my-opening-applications", projectIdNumber],
+    queryFn: () => openingsApi.getMyApplications(String(projectIdNumber)),
+    enabled: !isOwnProject && !Number.isNaN(projectIdNumber) && projectIdNumber > 0,
+  });
 
   const { data: myProposals = [] } = useQuery({
     queryKey: ["my-showcase-proposals"],
@@ -132,42 +142,61 @@ export function ProjectSidebar({
   const resolvedProjectTitle = projectTitle ?? project?.title ?? "Project";
   const resolvedShortDescription = project?.description ?? "—";
   const openingsCount = openingsForCount.length;
+  const myOpeningStatusMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const row of myOpeningApplications) {
+      const key = String(row.openingId ?? "").trim();
+      if (!key) continue;
+      map[key] = String(row.status ?? "").toLowerCase();
+    }
+    return map;
+  }, [myOpeningApplications]);
   const openingsPercent =
     (project as unknown as { openingsPercent?: number }).openingsPercent ?? 0;
 
   const teamMembers = (project?.teamMembers ?? []) as ProjectTeamMember[];
-  const openingApplicants = useMemo<OpeningApplicant[]>(() => {
-    // Source applicants from collaboration proposals for this project.
-    // Keep rejected/cancelled out of applicant list.
-    const blocked = new Set(["rejected", "cancelled"]);
-    const rows = (proposals ?? []).filter(
-      (p) => !blocked.has(String(p.status ?? "").toLowerCase())
-    );
-    const mapped = rows
-      .map((p) => {
-        const proposer = p.proposer;
-        if (!proposer) return null;
-        const name =
-          `${proposer.firstName ?? ""} ${proposer.lastName ?? ""}`.trim() || "Applicant";
-        return {
-          id: proposer.id,
-          name,
-          email: proposer.email,
-          avatarUrl:
-            proposer.profilePhotoUrl ??
-            proposer.avatarUrl ??
-            null,
-          status: p.status,
-        } as OpeningApplicant;
-      })
-      .filter((x): x is OpeningApplicant => Boolean(x));
-    const seen = new Set<number>();
-    return mapped.filter((a) => {
-      if (seen.has(a.id)) return false;
-      seen.add(a.id);
-      return true;
-    });
-  }, [proposals]);
+  const selectedOpeningId = String(selectedOpening?.id ?? selectedOpening?._id ?? "").trim();
+  const { data: openingApplicants = [] } = useQuery({
+    queryKey: ["opening-applicants", projectId, selectedOpeningId],
+    queryFn: async () => {
+      const rows = await openingsApi.getApplicants(projectId ?? "", selectedOpeningId);
+      return rows.map((r) => ({
+        id: r.id,
+        name: r.name || "Applicant",
+        email: r.email,
+        avatarUrl: r.avatarUrl ?? null,
+        status: r.status,
+      })) as OpeningApplicant[];
+    },
+    enabled: Boolean(projectId && selectedOpeningId && isOwnProject && openingDetailOpen),
+  });
+
+  const updateApplicantStatusMutation = useMutation({
+    mutationFn: async (payload: {
+      applicantId: string | number;
+      status: "accepted" | "rejected";
+    }) => {
+      if (!projectId || !selectedOpeningId) {
+        throw new Error("Missing project/opening context");
+      }
+      return openingsApi.updateApplicantStatus(
+        projectId,
+        selectedOpeningId,
+        String(payload.applicantId),
+        payload.status
+      );
+    },
+    onSuccess: (_, vars) => {
+      toast.success(vars.status === "accepted" ? "Applicant accepted" : "Applicant rejected");
+      queryClient.invalidateQueries({
+        queryKey: ["opening-applicants", projectId, selectedOpeningId],
+      });
+    },
+    onError: (err: unknown) => {
+      const ax = err as { response?: { data?: { message?: string } }; message?: string };
+      toast.error(ax.response?.data?.message ?? ax.message ?? "Failed to update applicant");
+    },
+  });
 
   const verifiedReach30d = (project as unknown as { verifiedReach30d?: number }).verifiedReach30d;
   const hasBrandSummary = verifiedReach30d != null;
@@ -368,7 +397,7 @@ export function ProjectSidebar({
             </Button>
           ))}
         </div>
-        {!isBrandOrBusinessAccount && (
+        {projectId && (
         <div className="pt-1">
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <div className="inline-flex items-center gap-2">
@@ -436,16 +465,65 @@ export function ProjectSidebar({
               setSelectedOpening(opening);
               setOpeningDetailOpen(true);
             }}
+            myOpeningStatuses={myOpeningStatusMap}
           />
           <OpeningDetailSheet
             open={openingDetailOpen}
             onOpenChange={setOpeningDetailOpen}
             opening={selectedOpening}
             applicants={openingApplicants}
+            onApply={(opening) => {
+              const oid = String(opening.id ?? opening._id ?? "").trim();
+              if (oid && myOpeningStatusMap[oid]) return;
+              setOpeningForApplication(opening);
+              setOpeningDetailOpen(false);
+              setOpeningsListOpen(false);
+              setApplyToOpeningOpen(true);
+            }}
+            myApplicationStatus={
+              selectedOpening
+                ? myOpeningStatusMap[String(selectedOpening.id ?? selectedOpening._id ?? "").trim()] ?? null
+                : null
+            }
+            myApplication={
+              !isOwnProject && selectedOpening
+                ? myOpeningApplications.find(
+                    (row) =>
+                      String(row.openingId ?? "").trim() ===
+                      String(selectedOpening.id ?? selectedOpening._id ?? "").trim()
+                  ) ?? null
+                : null
+            }
             onBack={() => {
               setOpeningDetailOpen(false);
               setOpeningsListOpen(true);
             }}
+            onAcceptApplicant={(applicant) => {
+              updateApplicantStatusMutation.mutate({
+                applicantId: applicant.id,
+                status: "accepted",
+              });
+            }}
+            onRejectApplicant={(applicant) => {
+              updateApplicantStatusMutation.mutate({
+                applicantId: applicant.id,
+                status: "rejected",
+              });
+            }}
+            applicantActionLoadingId={
+              updateApplicantStatusMutation.isPending
+                ? (updateApplicantStatusMutation.variables?.applicantId ?? null)
+                : null
+            }
+          />
+          <ApplyToOpeningModal
+            open={applyToOpeningOpen}
+            onOpenChange={(next) => {
+              setApplyToOpeningOpen(next);
+              if (!next) setOpeningForApplication(null);
+            }}
+            projectId={projectId ?? ""}
+            opening={openingForApplication}
           />
         </div>
         )}
