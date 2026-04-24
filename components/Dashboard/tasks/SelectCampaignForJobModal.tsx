@@ -72,7 +72,7 @@ export function SelectCampaignForJobModal({
       if (String(p.status ?? "").toLowerCase() !== "accepted") continue;
       if (!p.project?.id) continue;
       const raw = p.project.campaign_id ?? p.project.campaignId;
-      if (raw == null || raw === "") continue;
+      if (raw == null) continue;
       const cid = Number(raw);
       if (Number.isFinite(cid) && cid > 0) ids.add(Math.floor(cid));
     }
