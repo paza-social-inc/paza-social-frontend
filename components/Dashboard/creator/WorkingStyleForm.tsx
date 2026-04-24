@@ -69,7 +69,7 @@ export default function WorkingStyleForm({ initialData, onSuccess }: { initialDa
                         <div className="space-y-2">
                             <Label>Working Availability Type</Label>
                             <Select 
-                                onValueChange={(val: any) => setValue("availabilityType", val)}
+                                onValueChange={(val: string) => setValue("availabilityType", val as never)}
                                 defaultValue={initialData.availabilityType}
                             >
                                 <SelectTrigger>
@@ -102,7 +102,7 @@ export default function WorkingStyleForm({ initialData, onSuccess }: { initialDa
                     </div>
 
                     <div className="space-y-4 border-t pt-6">
-                        <Label>Personality Traits <span className="text-muted-foreground font-normal">(Select all that apply)</span></Label>
+                        <Label>Personality Traits <span className="text-muted-foreground font-normal">(Choose up to 3)</span></Label>
                         <div className="flex flex-wrap gap-2">
                             {PERSONALITY_TAGS.map(tag => (
                                 <Badge
@@ -112,13 +112,35 @@ export default function WorkingStyleForm({ initialData, onSuccess }: { initialDa
                                     onClick={() => {
                                         if (personalityTags.includes(tag)) {
                                             setValue("personalityTags", personalityTags.filter(v => v !== tag));
-                                        } else {
+                                        } else if (personalityTags.length < 3) {
                                             setValue("personalityTags", [...personalityTags, tag]);
                                         }
                                     }}
                                 >
                                     {tag}
                                     {personalityTags.includes(tag) && <RiCloseLine className="ml-1 h-3.5 w-3.5" />}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <Label>Engagement Models <span className="text-muted-foreground font-normal">(e.g. Retainer, One-off, Licensing)</span></Label>
+                        <div className="flex gap-2">
+                            <Input 
+                                value={tagInputs.engagement}
+                                onChange={(e) => setTagInputs(p => ({ ...p, engagement: e.target.value }))}
+                                placeholder="Add model..."
+                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag("engagementType", "engagement"))}
+                            />
+                            <Button type="button" variant="outline" size="icon" onClick={() => addTag("engagementType", "engagement")}>
+                                <RiAddLine />
+                            </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {engagementTypes.map(t => (
+                                <Badge key={t} variant="outline" className="gap-1 border-orange-200">
+                                    {t} <RiCloseLine className="h-3 w-3 cursor-pointer" onClick={() => removeTag("engagementType", t)} />
                                 </Badge>
                             ))}
                         </div>

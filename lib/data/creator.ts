@@ -16,10 +16,14 @@ export interface CreatorProfile {
   toneCultural?: string[];
   toneLifestyle?: string[];
   // ── 3. Working Style & Availability
-  availabilityType?: "FIXED" | "FLEXIBLE" | "PROJECT_BASED" | "HYBRID";
-  personalityTags?: string[]; // "Independent", "Adaptive", etc.
+  availabilityType?: string;
+  preferredCommunication?: string;
+  engagementType?: string[]; 
+  deliverables?: string[];
+  personalityTags?: string[];
+  equipmentAndSoftware?: string;
   // ── 4. Creative Capabilities
-  skillLevel?: "DEVELOPING" | "PROFICIENT" | "ADVANCED" | "EXPERT";
+  skillLevel?: "Developing" | "Proficient" | "Advanced" | "Expert";
   creatorType?: string[]; // "Visual Arts", "Music", etc.
   domainShards?: string[]; // "Hustle & Money", "Style & Gaze", etc.
   assetClassPrimary?: string; // "Distribution Pipe", "Trust Network", etc.
@@ -28,6 +32,9 @@ export interface CreatorProfile {
   audienceLocation?: "Global" | "Regional" | "Local";
   languages?: string[];
   audienceDescription?: string;
+  genderMale?: number;
+  genderFemale?: number;
+  locales?: { country: string; city?: string }[];
   // ── 8. Behavioral Product Data
   dailyRoutineText?: string;
   dailyCarryText?: string;
@@ -42,8 +49,6 @@ export interface CreatorProfile {
   meaningfulProject?: string;
   primaryVerticals?: string[];
   whatPeopleComeTo?: string[]; // Pick 2
-  // Legacy/Relations
-  locales?: { country: string; city: string }[];
   pastProjects?: CreatorPastProject[];
 }
 
@@ -54,6 +59,8 @@ export interface CreatorPastProject {
   description?: string;
   mediaLinks?: string[];
   role?: "IP owner" | "Co-creator" | "Operator" | "Talent" | "Distributor" | "Analyst" | "Contributor";
+  projectRoleIndustry?: string;
+  projectRoleBrand?: string;
   collaborators?: string;
   // ── Asset Declaration
   producedReusableAsset: boolean;
@@ -65,6 +72,8 @@ export interface CreatorPastProject {
   generatedMoney?: "Yes" | "No" | "Prefer not to say";
   revenueSources?: string[]; // "Brand payment", "Licensing", etc.
   revenueBand?: "<$500" | "$500-$2k" | "$2k-$10k" | "$10k+";
+  outcomeTypes?: string[];
+  measurementSources?: string[];
   proofFileUrl?: string; // Contract, Invoice, etc.
 }
 

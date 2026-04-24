@@ -68,9 +68,10 @@ export default function IdentityForm({ businessId, initialData = {}, onSuccess }
             } else {
                 toast.error(res.message || "Failed to initialize brand");
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Identity initialization failed:", err);
-            toast.error(err.response?.data?.message || "An error occurred while saving");
+            const e = err as { response?: { data?: { message?: string } } };
+            toast.error(e.response?.data?.message || "An error occurred while saving");
         } finally {
             setIsSubmitting(false);
         }

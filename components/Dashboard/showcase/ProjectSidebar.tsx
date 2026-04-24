@@ -54,13 +54,6 @@ export function ProjectSidebar({
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const normalizedAccountType = String(
-    user?.accountType ?? (user as { account?: { accountType?: string } } | null)?.account?.accountType ?? ""
-  )
-    .trim()
-    .toLowerCase();
-  const isBrandOrBusinessAccount =
-    normalizedAccountType === "brand" || normalizedAccountType === "business";
   const [showAboutCreator, setShowAboutCreator] = useState(false);
   const profileCreator = creator ?? mockCreator;
   const [openingsListOpen, setOpeningsListOpen] = useState(false);

@@ -179,7 +179,7 @@ import { projectsApi } from "@/lib/data/projects";
 import { usersApi } from "@/lib/data/users";
 import { messagesApi } from "@/lib/data/messages";
 import { tasksApi } from "@/lib/data/tasks";
-import { escrowPaymentsApi } from "@/lib/data/escrowPayments";
+import { EscrowListItem, escrowPaymentsApi } from "@/lib/data/escrowPayments";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { decodeJwtPayload, getAccountTypeFromPayload } from "@/lib/jwtPayload";
 import type { Job } from "@/types/jobs/jobTypes";
@@ -208,7 +208,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CopyButton } from "@/components/ui/shadcn-io/copy-button";
-import { RiArrowRightSLine, RiSearch2Line, RiMoneyDollarCircleLine, RiHandCoinLine, RiHistoryLine } from "@remixicon/react";
+import { RiArrowRightSLine, RiSearch2Line, RiHandCoinLine, RiHistoryLine } from "@remixicon/react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -433,22 +433,22 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
           const rawTarget: unknown = g?.targetNumber;
           const targetNumber =
             rawTarget == null ||
-            (typeof rawTarget === "string" && rawTarget.trim() === "")
+              (typeof rawTarget === "string" && rawTarget.trim() === "")
               ? null
               : Number.isFinite(Number(rawTarget))
                 ? Math.trunc(Number(rawTarget))
                 : null;
           return {
-          goal: String(g?.goal ?? "").trim(),
-          targetNumber,
-          deadline:
-            g?.deadline == null || String(g.deadline).trim() === ""
-              ? null
-              : String(g.deadline),
-          targetDescription:
-            g?.targetDescription == null || String(g.targetDescription).trim() === ""
-              ? null
-              : String(g.targetDescription).trim(),
+            goal: String(g?.goal ?? "").trim(),
+            targetNumber,
+            deadline:
+              g?.deadline == null || String(g.deadline).trim() === ""
+                ? null
+                : String(g.deadline),
+            targetDescription:
+              g?.targetDescription == null || String(g.targetDescription).trim() === ""
+                ? null
+                : String(g.targetDescription).trim(),
           };
         })
         .filter((g) => g.goal.length > 0);
@@ -527,14 +527,14 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
 
   const hiredCreators = useMemo(() => {
     // Collect all accepted proposals from all jobs linked to this campaign
-    const hired: Array<{ 
-      id: number; 
-      name: string; 
-      proposalTitle: string; 
-      budget: number; 
+    const hired: Array<{
+      id: number;
+      name: string;
+      proposalTitle: string;
+      budget: number;
       creatorId: number;
       jobId: number;
-      escrow?: any;
+      escrow?: EscrowListItem;
     }> = [];
 
     jobsForCampaign.forEach(job => {
@@ -568,7 +568,8 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         queryClient.invalidateQueries({ queryKey: ["campaign-escrows", campaignId] });
       }
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
       toast.error(error.response?.data?.message || "Failed to create escrow");
     },
   });
@@ -1234,11 +1235,10 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
               </div>
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <Badge
-                  className={`cursor-pointer border-0 ${
-                    campaign.active
-                      ? "bg-emerald-600 text-white hover:bg-emerald-600"
-                      : "bg-zinc-600 text-white hover:bg-zinc-600"
-                  }`}
+                  className={`cursor-pointer border-0 ${campaign.active
+                    ? "bg-emerald-600 text-white hover:bg-emerald-600"
+                    : "bg-zinc-600 text-white hover:bg-zinc-600"
+                    }`}
                   onClick={() => toggleActiveMutation.mutate(!campaign.active)}
                 >
                   {toggleActiveMutation.isPending ? (
@@ -1617,40 +1617,40 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                                   aria-hidden
                                 />
                                 <div className="min-w-0 flex-1 space-y-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <p className="font-semibold line-clamp-1">{title}</p>
-                                <Badge
-                                  variant="secondary"
-                                  className="shrink-0 bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30"
-                                >
-                                  {pending ? "Pending" : "Open"}
-                                </Badge>
-                              </div>
-                              <p className="text-xs text-muted-foreground line-clamp-3">
-                                {desc || "No description."}
-                              </p>
-                              <div className="flex flex-wrap items-center gap-2">
-                                {skills.map((s) => (
-                                  <Badge key={s} variant="outline" className="text-xs">
-                                    {s}
-                                  </Badge>
-                                ))}
-                                <RiArrowRightSLine
-                                  className="h-4 w-4 text-muted-foreground"
-                                  aria-hidden
-                                />
-                              </div>
-                              {jid != null && (
-                                <div className="flex justify-end pt-1">
-                                  <Button
-                                    size="sm"
-                                    className="bg-orange-500 hover:bg-orange-600 text-white"
-                                    asChild
-                                  >
-                                    <Link href={`/jobs/${jid}`}>View</Link>
-                                  </Button>
-                                </div>
-                              )}
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="font-semibold line-clamp-1">{title}</p>
+                                    <Badge
+                                      variant="secondary"
+                                      className="shrink-0 bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                                    >
+                                      {pending ? "Pending" : "Open"}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground line-clamp-3">
+                                    {desc || "No description."}
+                                  </p>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    {skills.map((s) => (
+                                      <Badge key={s} variant="outline" className="text-xs">
+                                        {s}
+                                      </Badge>
+                                    ))}
+                                    <RiArrowRightSLine
+                                      className="h-4 w-4 text-muted-foreground"
+                                      aria-hidden
+                                    />
+                                  </div>
+                                  {jid != null && (
+                                    <div className="flex justify-end pt-1">
+                                      <Button
+                                        size="sm"
+                                        className="bg-orange-500 hover:bg-orange-600 text-white"
+                                        asChild
+                                      >
+                                        <Link href={`/jobs/${jid}`}>View</Link>
+                                      </Button>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </CardContent>
@@ -1675,7 +1675,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                     {hiredCreators.map((hired) => {
                       const hasEscrow = hired.escrow != null;
                       const escrowStatus = hired.escrow?.status?.toLowerCase() || "none";
-                      
+
                       return (
                         <Card key={hired.id} className="border-border bg-card/80 dark:bg-zinc-900/60 transition-all hover:shadow-md">
                           <CardContent className="p-4 space-y-4">
@@ -1706,21 +1706,23 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
 
                             <div className="flex items-center gap-2 pt-1">
                               {hasEscrow ? (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
+                                <Button
+                                  size="sm"
+                                  variant="outline"
                                   className="flex-1 text-xs border-orange-500/40 text-orange-600 hover:bg-orange-500/10"
                                   onClick={() => {
-                                    setSelectedEscrowId(hired.escrow.id);
-                                    setEscrowDetailsOpen(true);
+                                    if (hired.escrow) {
+                                      setSelectedEscrowId(hired.escrow.id);
+                                      setEscrowDetailsOpen(true);
+                                    }
                                   }}
                                 >
                                   <RiHistoryLine className="h-3.5 w-3.5 mr-1.5" />
                                   Escrow Details
                                 </Button>
                               ) : (
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
                                   disabled={createEscrowMutation.isPending}
                                   onClick={() => {
@@ -1737,9 +1739,9 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                                   Fund Escrow
                                 </Button>
                               )}
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
+                              <Button
+                                size="sm"
+                                variant="ghost"
                                 className="h-8 w-8 rounded-full p-0"
                                 asChild
                               >
@@ -1852,12 +1854,12 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                                 <div className="mt-1.5 flex items-center gap-2">
                                   <div className="h-5 w-5 rounded-full bg-orange-500/10 flex items-center justify-center overflow-hidden border border-orange-500/20">
                                     {row.assigneeAvatar ? (
-                                      <Image 
-                                        src={row.assigneeAvatar} 
-                                        alt={row.assigneeName || "Assignee"} 
+                                      <Image
+                                        src={row.assigneeAvatar}
+                                        alt={row.assigneeName || "Assignee"}
                                         width={20}
                                         height={20}
-                                        className="h-full w-full object-cover" 
+                                        className="h-full w-full object-cover"
                                         unoptimized
                                       />
                                     ) : (
@@ -1931,11 +1933,10 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                               </h3>
                             </div>
                             <Badge
-                              className={`shrink-0 border-0 text-[10px] font-semibold uppercase tracking-wide ${
-                                linkedOutCampaign.active !== false
-                                  ? "bg-amber-500/90 text-black hover:bg-amber-500"
-                                  : "bg-zinc-600 text-white hover:bg-zinc-600"
-                              }`}
+                              className={`shrink-0 border-0 text-[10px] font-semibold uppercase tracking-wide ${linkedOutCampaign.active !== false
+                                ? "bg-amber-500/90 text-black hover:bg-amber-500"
+                                : "bg-zinc-600 text-white hover:bg-zinc-600"
+                                }`}
                             >
                               {linkedOutCampaign.active !== false ? "ACTIVE" : "INACTIVE"}
                             </Badge>
@@ -2016,11 +2017,10 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                               </h3>
                             </div>
                             <Badge
-                              className={`shrink-0 border-0 text-[10px] font-semibold uppercase tracking-wide ${
-                                c.active !== false
-                                  ? "bg-amber-500/90 text-black hover:bg-amber-500"
-                                  : "bg-zinc-600 text-white hover:bg-zinc-600"
-                              }`}
+                              className={`shrink-0 border-0 text-[10px] font-semibold uppercase tracking-wide ${c.active !== false
+                                ? "bg-amber-500/90 text-black hover:bg-amber-500"
+                                : "bg-zinc-600 text-white hover:bg-zinc-600"
+                                }`}
                             >
                               {c.active !== false ? "ACTIVE" : "INACTIVE"}
                             </Badge>
@@ -2096,11 +2096,10 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                                 {project.title ?? "Project name goes here…"}
                               </h3>
                               <Badge
-                                className={`shrink-0 border-0 text-[10px] font-semibold uppercase tracking-wide ${
-                                  isComplete
-                                    ? "bg-emerald-600 text-white hover:bg-emerald-600"
-                                    : "bg-amber-500/90 text-black hover:bg-amber-500"
-                                }`}
+                                className={`shrink-0 border-0 text-[10px] font-semibold uppercase tracking-wide ${isComplete
+                                  ? "bg-emerald-600 text-white hover:bg-emerald-600"
+                                  : "bg-amber-500/90 text-black hover:bg-amber-500"
+                                  }`}
                               >
                                 {isComplete ? "Complete" : "Active"}
                               </Badge>
@@ -2369,11 +2368,10 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                           return (
                             <div
                               key={team.id ?? team.name}
-                              className={`flex w-full items-stretch gap-0 overflow-hidden rounded-lg border transition-colors ${
-                                isActive
-                                  ? "border-orange-500/70 bg-orange-500/10"
-                                  : "border-border bg-card"
-                              }`}
+                              className={`flex w-full items-stretch gap-0 overflow-hidden rounded-lg border transition-colors ${isActive
+                                ? "border-orange-500/70 bg-orange-500/10"
+                                : "border-border bg-card"
+                                }`}
                             >
                               <button
                                 type="button"
@@ -2401,9 +2399,8 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                                     </div>
                                   </div>
                                   <span
-                                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-                                      isActive ? "bg-orange-500" : "bg-muted-foreground/60"
-                                    }`}
+                                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${isActive ? "bg-orange-500" : "bg-muted-foreground/60"
+                                      }`}
                                     aria-hidden
                                   />
                                 </div>
@@ -2569,9 +2566,8 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
             </DialogTitle>
             <DialogDescription className="text-left">
               {teamDetailTeam?.id != null
-                ? `Team #${teamDetailTeam.id} · ${teamDetailMembers.length} member${
-                    teamDetailMembers.length === 1 ? "" : "s"
-                  }`
+                ? `Team #${teamDetailTeam.id} · ${teamDetailMembers.length} member${teamDetailMembers.length === 1 ? "" : "s"
+                }`
                 : "Members on this team."}
             </DialogDescription>
           </DialogHeader>
@@ -2865,19 +2861,19 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
               >
                 Cancel
               </Button>
-            <Button
-              type="button"
-              className="bg-orange-500 text-white hover:bg-orange-600"
-              disabled={createTeamMutation.isPending || newTeamName.trim().length === 0}
-              onClick={() => createTeamMutation.mutate()}
-            >
-              {createTeamMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="mr-2 h-4 w-4" />
-              )}
-              Create team
-            </Button>
+              <Button
+                type="button"
+                className="bg-orange-500 text-white hover:bg-orange-600"
+                disabled={createTeamMutation.isPending || newTeamName.trim().length === 0}
+                onClick={() => createTeamMutation.mutate()}
+              >
+                {createTeamMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                Create team
+              </Button>
             </div>
           </div>
         </DialogContent>
@@ -3189,16 +3185,14 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                         className={`flex ${mine ? "justify-end" : "justify-start"}`}
                       >
                         <div
-                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                            mine ? "bg-orange-500 text-white" : "bg-muted text-foreground"
-                          }`}
+                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-orange-500 text-white" : "bg-muted text-foreground"
+                            }`}
                         >
                           <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                           {msg.createdAt ? (
                             <p
-                              className={`mt-1 text-[10px] ${
-                                mine ? "text-orange-50/80" : "text-muted-foreground"
-                              }`}
+                              className={`mt-1 text-[10px] ${mine ? "text-orange-50/80" : "text-muted-foreground"
+                                }`}
                             >
                               {new Date(msg.createdAt).toLocaleTimeString()}
                             </p>

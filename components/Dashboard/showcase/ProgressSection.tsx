@@ -210,8 +210,6 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
     setStatusUi(next.completed ? "Completed" : "In progress");
   }, [initial]);
 
-  const targetDisplay = draft.reachTarget?.trim() || "—";
-  const achievedDisplay = draft.reachAchieved?.trim() || "—";
   const percentDisplay = clampPercent(draft.reachPercent ?? 0);
   const completedDisplay = statusUi === "Completed";
 

@@ -92,50 +92,68 @@ export interface BrandPastProject {
  * Normalizes backend responses that might come in different shapes.
  * Handles both { success, data, message } and { message, profile/product/etc }
  */
-function normalizeApiResponse<T>(res: any, key?: string): ApiResponse<T> {
+function normalizeApiResponse<T>(res: Record<string, unknown>, key?: string): ApiResponse<T> {
   // If it already fits the ApiResponse pattern perfectly
   if (res && typeof res.success === 'boolean' && res.data !== undefined) {
-    return res as ApiResponse<T>;
+    return res as unknown as ApiResponse<T>;
   }
 
   // Fallback for legacy format: { message, profile: {...} } or { message, product: {...} }
-  const data = key ? res[key] : (res.profile || res.product || res.projects || res.data || res);
+  let data: T;
+  if (key && req_has(res, key)) {
+    data = res[key] as T;
+  } else if (req_has(res, 'profile')) {
+    data = res.profile as T;
+  } else if (req_has(res, 'product')) {
+    data = res.product as T;
+  } else if (req_has(res, 'projects')) {
+    data = res.projects as T;
+  } else if (req_has(res, 'data')) {
+    data = res.data as T;
+  } else {
+    data = res as unknown as T;
+  }
   
   return {
-    success: true, // If we got a response without an error field, assume success
+    success: true,
     data: data,
-    message: res.message
+    message: typeof res.message === 'string' ? res.message : undefined
   };
+}
+
+/** Helper to check property existence on unknown record */
+function req_has<K extends string>(obj: Record<string, unknown>, key: K): obj is Record<string, unknown> & Record<K, unknown> {
+  return key in obj && obj[key] !== undefined;
 }
 
 // ─── Profile Retrieval ───────────────────────────────────────────────────
 
 export async function getBrandProfile(businessId: number): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.get<any>(`/api/brands/${businessId}/profile`);
+  const response = await pazaApi.get<Record<string, unknown>>(`/api/brands/${businessId}/profile`);
   return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
 // ─── Identity + Narrative ────────────────────────────────────────────────
 
 export async function updateBrandIdentity(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.patch<any>(`/api/brands/${businessId}/profile/identity`, data);
+  const response = await pazaApi.patch<Record<string, unknown>>(`/api/brands/${businessId}/profile/identity`, data);
   return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
 export async function updateBrandNarrative(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.patch<any>(`/api/brands/${businessId}/profile/narrative`, data);
+  const response = await pazaApi.patch<Record<string, unknown>>(`/api/brands/${businessId}/profile/narrative`, data);
   return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
 // ─── Products ────────────────────────────────────────────────────────────
 
 export async function addBrandProduct(businessId: number, data: Omit<BrandProduct, 'id'>): Promise<ApiResponse<BrandProduct>> {
-  const response = await pazaApi.post<any>(`/api/brands/${businessId}/products`, data);
+  const response = await pazaApi.post<Record<string, unknown>>(`/api/brands/${businessId}/products`, data);
   return normalizeApiResponse<BrandProduct>(response.data, 'product');
 }
 
 export async function removeBrandProduct(businessId: number, productId: number): Promise<ApiResponse<void>> {
-  const response = await pazaApi.delete<any>(`/api/brands/${businessId}/products/${productId}`);
+  const response = await pazaApi.delete<Record<string, unknown>>(`/api/brands/${businessId}/products/${productId}`);
   return normalizeApiResponse<void>(response.data);
 }
 
@@ -151,24 +169,24 @@ export interface IpDeclarationPayload {
 }
 
 export async function submitIpDeclaration(businessId: number, data: IpDeclarationPayload): Promise<ApiResponse<void>> {
-  const response = await pazaApi.post<any>(`/api/brands/${businessId}/ip-declaration`, data);
+  const response = await pazaApi.post<Record<string, unknown>>(`/api/brands/${businessId}/ip-declaration`, data);
   return normalizeApiResponse<void>(response.data);
 }
 
 // ─── Past Projects ─────────────────────────────────────────────────────────
 
 export async function addBrandPastProject(businessId: number, data: Omit<BrandPastProject, 'id'>): Promise<ApiResponse<BrandPastProject>> {
-  const response = await pazaApi.post<any>(`/api/brands/${businessId}/past-projects`, data);
+  const response = await pazaApi.post<Record<string, unknown>>(`/api/brands/${businessId}/past-projects`, data);
   return normalizeApiResponse<BrandPastProject>(response.data, 'project');
 }
 
 export async function listBrandPastProjects(businessId: number): Promise<ApiResponse<BrandPastProject[]>> {
-  const response = await pazaApi.get<any>(`/api/brands/${businessId}/past-projects`);
+  const response = await pazaApi.get<Record<string, unknown>>(`/api/brands/${businessId}/past-projects`);
   return normalizeApiResponse<BrandPastProject[]>(response.data, 'projects');
 }
 
 export async function removeBrandPastProject(businessId: number, projectId: number): Promise<ApiResponse<void>> {
-  const response = await pazaApi.delete<any>(`/api/brands/${businessId}/past-projects/${projectId}`);
+  const response = await pazaApi.delete<Record<string, unknown>>(`/api/brands/${businessId}/past-projects/${projectId}`);
   return normalizeApiResponse<void>(response.data);
 }
 
@@ -177,7 +195,7 @@ export async function removeBrandPastProject(businessId: number, projectId: numb
 export async function uploadBrandLogo(businessId: number, file: File): Promise<ApiResponse<{ logo: string }>> {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await pazaApi.post<any>(
+  const response = await pazaApi.post<Record<string, unknown>>(
     `/api/brands/${businessId}/profile/logo`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
@@ -188,7 +206,7 @@ export async function uploadBrandLogo(businessId: number, file: File): Promise<A
 export async function uploadBrandCoverImage(businessId: number, file: File): Promise<ApiResponse<{ coverImage: string }>> {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await pazaApi.post<any>(
+  const response = await pazaApi.post<Record<string, unknown>>(
     `/api/brands/${businessId}/profile/cover-image`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
@@ -199,7 +217,7 @@ export async function uploadBrandCoverImage(businessId: number, file: File): Pro
 // ─── Voice & Tone ────────────────────────────────────────────────────────
 
 export async function updateBrandVoice(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
-  const response = await pazaApi.patch<any>(`/api/brands/${businessId}/profile/voice`, data);
+  const response = await pazaApi.patch<Record<string, unknown>>(`/api/brands/${businessId}/profile/voice`, data);
   return normalizeApiResponse<BrandProfile>(response.data, 'profile');
 }
 
@@ -212,7 +230,7 @@ export async function appendPastProjectMedia(
 ): Promise<ApiResponse<{ mediaLinks: string[] }>> {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
-  const response = await pazaApi.post<any>(
+  const response = await pazaApi.post<Record<string, unknown>>(
     `/api/brands/${businessId}/past-projects/${projectId}/media`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }

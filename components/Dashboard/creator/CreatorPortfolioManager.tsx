@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPlayCircleLine, RiCloseLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPlayCircleLine } from "@remixicon/react";
 import { CreatorPastProject, addCreatorPastProject, removeCreatorPastProject } from "@/lib/data/creator";
 import { 
     PROJECT_ROLES_INDUSTRY, 
@@ -31,7 +31,12 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
         period: "",
         description: "",
         mediaLinks: [],
-        spendBand: ""
+        producedReusableAsset: false,
+        revenueBand: "<$500",
+        projectRoleIndustry: "",
+        projectRoleBrand: "",
+        outcomeTypes: [],
+        measurementSources: []
     });
 
     const handleAdd = async () => {
@@ -43,7 +48,7 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                 toast.success("Project added to portfolio");
                 setProjects([...projects, res.data]);
                 setOpen(false);
-                setNewProject({ title: "", period: "", description: "", mediaLinks: [], spendBand: "" });
+                setNewProject({ title: "", period: "", description: "", mediaLinks: [], producedReusableAsset: false, revenueBand: "<$500", projectRoleIndustry: "", projectRoleBrand: "", outcomeTypes: [], measurementSources: [] });
                 if (onUpdate) onUpdate();
             }
         } catch {
@@ -178,8 +183,8 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                                 <h4 className="text-sm font-bold">Commercial Evidence</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Spend Band</Label>
-                                        <Select onValueChange={(val) => setNewProject(p => ({ ...p, spendBand: val }))}>
+                                        <Label>Revenue Band</Label>
+                                        <Select onValueChange={(val) => setNewProject(p => ({ ...p, revenueBand: val as never }))}>
                                             <SelectTrigger><SelectValue placeholder="Select range" /></SelectTrigger>
                                             <SelectContent>
                                                 {REVENUE_BANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}

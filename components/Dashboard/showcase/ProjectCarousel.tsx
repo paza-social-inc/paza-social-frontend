@@ -59,7 +59,6 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
     user?.id &&
       project.teamMembers?.some((m) => Number(m.userId) === Number(user.id))
   );
-  const isPublicProject = Boolean((project as Project).isPublic);
   const hasRealProject = projectProp != null;
   const assetsFundingMerged = useMemo(
     () => mergeAssetsFundingFromProject(project as Project & Record<string, unknown>),
@@ -247,8 +246,6 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
               projectId={String(project.id ?? "")}
               enabled
               isOwner={Boolean(isOwner)}
-              isTeamMember={isTeamMember}
-              isPublic={isPublicProject}
             />
           ) : (
             <div className="space-y-3 text-sm text-muted-foreground">

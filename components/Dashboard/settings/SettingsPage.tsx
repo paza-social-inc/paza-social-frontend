@@ -14,7 +14,7 @@ import { TeamSection } from "./sections/TeamSection";
 import BrandProfileView from "../brand/BrandProfileView";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 
-const sidebarItems = [
+const sidebarItems: { id: string; label: string; icon: React.ElementType }[] = [
     { id: "profile", label: "Profile", icon: User },
     { id: "team", label: "Team", icon: Users },
     { id: "security", label: "Security", icon: Shield },

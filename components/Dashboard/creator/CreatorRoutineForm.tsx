@@ -51,7 +51,7 @@ export default function CreatorRoutineForm({ initialData, onSuccess }: CreatorRo
                     <div className="space-y-2">
                         <Label>A Day in Your Life</Label>
                         <Textarea 
-                            {...register("dayInLife")} 
+                            {...register("dailyRoutineText")} 
                             placeholder="Walk us through your routine — from when you wake up to when you wind down. What products are part of your daily routine?"
                             className="min-h-[120px]"
                         />
@@ -60,7 +60,7 @@ export default function CreatorRoutineForm({ initialData, onSuccess }: CreatorRo
                     <div className="space-y-2">
                         <Label>Backpack / Daily Carry</Label>
                         <Textarea 
-                            {...register("backpackEssentials")} 
+                            {...register("dailyCarryText")} 
                             placeholder="What are the non-negotiables you never leave behind? (Laptops, Gadgets, Kits, etc.)"
                             className="min-h-[100px]"
                         />
@@ -69,7 +69,7 @@ export default function CreatorRoutineForm({ initialData, onSuccess }: CreatorRo
                     <div className="space-y-2">
                         <Label>Nostalgic Favorites</Label>
                         <Textarea 
-                            {...register("nostalgicFavorites")} 
+                            {...register("nostalgicProductsText")} 
                             placeholder="Any favorites from your past/childhood that still hold a special place or that you still use today?"
                             className="min-h-[100px]"
                         />

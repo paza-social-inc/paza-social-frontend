@@ -196,11 +196,9 @@ type Props = {
   /** Fetch when the Q&A tab is active */
   enabled: boolean;
   isOwner: boolean;
-  isTeamMember: boolean;
-  isPublic: boolean;
 };
 
-export function ProjectQaSection({ projectId, enabled, isOwner, isTeamMember, isPublic }: Props) {
+export function ProjectQaSection({ projectId, enabled, isOwner }: Props) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [askOpen, setAskOpen] = useState(false);

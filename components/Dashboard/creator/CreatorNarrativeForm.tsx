@@ -3,12 +3,11 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RiAddLine, RiCloseLine, RiLoader2Line, RiSparklingLine, RiPaletteLine } from "@remixicon/react";
+import { RiCloseLine, RiLoader2Line, RiSparklingLine, RiPaletteLine } from "@remixicon/react";
 import { CreatorProfile, updateNarrativeIdentity } from "@/lib/data/creator";
 import { NARRATIVE_IDENTITY_TAGS, CREATOR_TONE_CATEGORIES } from "@/lib/constants/creatorTaxonomy";
 import toast from "react-hot-toast";
@@ -19,7 +18,6 @@ export default function CreatorNarrativeForm({ initialData, onSuccess }: { initi
     });
 
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [tagInput, setTagInput] = React.useState("");
     const vibes = watch("originStoryTags") || [];
 
     const onSubmit = async (data: Partial<CreatorProfile>) => {
@@ -39,12 +37,6 @@ export default function CreatorNarrativeForm({ initialData, onSuccess }: { initi
         }
     };
 
-    const addTag = () => {
-        if (tagInput.trim() && !vibes.includes(tagInput.trim())) {
-            setValue("originStoryTags", [...vibes, tagInput.trim()]);
-            setTagInput("");
-        }
-    };
 
     return (
         <Card>
@@ -118,8 +110,8 @@ export default function CreatorNarrativeForm({ initialData, onSuccess }: { initi
                                                     variant={isActive ? "default" : "secondary"}
                                                     className="cursor-pointer text-[10px] px-2 py-0.5"
                                                     onClick={() => {
-                                                        if (isActive) setValue(field, currentTags.filter(t => t !== tag) as any);
-                                                        else setValue(field, [...currentTags, tag] as any);
+                                                        if (isActive) setValue(field, currentTags.filter(t => t !== tag) as never);
+                                                        else setValue(field, [...currentTags, tag] as never);
                                                     }}
                                                 >
                                                     {tag}

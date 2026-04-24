@@ -7,16 +7,19 @@ import { siteConfig, absoluteUrl } from "@/lib/seo";
 const fontSans = Geist({
     variable: "--font-sans",
     subsets: ["latin"],
+    preload: false,
 });
 
 const fontMono = Geist_Mono({
     variable: "--font-mono",
     subsets: ["latin"],
+    preload: false,
 });
 
 const Jarkata = Plus_Jakarta_Sans({
     variable: "--font-jarkata",
     subsets: ["latin"],
+    preload: false,
 });
 
 export const metadata = {

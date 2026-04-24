@@ -3,15 +3,13 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RiAddLine, RiCloseLine, RiLoader2Line, RiCompassLine, RiShieldUserLine, RiNodeTree } from "@remixicon/react";
+import { RiLoader2Line, RiCompassLine } from "@remixicon/react";
 import { CreatorProfile, updateCreativeCapabilities } from "@/lib/data/creator";
 import { 
-    SKILL_LEVELS, 
     CREATOR_TYPES, 
     DOMAIN_SHARDS, 
     ASSET_CLASSES, 
@@ -25,11 +23,6 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
     });
 
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [tagInputs, setTagInputs] = React.useState({ shards: "", props: "" });
-
-    const shards = watch("domainShards") || [];
-    const valueProps = watch("valueProp") || [];
-
     const onSubmit = async (data: Partial<CreatorProfile>) => {
         setIsSubmitting(true);
         try {
@@ -45,14 +38,6 @@ export default function CreatorCapabilitiesForm({ initialData, onSuccess }: { in
         }
     };
 
-    const addTag = (field: keyof CreatorProfile, inputKey: keyof typeof tagInputs) => {
-        const val = tagInputs[inputKey].trim();
-        const current = (watch(field) as string[]) || [];
-        if (val && !current.includes(val)) {
-            setValue(field as keyof CreatorProfile, [...current, val] as never);
-            setTagInputs(p => ({ ...p, [inputKey]: "" }));
-        }
-    };
 
     return (
         <Card>

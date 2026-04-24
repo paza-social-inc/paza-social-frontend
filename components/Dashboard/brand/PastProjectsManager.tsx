@@ -32,13 +32,13 @@ const EMPTY_PROJECT: Omit<BrandPastProject, 'id'> = {
     title: "",
     period: "",
     description: "",
-    participationRole: "",
+    participationRole: undefined,
     collaborators: "",
     paidSpend: "prefer_not",
     spendTypes: [],
-    spendBand: "",
+    spendBand: undefined,
     outcomeTypes: [],
-    measurementSource: "",
+    measurementSource: undefined,
     mediaLinks: [],
 };
 
@@ -174,7 +174,7 @@ export default function PastProjectsManager({ businessId, initialProjects, onUpd
                                     <Label>Your Role</Label>
                                     <Select
                                         value={newProject.participationRole}
-                                        onValueChange={(val) => setNewProject(p => ({ ...p, participationRole: val }))}
+                                        onValueChange={(val) => setNewProject(p => ({ ...p, participationRole: val as never }))}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select role" />
@@ -234,7 +234,7 @@ export default function PastProjectsManager({ businessId, initialProjects, onUpd
                                             <Label>Spend Band</Label>
                                             <Select
                                                 value={newProject.spendBand}
-                                                onValueChange={(val) => setNewProject(p => ({ ...p, spendBand: val }))}
+                                                onValueChange={(val) => setNewProject(p => ({ ...p, spendBand: val as never }))}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select range" />
@@ -289,7 +289,7 @@ export default function PastProjectsManager({ businessId, initialProjects, onUpd
                                     <Label>Measurement Source</Label>
                                     <Select
                                         value={newProject.measurementSource}
-                                        onValueChange={(val) => setNewProject(p => ({ ...p, measurementSource: val }))}
+                                        onValueChange={(val) => setNewProject(p => ({ ...p, measurementSource: val as never }))}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="How did you measure?" />

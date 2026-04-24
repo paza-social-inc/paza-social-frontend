@@ -60,7 +60,7 @@ export default function CreatorAffinityForm({ initialData, onSuccess }: CreatorA
                         <div className="space-y-2">
                             <Label>Product You Always Recommend</Label>
                             <Input 
-                                {...register("alwaysRecommendProduct")} 
+                                {...register("alwaysRecommend")} 
                                 placeholder="What do you recommend unprompted?" 
                             />
                         </div>
@@ -72,7 +72,7 @@ export default function CreatorAffinityForm({ initialData, onSuccess }: CreatorA
                         <div className="space-y-2">
                             <Label>Meaningful Collaborators</Label>
                             <Textarea 
-                                {...register("collaboratorsMeaningfulWork")} 
+                                {...register("collabMindedPeople")} 
                                 placeholder="Who have you worked with who brings out your best work? (e.g. Opposite strengths, like-minded creators)"
                                 className="min-h-[100px]"
                             />
@@ -81,7 +81,7 @@ export default function CreatorAffinityForm({ initialData, onSuccess }: CreatorA
                         <div className="space-y-2">
                             <Label>Future Collaboration Wishlist</Label>
                             <Input 
-                                {...register("tomorrowCollaboration")} 
+                                {...register("dreamCollaborator")} 
                                 placeholder="Who would you collaborate with tomorrow if given the chance?" 
                             />
                         </div>

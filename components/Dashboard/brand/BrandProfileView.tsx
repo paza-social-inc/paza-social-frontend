@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAuthMe } from "@/lib/data/auth";
-import { getBrandProfile, BrandProfile } from "@/lib/data/brands";
+import { BrandProfile, BrandPastProject } from "@/lib/data/brands";
 import IdentityForm from "./IdentityForm";
 import NarrativeForm from "./NarrativeForm";
 import ProductManager from "./ProductManager";
@@ -44,8 +44,6 @@ export default function BrandProfileView() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const isActuallyBusiness = user?.accountType === "Business" || user?.accountType === "Brand";
-
     const loadProfile = React.useCallback(async () => {
         if (!businessId) {
             setLoading(false);
@@ -54,7 +52,7 @@ export default function BrandProfileView() {
         setLoading(true);
         try {
             const { getBrandProfile, listBrandPastProjects } = await import("@/lib/data/brands");
-            
+
             // Fetch both profile and projects in parallel for better performance
             const [profileRes, projectsRes] = await Promise.all([
                 getBrandProfile(businessId),
@@ -70,9 +68,10 @@ export default function BrandProfileView() {
             if (projectsRes.success) {
                 setProjects(projectsRes.data);
             }
-        } catch (e: any) {
+        } catch (err: unknown) {
+            const e = err as { response?: { status?: number }; data?: { message?: string } };
             // If the business doesn't exist in the DB, it's effectively a "new" brand onboarding case
-            if (e.response?.status === 404 || e.response?.data?.message?.includes("not found")) {
+            if (e.response?.status === 404 || (typeof e.data?.message === 'string' && e.data.message.includes("not found"))) {
                 setProfile(null);
             } else {
                 setError("Failed to fetch brand profile data");
@@ -108,25 +107,25 @@ export default function BrandProfileView() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="p-6 text-center sm:p-10">
                         <h3 className="text-2xl font-bold tracking-tight sm:text-3xl">Ready to build your Brand?</h3>
                         <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-                            Join our ecosystem of creators. Once you define your brand identity, you&apos;ll be able to 
+                            Join our ecosystem of creators. Once you define your brand identity, you&apos;ll be able to
                             set your voice, tone, and showcase products to the world.
                         </p>
-                        
+
                         <div className="mt-10 text-left">
                             <div className="mb-6 flex items-center gap-2 border-b border-border pb-2">
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">1</span>
                                 <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initial Identity</h4>
                             </div>
-                            <IdentityForm 
-                                businessId={businessId || 0} 
-                                initialData={{}} 
+                            <IdentityForm
+                                businessId={businessId || 0}
+                                initialData={{}}
                                 onSuccess={() => {
                                     window.location.reload();
-                                }} 
+                                }}
                             />
                         </div>
                     </div>

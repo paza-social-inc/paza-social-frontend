@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/store/auth/useAuth";
-import { getCreatorProfile, CreatorProfile } from "@/lib/data/creator";
+import { CreatorPastProject, CreatorProfile } from "@/lib/data/creator";
 import CreatorNarrativeForm from "./CreatorNarrativeForm";
 import WorkingStyleForm from "./WorkingStyleForm";
 import CreatorCapabilitiesForm from "./CreatorCapabilitiesForm";
@@ -31,7 +31,7 @@ export default function CreatorProfileView() {
         setLoading(true);
         try {
             const { getCreatorProfile, listCreatorPastProjects } = await import("@/lib/data/creator");
-            
+
             // Parallel fetch for speed
             const [profileRes, projectsRes] = await Promise.all([
                 getCreatorProfile(),
@@ -52,9 +52,10 @@ export default function CreatorProfileView() {
             if (projectsRes.success) {
                 setProjects(projectsRes.data);
             }
-        } catch (e: any) {
+        } catch (err: unknown) {
+            const e = err as { response?: { status?: number }; data?: { message?: string } };
             // Check for 404 in the catch block as well for robust error handling
-            if (e.response?.status === 404 || e.response?.data?.message?.toLowerCase().includes("not found")) {
+            if (e.response?.status === 404 || (typeof e.data?.message === 'string' && e.data.message.toLowerCase().includes("not found"))) {
                 setProfile(null);
             } else {
                 setError("Error fetching creator profile data");
@@ -104,53 +105,53 @@ export default function CreatorProfileView() {
                         <TabsTrigger value="portfolio" className="tab-trigger">Portfolio</TabsTrigger>
                     </TabsList>
                 </div>
-                
+
                 <div className="mt-6">
                     <TabsContent value="narrative">
-                        <CreatorNarrativeForm 
-                            initialData={profile || {}} 
-                            onSuccess={(data) => setProfile(data)} 
+                        <CreatorNarrativeForm
+                            initialData={profile || {}}
+                            onSuccess={(data) => setProfile(data)}
                         />
                     </TabsContent>
-                    
+
                     <TabsContent value="capabilities">
-                        <CreatorCapabilitiesForm 
-                            initialData={profile || {}} 
-                            onSuccess={(data) => setProfile(data)} 
+                        <CreatorCapabilitiesForm
+                            initialData={profile || {}}
+                            onSuccess={(data) => setProfile(data)}
                         />
                     </TabsContent>
 
                     <TabsContent value="routine">
-                        <CreatorRoutineForm 
-                            initialData={profile || {}} 
-                            onSuccess={(data) => setProfile(data)} 
+                        <CreatorRoutineForm
+                            initialData={profile || {}}
+                            onSuccess={(data) => setProfile(data)}
                         />
                     </TabsContent>
 
                     <TabsContent value="affinities">
-                        <CreatorAffinityForm 
-                            initialData={profile || {}} 
-                            onSuccess={(data) => setProfile(data)} 
+                        <CreatorAffinityForm
+                            initialData={profile || {}}
+                            onSuccess={(data) => setProfile(data)}
                         />
                     </TabsContent>
-                    
+
                     <TabsContent value="working-style">
-                        <WorkingStyleForm 
-                            initialData={profile || {}} 
-                            onSuccess={(data) => setProfile(data)} 
+                        <WorkingStyleForm
+                            initialData={profile || {}}
+                            onSuccess={(data) => setProfile(data)}
                         />
                     </TabsContent>
-                    
+
                     <TabsContent value="audience">
-                        <AudienceDemographicsForm 
-                            initialData={profile || {}} 
-                            onSuccess={(data) => setProfile(data)} 
+                        <AudienceDemographicsForm
+                            initialData={profile || {}}
+                            onSuccess={(data) => setProfile(data)}
                         />
                     </TabsContent>
 
                     <TabsContent value="portfolio">
-                        <CreatorPortfolioManager 
-                            initialProjects={projects} 
+                        <CreatorPortfolioManager
+                            initialProjects={projects}
                             onUpdate={loadProfile}
                         />
                     </TabsContent>

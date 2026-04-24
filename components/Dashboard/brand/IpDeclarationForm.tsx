@@ -8,8 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { RiAddLine, RiCloseLine, RiLoader2Line, RiShieldCheckLine, RiFileUploadLine } from "@remixicon/react";
+import { RiLoader2Line, RiShieldCheckLine, RiFileUploadLine } from "@remixicon/react";
 import { IpDeclarationPayload, submitIpDeclaration } from "@/lib/data/brands";
 import { IP_TERRITORIES, IP_DURATIONS } from "@/lib/constants/brandTaxonomy";
 import toast from "react-hot-toast";
@@ -30,7 +29,6 @@ export default function IpDeclarationForm({ businessId, isAlreadyEnabled, onSucc
     });
 
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [channelInput, setChannelInput] = React.useState("");
     const channels = watch("channels") || [];
 
     const onSubmit = async (data: IpDeclarationPayload) => {
@@ -50,12 +48,6 @@ export default function IpDeclarationForm({ businessId, isAlreadyEnabled, onSucc
         }
     };
 
-    const addChannel = () => {
-        if (channelInput.trim() && !channels.includes(channelInput.trim())) {
-            setValue("channels", [...channels, channelInput.trim()]);
-            setChannelInput("");
-        }
-    };
 
     if (isAlreadyEnabled) {
         return (

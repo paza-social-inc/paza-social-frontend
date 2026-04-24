@@ -347,6 +347,12 @@ export default function CreateCampaignForm() {
               </FieldDescription>
             </CardHeader>
             <CardContent>
+              {attachmentUploadPending && (
+                <div className="flex items-center gap-2 mb-3 text-sm text-orange-600 animate-pulse font-medium">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Uploading attachments...
+                </div>
+              )}
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <Input
                   value={attachmentInputValue}
@@ -516,7 +522,7 @@ export default function CreateCampaignForm() {
           <div className="flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:gap-4">
             <Button
               type="submit"
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || attachmentUploadPending}
               className="min-h-12 flex-1 touch-manipulation text-base font-medium sm:flex-none sm:px-8"
             >
               {createMutation.isPending ? (
