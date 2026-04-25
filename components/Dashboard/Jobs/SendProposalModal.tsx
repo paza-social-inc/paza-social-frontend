@@ -147,14 +147,14 @@ export function SendProposalModal({
       <DialogContent
         showCloseButton={true}
         className={cn(
-          "max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[90dvh] overflow-y-auto",
+          "max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[90dvh] min-w-0 overflow-x-hidden overflow-y-auto",
           "rounded-xl border-border bg-card p-0 gap-0"
         )}
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">Send a proposal</DialogTitle>
 
-        <div className="p-4 sm:p-6">
+        <div className="min-w-0 max-w-full p-4 sm:p-6">
           <button
             type="button"
             onClick={handleCancel}
@@ -171,7 +171,7 @@ export function SendProposalModal({
             </p>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-6 min-w-0 max-w-full space-y-5">
             <Field>
               <FieldLabel>Proposal title *</FieldLabel>
               <Input
@@ -187,8 +187,8 @@ export function SendProposalModal({
               <Textarea
                 {...register("description")}
                 placeholder="Describe your approach, experience, and why you're a good fit."
-                rows={4}
-                className="border-border bg-background resize-none"
+                rows={5}
+                className="border-border bg-background min-h-[120px] resize-y"
               />
               <FieldError>{errors.description?.message}</FieldError>
             </Field>

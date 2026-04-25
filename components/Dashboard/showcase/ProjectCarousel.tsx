@@ -191,7 +191,7 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
         </div>
       </div>
 
-      <div className="py-4 sm:py-6 min-h-[200px]">
+      <div className="min-w-0 py-4 sm:py-6 min-h-[200px]">
         {activeTab === "about" && (
           <AboutSection
             projectId={String(project.id ?? mockProject.id)}

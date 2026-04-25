@@ -234,6 +234,7 @@ import {
   formatCampaignDeadlineDisplay,
 } from "./CampaignTargetDeadlineModal";
 import { cn } from "@/lib/utils";
+import { canManageCampaign } from "@/lib/campaignPermissions";
 import Image from "next/image";
 import EscrowDetailsModal from "@/components/Dashboard/payments/EscrowDetailsModal";
 
@@ -483,6 +484,16 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
    */
   const showProjectsSection =
     isCreatorAccount || (viewerOwnsCampaign && campaignOwnerIsCreatorUser);
+
+  /** Only the campaign owner may link a new showcase project (matches API `sourceCampaignId` rules). */
+  const canLinkShowcaseProjectToCampaign = useMemo(() => {
+    if (!campaign || !isCreatorAccount || !Number.isFinite(ownerId)) return false;
+    const emailLower = String(authMe?.email ?? user?.email ?? "").trim().toLowerCase();
+    return canManageCampaign(campaign, {
+      userId: String(ownerId),
+      emailLower,
+    });
+  }, [campaign, isCreatorAccount, ownerId, authMe?.email, user]);
 
   const creatorDisplayName = useMemo(() => {
     if (authMe?.firstName || authMe?.lastName) {
@@ -2065,17 +2076,20 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                 <div className="mt-6 space-y-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h2 className="text-2xl font-bold tracking-tight">Projects</h2>
-                    <Button
-                      className="rounded-lg bg-orange-500 px-5 font-semibold text-black hover:bg-orange-600"
-                      onClick={() => setShowProjectWizard(true)}
-                    >
-                      Add Projects
-                    </Button>
+                    {canLinkShowcaseProjectToCampaign ? (
+                      <Button
+                        className="rounded-lg bg-orange-500 px-5 font-semibold text-black hover:bg-orange-600"
+                        onClick={() => setShowProjectWizard(true)}
+                      >
+                        Add Projects
+                      </Button>
+                    ) : null}
                   </div>
                   {projectsForCampaign.length === 0 ? (
                     <p className="text-sm text-muted-foreground rounded-xl border border-border bg-muted/30 px-4 py-8 text-center">
-                      No showcase projects linked to this campaign yet. Use Add Projects to create one for
-                      this campaign.
+                      {canLinkShowcaseProjectToCampaign
+                        ? "No showcase projects linked to this campaign yet. Use Add Projects to create one for this campaign."
+                        : "No showcase projects linked to this campaign yet. Only the campaign owner can create and link a showcase project here."}
                     </p>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -2545,7 +2559,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         </div>
       </div>
 
-      {showProjectWizard && (
+      {showProjectWizard && canLinkShowcaseProjectToCampaign && (
         <CreateProjectForm
           initialCampaignId={campaign.id}
           mode="embedded"

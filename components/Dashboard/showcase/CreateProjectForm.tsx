@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,7 +16,10 @@ import {
 } from "@/components/ui/field";
 // Card components removed as they are unused
 import { projectsApi } from "@/lib/data/projects";
+import { campaignApi } from "@/lib/data/campaigns";
 import { uploadPublicFileUrl } from "@/lib/data/uploads";
+import { canManageCampaign } from "@/lib/campaignPermissions";
+import { useAuth } from "@/hooks/store/auth/useAuth";
 import { ArrowLeft, Loader2, Link as LinkIcon, X } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -60,6 +63,8 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const warnedCampaignPermissionRef = useRef(false);
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [mediaInputValue, setMediaInputValue] = useState("");
   const [mediaUrlError, setMediaUrlError] = useState<string | null>(null);
@@ -89,6 +94,51 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
   const campaignId = mode === "embedded"
     ? (initialCampaignId ?? undefined)?.toString()
     : campaignIdFromQuery ?? (initialCampaignId ?? undefined)?.toString();
+
+  const linkCampaignNumericId = useMemo(() => {
+    const raw = String(campaignId ?? "").trim();
+    if (!raw) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [campaignId]);
+
+  const { data: linkedCampaignForPermission, isLoading: linkedCampaignPermissionLoading } = useQuery({
+    queryKey: ["campaign", linkCampaignNumericId],
+    queryFn: () => campaignApi.getById(linkCampaignNumericId!),
+    enabled: linkCampaignNumericId != null,
+  });
+
+  const mayLinkSelectedCampaign = useMemo(() => {
+    if (!linkCampaignNumericId) return true;
+    if (!linkedCampaignForPermission || !user?.id) return false;
+    return canManageCampaign(linkedCampaignForPermission, {
+      userId: String(user.id).trim(),
+      emailLower: String(user.email ?? "").trim().toLowerCase(),
+    });
+  }, [linkCampaignNumericId, linkedCampaignForPermission, user]);
+
+  useEffect(() => {
+    if (
+      !linkCampaignNumericId ||
+      linkedCampaignPermissionLoading ||
+      !linkedCampaignForPermission ||
+      !user?.id
+    ) {
+      return;
+    }
+    if (!mayLinkSelectedCampaign && !warnedCampaignPermissionRef.current) {
+      warnedCampaignPermissionRef.current = true;
+      toast.error(
+        "You can only link a showcase project to campaigns you own. This project will be created without that campaign link."
+      );
+    }
+  }, [
+    linkCampaignNumericId,
+    linkedCampaignPermissionLoading,
+    linkedCampaignForPermission,
+    user?.id,
+    mayLinkSelectedCampaign,
+  ]);
 
   useEffect(() => {
     if (campaignId && initialCampaignId) {
@@ -222,6 +272,12 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
 
   const onSubmit = (data: FormData) => {
     const formCategory = data.category?.trim();
+    const sourceCampaignId =
+      linkCampaignNumericId != null
+        ? mayLinkSelectedCampaign && !linkedCampaignPermissionLoading
+          ? campaignId
+          : undefined
+        : campaignId;
     createMutation.mutate({
       title: data.title,
       description: data.description || undefined,
@@ -233,7 +289,7 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
       subCategory: selectedSubCategory || undefined,
       location: data.location?.trim() || undefined,
       tags: tags.length > 0 ? tags : undefined,
-      sourceCampaignId: campaignId,
+      sourceCampaignId,
     });
   };
 
@@ -288,7 +344,10 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
           <div className="flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:gap-4">
             <Button
               type="submit"
-              disabled={createMutation.isPending}
+              disabled={
+                createMutation.isPending ||
+                (linkCampaignNumericId != null && linkedCampaignPermissionLoading)
+              }
               className="min-h-12 flex-1 touch-manipulation text-base font-medium sm:flex-none sm:px-8"
             >
               {createMutation.isPending ? (
@@ -698,7 +757,11 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                   </Button>
                   <Button
                     type="button"
-                    disabled={createMutation.isPending || uploadingFiles}
+                    disabled={
+                      createMutation.isPending ||
+                      uploadingFiles ||
+                      (linkCampaignNumericId != null && linkedCampaignPermissionLoading)
+                    }
                     className="min-w-[160px] bg-orange-500 text-black hover:bg-orange-500/90"
                     onClick={() => handleSubmit(onSubmit)()}
                   >

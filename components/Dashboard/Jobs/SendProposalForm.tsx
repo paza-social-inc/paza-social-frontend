@@ -116,7 +116,7 @@ export function SendProposalForm({ jobId, jobTitle, jobOwnerUserId }: SendPropos
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
+    <div className="mx-auto min-w-0 max-w-2xl px-4 py-6 sm:py-8">
       <Link
         href={`/jobs/${jobId}`}
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
@@ -125,15 +125,15 @@ export function SendProposalForm({ jobId, jobTitle, jobOwnerUserId }: SendPropos
         Back to job
       </Link>
 
-      <Card className="border-border rounded-xl overflow-hidden">
+      <Card className="min-w-0 overflow-x-hidden rounded-xl border-border">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg sm:text-xl">Send a proposal</CardTitle>
           {jobTitle && (
             <p className="text-sm text-muted-foreground mt-0.5">Applying to: {jobTitle}</p>
           )}
         </CardHeader>
-        <CardContent className="space-y-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <CardContent className="min-w-0 space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="min-w-0 space-y-5">
             <Field>
               <FieldLabel>Proposal title *</FieldLabel>
               <Input
@@ -149,8 +149,8 @@ export function SendProposalForm({ jobId, jobTitle, jobOwnerUserId }: SendPropos
               <Textarea
                 {...register("description")}
                 placeholder="Describe your approach, experience, and why you're a good fit."
-                rows={4}
-                className="border-border resize-none"
+                rows={5}
+                className="border-border min-h-[120px] resize-y"
               />
               <FieldError>{errors.description?.message}</FieldError>
             </Field>

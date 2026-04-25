@@ -592,7 +592,12 @@ export function ProjectSidebar({
               <p className="text-[10px] text-muted-foreground">{profileCreator.location}</p>
             </div>
           </div>
-          <p className={cn("text-xs text-muted-foreground", !showAboutCreator && "line-clamp-3")}>
+          <p
+            className={cn(
+              "min-w-0 max-w-full text-xs text-muted-foreground wrap-anywhere",
+              !showAboutCreator && "line-clamp-3"
+            )}
+          >
             {profileCreator.about}
           </p>
           <button

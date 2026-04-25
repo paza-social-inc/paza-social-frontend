@@ -150,7 +150,7 @@ export function AboutSection({ projectId, initial, initialMediaUrls, canEdit }: 
 
   if (editing && canEdit) {
     return (
-      <div className="space-y-4">
+      <div className="min-w-0 max-w-full space-y-4">
         <div className="rounded-lg border border-border p-3">
           <p className="mb-2 text-xs text-muted-foreground">Project image</p>
           {primaryImageUrl ? (
@@ -220,9 +220,11 @@ export function AboutSection({ projectId, initial, initialMediaUrls, canEdit }: 
   }
 
   return (
-    <div className="space-y-4 text-sm sm:text-base text-muted-foreground">
+    <div className="min-w-0 max-w-full space-y-4 text-sm sm:text-base text-muted-foreground">
       {initial.trim() ? (
-        <p className="leading-relaxed whitespace-pre-wrap">{initial}</p>
+        <p className="min-w-0 max-w-full leading-relaxed whitespace-pre-wrap wrap-anywhere">
+          {initial}
+        </p>
       ) : (
         <p className="leading-relaxed italic text-muted-foreground/80">
           No description yet.{canEdit ? " Add a short overview of your project." : ""}
