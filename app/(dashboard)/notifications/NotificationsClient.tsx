@@ -1,13 +1,30 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { notificationsApi } from "@/lib/data/notifications";
+import { notificationsApi, type Notification } from "@/lib/data/notifications";
+import {
+    FRONTEND_TASK_NOTIFICATIONS_QUERY_KEY,
+    getFrontendTaskNotifications,
+    markAllFrontendTaskNotificationsRead,
+    markFrontendTaskNotificationRead,
+    subscribeFrontendTaskNotifications,
+    type FrontendTaskNotificationRow,
+} from "@/lib/frontendTaskNotifications";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Bell, CheckCheck, Clock } from "lucide-react";
+import { Loader2, Bell, CheckCheck, Clock, ListTodo } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+
+type MergedNotification =
+    | { source: "api"; row: Notification }
+    | { source: "task"; row: FrontendTaskNotificationRow };
+
+function isFrontendTaskNotificationId(id: number | string): id is string {
+    return typeof id === "string" && id.startsWith("ftn-");
+}
 
 export default function NotificationsClient() {
     const router = useRouter();
@@ -17,6 +34,31 @@ export default function NotificationsClient() {
         queryKey: ["notifications"],
         queryFn: () => notificationsApi.getList(),
     });
+
+    const { data: taskNotifications = [] } = useQuery({
+        queryKey: FRONTEND_TASK_NOTIFICATIONS_QUERY_KEY,
+        queryFn: () => getFrontendTaskNotifications(),
+    });
+
+    useEffect(() => {
+        return subscribeFrontendTaskNotifications(() => {
+            void queryClient.invalidateQueries({
+                queryKey: FRONTEND_TASK_NOTIFICATIONS_QUERY_KEY,
+            });
+        });
+    }, [queryClient]);
+
+    const merged = useMemo((): MergedNotification[] => {
+        const apiRows: MergedNotification[] = notifications.map((row) => ({
+            source: "api",
+            row,
+        }));
+        const taskRows: MergedNotification[] = taskNotifications.map((row) => ({
+            source: "task",
+            row,
+        }));
+        return [...taskRows, ...apiRows];
+    }, [notifications, taskNotifications]);
 
     const markReadMutation = useMutation({
         mutationFn: (id: number) => notificationsApi.markRead(id),
@@ -36,7 +78,20 @@ export default function NotificationsClient() {
         },
     });
 
-    const handleNotificationClick = (id: number) => {
+    const handleNotificationClick = (id: number | string) => {
+        if (isFrontendTaskNotificationId(id)) {
+            const selected = taskNotifications.find((n) => n.id === id);
+            if (selected?.unread) {
+                markFrontendTaskNotificationRead(id);
+                void queryClient.invalidateQueries({
+                    queryKey: FRONTEND_TASK_NOTIFICATIONS_QUERY_KEY,
+                });
+            }
+            if (selected?.href) {
+                router.push(selected.href);
+            }
+            return;
+        }
         const selected = notifications.find((n) => n.id === id);
         if (selected?.unread) {
             markReadMutation.mutate(id);
@@ -47,8 +102,19 @@ export default function NotificationsClient() {
     };
 
     const handleMarkAllRead = () => {
-        if (notifications.some(n => n.unread)) {
+        const hadApiUnread = notifications.some((n) => n.unread);
+        const hadTaskUnread = taskNotifications.some((n) => n.unread);
+        if (hadApiUnread) {
             markAllReadMutation.mutate();
+        }
+        if (hadTaskUnread) {
+            markAllFrontendTaskNotificationsRead();
+            void queryClient.invalidateQueries({
+                queryKey: FRONTEND_TASK_NOTIFICATIONS_QUERY_KEY,
+            });
+            if (!hadApiUnread) {
+                toast.success("All notifications marked as read");
+            }
         }
     };
 
@@ -75,7 +141,9 @@ export default function NotificationsClient() {
         );
     }
 
-    const unreadCount = notifications.filter(n => n.unread).length;
+    const unreadCount =
+        notifications.filter((n) => n.unread).length +
+        taskNotifications.filter((n) => n.unread).length;
 
     return (
         <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
@@ -107,7 +175,7 @@ export default function NotificationsClient() {
                 )}
             </div>
 
-            {notifications.length === 0 ? (
+            {merged.length === 0 ? (
                 <Card className="border-dashed border-2">
                     <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                         <div className="bg-muted rounded-full p-4 mb-4">
@@ -116,43 +184,104 @@ export default function NotificationsClient() {
                         <h3 className="text-lg font-medium">No notifications yet</h3>
                         <p className="text-sm text-muted-foreground max-w-xs mt-2">
                             When you get activity updates from campaigns, jobs, or payments, they&apos;ll appear here.
+                            Task updates you trigger in this browser also show under Tasks.
                         </p>
                     </CardContent>
                 </Card>
             ) : (
                 <div className="space-y-3">
-                    {notifications.map((n) => (
-                        <Card 
-                            key={n.id} 
-                            className={`border-border transition-colors ${n.unread ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted/30'}`}
-                            onClick={() => handleNotificationClick(n.id)}
-                        >
-                            <CardContent className="p-4 flex items-start gap-4 cursor-pointer">
-                                <div className={`mt-1 p-2 rounded-full ${n.unread ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                    <Bell className="h-4 w-4" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <h3 className={`text-sm font-semibold truncate ${n.unread ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                            {n.user}
-                                        </h3>
-                                        {n.unread && (
-                                            <Badge variant="default" className="text-[10px] px-1.5 py-0">New</Badge>
-                                        )}
+                    {merged.map((item) => {
+                        if (item.source === "task") {
+                            const n = item.row;
+                            return (
+                                <Card
+                                    key={n.id}
+                                    className={`border-border transition-colors ${n.unread ? "bg-primary/5 border-primary/20 shadow-sm" : "hover:bg-muted/30"}`}
+                                    onClick={() => handleNotificationClick(n.id)}
+                                >
+                                    <CardContent className="flex cursor-pointer items-start gap-4 p-4">
+                                        <div
+                                            className={`mt-1 rounded-full p-2 ${n.unread ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                                        >
+                                            <ListTodo className="h-4 w-4" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <h3
+                                                    className={`truncate text-sm font-semibold ${n.unread ? "text-foreground" : "text-muted-foreground"}`}
+                                                >
+                                                    {n.user}
+                                                </h3>
+                                                {n.unread && (
+                                                    <Badge
+                                                        variant="default"
+                                                        className="px-1.5 py-0 text-[10px]"
+                                                    >
+                                                        New
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <p
+                                                className={`mt-1 text-sm leading-relaxed ${n.unread ? "text-foreground/90" : "text-muted-foreground"}`}
+                                            >
+                                                {n.action}
+                                            </p>
+                                            <div className="mt-2 flex items-center gap-4">
+                                                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                                    <Clock className="h-3 w-3" />
+                                                    {n.timestamp}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        }
+                        const n = item.row;
+                        return (
+                            <Card
+                                key={n.id}
+                                className={`border-border transition-colors ${n.unread ? "bg-primary/5 border-primary/20 shadow-sm" : "hover:bg-muted/30"}`}
+                                onClick={() => handleNotificationClick(n.id)}
+                            >
+                                <CardContent className="flex cursor-pointer items-start gap-4 p-4">
+                                    <div
+                                        className={`mt-1 rounded-full p-2 ${n.unread ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                                    >
+                                        <Bell className="h-4 w-4" />
                                     </div>
-                                    <p className={`text-sm mt-1 leading-relaxed ${n.unread ? 'text-foreground/90' : 'text-muted-foreground'}`}>
-                                        {n.action}
-                                    </p>
-                                    <div className="flex items-center gap-4 mt-2">
-                                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                                            <Clock className="h-3 w-3" />
-                                            {n.timestamp}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <h3
+                                                className={`truncate text-sm font-semibold ${n.unread ? "text-foreground" : "text-muted-foreground"}`}
+                                            >
+                                                {n.user}
+                                            </h3>
+                                            {n.unread && (
+                                                <Badge
+                                                    variant="default"
+                                                    className="px-1.5 py-0 text-[10px]"
+                                                >
+                                                    New
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <p
+                                            className={`mt-1 text-sm leading-relaxed ${n.unread ? "text-foreground/90" : "text-muted-foreground"}`}
+                                        >
+                                            {n.action}
+                                        </p>
+                                        <div className="mt-2 flex items-center gap-4">
+                                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                                <Clock className="h-3 w-3" />
+                                                {n.timestamp}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
         </div>

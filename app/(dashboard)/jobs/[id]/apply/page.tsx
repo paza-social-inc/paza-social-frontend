@@ -8,6 +8,10 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/store/auth/useAuth";
+import {
+  getViewerProposalOnJob,
+  type JobProposalListItem,
+} from "@/lib/jobs/viewerProposalOnJob";
 
 function resolveJobOwnerId(job: {
   owner_id?: number | string;
@@ -89,11 +93,18 @@ export default function JobApplyPage() {
     );
   }
 
+  const proposals = (job as { proposals?: JobProposalListItem[] | null }).proposals;
+  const existingProposal =
+    Number.isFinite(viewerId) && viewerId > 0
+      ? getViewerProposalOnJob(proposals, viewerId)
+      : null;
+
   return (
     <SendProposalForm
       jobId={jobId}
       jobTitle={jobTitle}
       jobOwnerUserId={jobOwnerId}
+      existingProposal={existingProposal}
     />
   );
 }

@@ -26,6 +26,11 @@ export interface Task {
     description?: string;
     assignee?: string;
     assigneeAvatar?: string;
+    /** From API — for permission checks (assignee vs. record creator). */
+    assigneeUserId?: number | null;
+    assigneeEmailLower?: string | null;
+    createdByUserId?: number | null;
+    createdByEmailLower?: string | null;
     status?: 'Not Started' | 'In Progress' | 'Review' | 'Done';
     startDate?: string; // YYYY-MM-DD
     dueDate?: string;

@@ -27,6 +27,7 @@ export function OpeningDetailSheet({
   applicants = [],
   onBack,
   onApply,
+  applyRestrictionMessage,
   onAcceptApplicant,
   onRejectApplicant,
   applicantActionLoadingId,
@@ -39,6 +40,7 @@ export function OpeningDetailSheet({
   applicants?: OpeningApplicant[];
   onBack?: () => void;
   onApply?: (opening: Opening) => void;
+  applyRestrictionMessage?: string | null;
   onAcceptApplicant?: (applicant: OpeningApplicant) => void;
   onRejectApplicant?: (applicant: OpeningApplicant) => void;
   applicantActionLoadingId?: string | number | null;
@@ -131,6 +133,10 @@ export function OpeningDetailSheet({
                     ? "Application submitted"
                     : "Apply to this opening"}
             </button>
+          ) : applyRestrictionMessage ? (
+            <p className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-center text-xs text-muted-foreground leading-snug">
+              {applyRestrictionMessage}
+            </p>
           ) : null}
           {(opening.compensation || opening.description) && (
             <div className="flex flex-wrap gap-2 text-sm">

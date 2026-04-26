@@ -108,6 +108,8 @@ export interface JobProposal {
     id?: number;
     _id?: string;
     jobId?: number;
+    /** Present on job detail / proposal list API payloads */
+    proposer_id?: number;
     title: string;
     description?: string;
     proposedBudget?: string;

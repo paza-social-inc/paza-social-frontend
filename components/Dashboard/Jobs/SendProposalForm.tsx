@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { ProposalCollaboratorsField } from "./ProposalCollaboratorsField";
 import type { JobCollaboratorPick } from "./JobCollaboratorsField";
+import type { JobProposalListItem } from "@/lib/jobs/viewerProposalOnJob";
 
 const schema = z.object({
   title: z
@@ -59,9 +60,16 @@ interface SendProposalFormProps {
   jobId: number;
   jobTitle?: string;
   jobOwnerUserId?: number | null;
+  /** When set, the form is hidden — user already has a proposal on this job. */
+  existingProposal?: JobProposalListItem | null;
 }
 
-export function SendProposalForm({ jobId, jobTitle, jobOwnerUserId }: SendProposalFormProps) {
+export function SendProposalForm({
+  jobId,
+  jobTitle,
+  jobOwnerUserId,
+  existingProposal = null,
+}: SendProposalFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -114,6 +122,37 @@ export function SendProposalForm({ jobId, jobTitle, jobOwnerUserId }: SendPropos
       collaboratorIds: collabIds.length > 0 ? collabIds : undefined,
     });
   };
+
+  if (existingProposal) {
+    return (
+      <div className="mx-auto min-w-0 max-w-2xl px-4 py-6 sm:py-8">
+        <Link
+          href={`/jobs/${jobId}`}
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to job
+        </Link>
+        <Card className="min-w-0 overflow-x-hidden rounded-xl border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg sm:text-xl">Proposal already sent</CardTitle>
+            {jobTitle ? (
+              <p className="mt-0.5 text-sm text-muted-foreground">Job: {jobTitle}</p>
+            ) : null}
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              You can only submit one proposal per job. Yours is recorded
+              {existingProposal.status ? ` as ${existingProposal.status}` : ""}.
+            </p>
+            <Button asChild className="bg-primary text-primary-foreground">
+              <Link href={`/jobs/${jobId}`}>View job</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto min-w-0 max-w-2xl px-4 py-6 sm:py-8">

@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -23,9 +24,9 @@ import {
   Pencil,
   Trash2,
   X,
-  Info,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { appendFrontendTaskNotification } from "@/lib/frontendTaskNotifications";
 
 function formatDisplayDate(iso?: string) {
   if (!iso) return "—";
@@ -88,18 +89,66 @@ function attachmentKind(
   return "other";
 }
 
-const WORKFLOW: Task["status"][] = [
+const WORKFLOW: NonNullable<Task["status"]>[] = [
   "Not Started",
   "In Progress",
   "Review",
   "Done",
 ];
 
+type TaskCommentRow = {
+  id: string;
+  body: string;
+  authorName: string;
+  at: string;
+};
+
+function taskCommentsStorageKey(taskId: string): string {
+  return `paza-task-comments-v1:${taskId}`;
+}
+
+function loadTaskCommentsFromStorage(taskId: string): TaskCommentRow[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem(taskCommentsStorageKey(taskId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (c): c is TaskCommentRow =>
+        Boolean(c) &&
+        typeof (c as TaskCommentRow).id === "string" &&
+        typeof (c as TaskCommentRow).body === "string" &&
+        typeof (c as TaskCommentRow).authorName === "string" &&
+        typeof (c as TaskCommentRow).at === "string"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function saveTaskCommentsToStorage(taskId: string, rows: TaskCommentRow[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(taskCommentsStorageKey(taskId), JSON.stringify(rows));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
 export interface TaskDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task: Task | null;
+  /** Assignee (not task creator): no edit/delete/upload; comments + workflow tabs only. */
+  readOnlyTaskMetadata?: boolean;
   onMarkComplete?: (task: Task) => void;
+  /** When set (e.g. creator assignee), workflow stages are tappable to change status in the parent UI. */
+  onWorkflowStatusChange?: (task: Task, status: NonNullable<Task["status"]>) => void;
+  /** Brand (or business/individual) who created the task — show local-only comment composer. */
+  canComposeBrandTaskComments?: boolean;
+  /** Display name stored on each posted comment (e.g. brand contact). */
+  taskCommentAuthorName?: string;
   onRequestEdit?: (task: Task) => void;
   onDeleted?: (task: Task) => Promise<void> | void;
 }
@@ -108,13 +157,19 @@ export function TaskDetailsModal({
   open,
   onOpenChange,
   task,
+  readOnlyTaskMetadata = false,
   onMarkComplete,
+  onWorkflowStatusChange,
+  canComposeBrandTaskComments = false,
+  taskCommentAuthorName = "",
   onRequestEdit,
   onDeleted,
 }: TaskDetailsModalProps) {
   const [expanded, setExpanded] = React.useState(false);
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
+  const [taskComments, setTaskComments] = React.useState<TaskCommentRow[]>([]);
+  const [commentDraft, setCommentDraft] = React.useState("");
 
   React.useEffect(() => {
     if (!open) {
@@ -123,6 +178,16 @@ export function TaskDetailsModal({
       setDeleting(false);
     }
   }, [open]);
+
+  React.useEffect(() => {
+    if (!open || !task?.id) {
+      setTaskComments([]);
+      setCommentDraft("");
+      return;
+    }
+    setTaskComments(loadTaskCommentsFromStorage(task.id));
+    setCommentDraft("");
+  }, [open, task?.id]);
 
   const milestone =
     task?.milestonePercent ?? milestoneFromStatus(task?.status);
@@ -152,6 +217,39 @@ export function TaskDetailsModal({
   const attKind = attachmentName ? attachmentKind(attachmentName) : null;
 
   const canComplete = task && task.status !== "Done";
+  const workflowInteractive = Boolean(task && onWorkflowStatusChange);
+
+  const postBrandComment = () => {
+    if (!task || !canComposeBrandTaskComments) return;
+    const body = commentDraft.trim();
+    if (!body) {
+      toast.error("Write a comment first");
+      return;
+    }
+    if (body.length > 2000) {
+      toast.error("Comment is too long (max 2000 characters)");
+      return;
+    }
+    const id =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : String(Date.now());
+    const row: TaskCommentRow = {
+      id,
+      body,
+      authorName: String(taskCommentAuthorName || "You").trim() || "You",
+      at: new Date().toISOString(),
+    };
+    const next = [...taskComments, row];
+    setTaskComments(next);
+    saveTaskCommentsToStorage(task.id, next);
+    setCommentDraft("");
+    toast.success("Comment added");
+    appendFrontendTaskNotification({
+      action: `Local comment saved on “${task.title.trim()}”. Open Tasks to continue.`,
+      href: "/tasks",
+    });
+  };
 
   const handleMarkComplete = () => {
     if (!task || !canComplete) return;
@@ -414,13 +512,15 @@ export function TaskDetailsModal({
                     <h3 className="text-sm font-semibold text-white">
                       Attachments
                     </h3>
-                    <button
-                      type="button"
-                      className="text-sm font-medium text-orange-400 hover:underline"
-                      onClick={() => toast("Upload attachment — coming soon")}
-                    >
-                      Upload
-                    </button>
+                    {!readOnlyTaskMetadata ? (
+                      <button
+                        type="button"
+                        className="text-sm font-medium text-orange-400 hover:underline"
+                        onClick={() => toast("Upload attachment — coming soon")}
+                      >
+                        Upload
+                      </button>
+                    ) : null}
                   </div>
                   {attachmentName ? (
                     <div className="flex flex-wrap gap-3">
@@ -456,7 +556,19 @@ export function TaskDetailsModal({
                 </div>
 
                 <div className="px-5 py-4">
-                  <Tabs defaultValue="comments" className="w-full">
+                  {readOnlyTaskMetadata ? (
+                    <p className="mb-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs leading-relaxed text-zinc-400">
+                      You can&apos;t change title, dates, or other task details here.
+                      {workflowInteractive
+                        ? " Tap a workflow stage below (or drag the card on the board) to update status. Use Comments when available."
+                        : " Move the card on the board to update workflow, and use Comments when available."}
+                    </p>
+                  ) : null}
+                  <Tabs
+                    key={`${task.id}-ro-${readOnlyTaskMetadata}`}
+                    defaultValue={readOnlyTaskMetadata ? "milestones" : "comments"}
+                    className="w-full"
+                  >
                     <TabsList className="h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
                       <TabsTrigger
                         value="comments"
@@ -464,7 +576,7 @@ export function TaskDetailsModal({
                       >
                         Comments
                         <Badge className="ml-2 h-5 min-w-5 rounded-full bg-zinc-700 px-1.5 text-[10px] text-zinc-300">
-                          0
+                          {taskComments.length}
                         </Badge>
                       </TabsTrigger>
                       <TabsTrigger
@@ -474,26 +586,74 @@ export function TaskDetailsModal({
                         Activity
                       </TabsTrigger>
                       <TabsTrigger
-                        value="todo"
-                        className="rounded-none border-b-2 border-transparent px-3 py-2 text-zinc-400 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
-                      >
-                        <span className="inline-flex items-center gap-1">
-                          To-do / recurring
-                          <Info className="h-3.5 w-3.5 opacity-60" />
-                        </span>
-                      </TabsTrigger>
-                      <TabsTrigger
                         value="milestones"
                         className="rounded-none border-b-2 border-transparent px-3 py-2 text-zinc-400 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
                       >
                         Workflow
                       </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="comments" className="mt-4">
-                      <p className="text-sm text-zinc-500">
-                        No comments yet. Task comments will appear here when the
-                        feature is available.
-                      </p>
+                    <TabsContent value="comments" className="mt-4 space-y-4">
+                      {taskComments.length === 0 ? (
+                        <p className="text-sm text-zinc-500">
+                          {canComposeBrandTaskComments
+                            ? "No comments yet. Add one below — saved in this browser only until backend comments ship."
+                            : "No comments yet."}
+                        </p>
+                      ) : (
+                        <ul className="space-y-3">
+                          {taskComments.map((c) => (
+                            <li
+                              key={c.id}
+                              className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2.5"
+                            >
+                              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                <span className="text-xs font-semibold text-zinc-200">
+                                  {c.authorName}
+                                </span>
+                                <time
+                                  className="text-[10px] text-zinc-500 tabular-nums"
+                                  dateTime={c.at}
+                                >
+                                  {formatDateTime(c.at)}
+                                </time>
+                              </div>
+                              <p className="mt-1.5 whitespace-pre-wrap wrap-anywhere text-sm leading-relaxed text-zinc-300">
+                                {c.body}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {canComposeBrandTaskComments ? (
+                        <div className="space-y-2 border-t border-zinc-800 pt-4">
+                          <label htmlFor="task-brand-comment" className="text-xs font-medium text-zinc-400">
+                            Add a comment
+                          </label>
+                          <Textarea
+                            id="task-brand-comment"
+                            value={commentDraft}
+                            onChange={(e) => setCommentDraft(e.target.value)}
+                            placeholder="Message the assignee…"
+                            rows={4}
+                            className="min-h-[100px] border-zinc-700 bg-zinc-900/80 text-zinc-100 placeholder:text-zinc-600"
+                            maxLength={2000}
+                          />
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              className="bg-orange-500 font-semibold text-black hover:bg-orange-400"
+                              onClick={postBrandComment}
+                              disabled={!commentDraft.trim()}
+                            >
+                              Post comment
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-zinc-600">
+                          Only the teammate who created this task can add comments here.
+                        </p>
+                      )}
                     </TabsContent>
                     <TabsContent value="activity" className="mt-4 space-y-3">
                       <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm">
@@ -509,60 +669,75 @@ export function TaskDetailsModal({
                         </span>
                       </div>
                     </TabsContent>
-                    <TabsContent value="todo" className="mt-4 space-y-2 text-sm">
-                      {task.recurTask ? (
-                        <>
-                          <p className="text-zinc-300">
-                            <span className="text-zinc-500">Recurring: </span>
-                            Yes
-                          </p>
-                          {task.repeat ? (
-                            <p className="text-zinc-300">
-                              <span className="text-zinc-500">Repeat: </span>
-                              {task.repeat}
-                            </p>
-                          ) : (
-                            <p className="text-zinc-500">Repeat rule not set.</p>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-zinc-500">
-                          This is not a recurring task.
-                        </p>
-                      )}
-                    </TabsContent>
                     <TabsContent value="milestones" className="mt-4">
                       <p className="mb-3 text-xs text-zinc-500">
-                        Workflow stages for this task. Current stage is
-                        highlighted.
+                        {workflowInteractive
+                          ? "Tap a stage to set the task status. You can still drag the card on the board."
+                          : readOnlyTaskMetadata
+                            ? "Drag this task between columns on the board to change status. Stages below show the current step."
+                            : "Workflow stages for this task. Current stage is highlighted."}
                       </p>
                       <ol className="space-y-2">
-                        {WORKFLOW.map((st) => (
-                          <li
-                            key={st}
-                            className={cn(
-                              "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm",
-                              task.status === st
-                                ? "border-orange-500/60 bg-orange-500/10 text-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400"
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "size-2 shrink-0 rounded-full",
-                                task.status === st
-                                  ? "bg-orange-500"
-                                  : "bg-zinc-600"
-                              )}
-                            />
-                            {st}
-                            {task.status === st ? (
-                              <Badge className="ml-auto border-orange-500/40 bg-orange-500/20 text-[10px] text-orange-200">
-                                Current
-                              </Badge>
-                            ) : null}
-                          </li>
-                        ))}
+                        {WORKFLOW.map((st) => {
+                          const isCurrent = task.status === st;
+                          const rowClass = cn(
+                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                            isCurrent
+                              ? "border-orange-500/60 bg-orange-500/10 text-white"
+                              : "border-zinc-800 bg-zinc-900/40 text-zinc-400",
+                            workflowInteractive &&
+                              !isCurrent &&
+                              "cursor-pointer hover:border-orange-500/40 hover:bg-orange-500/5 hover:text-zinc-200",
+                            workflowInteractive && isCurrent && "cursor-default"
+                          );
+                          if (workflowInteractive && onWorkflowStatusChange) {
+                            return (
+                              <li key={st} className="list-none">
+                                <button
+                                  type="button"
+                                  className={rowClass}
+                                  onClick={() => {
+                                    if (task.status === st) return;
+                                    onWorkflowStatusChange(task, st);
+                                  }}
+                                  aria-current={isCurrent ? "step" : undefined}
+                                  aria-label={
+                                    isCurrent ? `${st}, current stage` : `Set status to ${st}`
+                                  }
+                                >
+                                  <span
+                                    className={cn(
+                                      "size-2 shrink-0 rounded-full",
+                                      isCurrent ? "bg-orange-500" : "bg-zinc-600"
+                                    )}
+                                  />
+                                  {st}
+                                  {isCurrent ? (
+                                    <Badge className="ml-auto border-orange-500/40 bg-orange-500/20 text-[10px] text-orange-200">
+                                      Current
+                                    </Badge>
+                                  ) : null}
+                                </button>
+                              </li>
+                            );
+                          }
+                          return (
+                            <li key={st} className={rowClass}>
+                              <span
+                                className={cn(
+                                  "size-2 shrink-0 rounded-full",
+                                  isCurrent ? "bg-orange-500" : "bg-zinc-600"
+                                )}
+                              />
+                              {st}
+                              {isCurrent ? (
+                                <Badge className="ml-auto border-orange-500/40 bg-orange-500/20 text-[10px] text-orange-200">
+                                  Current
+                                </Badge>
+                              ) : null}
+                            </li>
+                          );
+                        })}
                       </ol>
                     </TabsContent>
                   </Tabs>
@@ -578,14 +753,16 @@ export function TaskDetailsModal({
                 >
                   Back
                 </Button>
-                <Button
-                  type="button"
-                  disabled={!canComplete}
-                  className="h-11 bg-orange-500 font-semibold text-black hover:bg-orange-400 disabled:opacity-40"
-                  onClick={handleMarkComplete}
-                >
-                  Mark as Completed
-                </Button>
+                {!workflowInteractive ? (
+                  <Button
+                    type="button"
+                    disabled={!canComplete}
+                    className="h-11 bg-orange-500 font-semibold text-black hover:bg-orange-400 disabled:opacity-40"
+                    onClick={handleMarkComplete}
+                  >
+                    Mark as Completed
+                  </Button>
+                ) : null}
               </div>
             </>
 

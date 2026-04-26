@@ -89,6 +89,14 @@ export function ProjectSidebar({
     return false;
   }, [project, user?.id]);
 
+  const isCreatorAccount = useMemo(() => {
+    const t = String(user?.accountType ?? "").trim().toLowerCase();
+    return t === "creator";
+  }, [user?.accountType]);
+
+  /** Openings are creator-to-creator; brands/business/individual use proposals or invites. */
+  const canApplyToOpenings = isCreatorAccount;
+
   const {
     data: proposals = [],
     isLoading: proposalsLoading,
@@ -108,7 +116,11 @@ export function ProjectSidebar({
   const { data: myOpeningApplications = [] } = useQuery({
     queryKey: ["my-opening-applications", projectIdNumber],
     queryFn: () => openingsApi.getMyApplications(String(projectIdNumber)),
-    enabled: !isOwnProject && !Number.isNaN(projectIdNumber) && projectIdNumber > 0,
+    enabled:
+      !isOwnProject &&
+      canApplyToOpenings &&
+      !Number.isNaN(projectIdNumber) &&
+      projectIdNumber > 0,
   });
 
   const { data: myProposals = [] } = useQuery({
@@ -468,14 +480,21 @@ export function ProjectSidebar({
             onApply={
               isOwnProject
                 ? undefined
-                : (opening) => {
-                    const oid = String(opening.id ?? opening._id ?? "").trim();
-                    if (oid && myOpeningStatusMap[oid]) return;
-                    setOpeningForApplication(opening);
-                    setOpeningDetailOpen(false);
-                    setOpeningsListOpen(false);
-                    setApplyToOpeningOpen(true);
-                  }
+                : canApplyToOpenings
+                  ? (opening) => {
+                      const oid = String(opening.id ?? opening._id ?? "").trim();
+                      if (oid && myOpeningStatusMap[oid]) return;
+                      setOpeningForApplication(opening);
+                      setOpeningDetailOpen(false);
+                      setOpeningsListOpen(false);
+                      setApplyToOpeningOpen(true);
+                    }
+                  : undefined
+            }
+            applyRestrictionMessage={
+              !isOwnProject && !canApplyToOpenings && user
+                ? "Only creator accounts can apply to openings. Use Request collaboration or a proposal if you’re a brand."
+                : null
             }
             myApplicationStatus={
               selectedOpening

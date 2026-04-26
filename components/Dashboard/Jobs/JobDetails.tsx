@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { jobsApi } from "@/lib/data/jobs";
@@ -21,6 +21,7 @@ import { SendProposalModal } from "./SendProposalModal";
 import JobProposalsList from "./JobProposalsList";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import type { Job, JobValues } from "@/types";
+import { getViewerProposalOnJob } from "@/lib/jobs/viewerProposalOnJob";
 
 /** API may return extra top-level fields not on the base `Job` type. */
 type JobDetailRecord = Job & {
@@ -69,6 +70,16 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
         },
         enabled: !!jobId,
     });
+
+    const viewerIdForProposal = user?.id != null ? Number(user.id) : NaN;
+    const viewerProposalOnJob = useMemo(() => {
+        if (!job) return null;
+        if (!Number.isFinite(viewerIdForProposal) || viewerIdForProposal <= 0) {
+            return null;
+        }
+        const proposals = (job as JobDetailRecord).proposals;
+        return getViewerProposalOnJob(proposals, viewerIdForProposal);
+    }, [job, viewerIdForProposal]);
 
     // Loading state
     if (isLoading) {
@@ -419,20 +430,32 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                         <CardContent className="p-6 space-y-4">
                             {!isJobOwner ? (
                                 <>
-                                    <Button
-                                        className="w-full"
-                                        onClick={() => setProposalModalOpen(true)}
-                                    >
-                                        <RiCheckboxCircleLine className="mr-2 h-4 w-4" />
-                                        Send Proposal
-                                    </Button>
-                                    <SendProposalModal
-                                        open={proposalModalOpen}
-                                        onOpenChange={setProposalModalOpen}
-                                        jobId={parseInt(jobId, 10)}
-                                        jobTitle={title}
-                                        jobOwnerUserId={jobOwnerId}
-                                    />
+                                    {viewerProposalOnJob ? (
+                                        <p className="rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-sm text-muted-foreground">
+                                            You already submitted a proposal for this job
+                                            {viewerProposalOnJob.status
+                                                ? ` (${viewerProposalOnJob.status})`
+                                                : ""}
+                                            . Only one proposal per account is allowed.
+                                        </p>
+                                    ) : (
+                                        <Button
+                                            className="w-full"
+                                            onClick={() => setProposalModalOpen(true)}
+                                        >
+                                            <RiCheckboxCircleLine className="mr-2 h-4 w-4" />
+                                            Send Proposal
+                                        </Button>
+                                    )}
+                                    {!viewerProposalOnJob ? (
+                                        <SendProposalModal
+                                            open={proposalModalOpen}
+                                            onOpenChange={setProposalModalOpen}
+                                            jobId={parseInt(jobId, 10)}
+                                            jobTitle={title}
+                                            jobOwnerUserId={jobOwnerId}
+                                        />
+                                    ) : null}
                                 </>
                             ) : (
                                 <p className="text-sm text-muted-foreground rounded-lg border border-border bg-muted/30 px-3 py-2.5">
