@@ -27,6 +27,7 @@ import {
   campaignMotionFocus,
   campaignPressStudio,
   campaignUrbanBodega,
+  pazaLandingImg,
   service,
 } from "@/assets";
 import { cn } from "@/lib/utils";
@@ -71,8 +72,7 @@ const SIGNUP_HREF = "/account-type";
 
 // ─── 1) Hero — Figma `1419:897` (1440×1024, node `1419:847` file) ───
 
-const FIGMA_HERO_BG =
-  "https://www.figma.com/api/mcp/asset/aa1bca31-87ee-4ed4-8bd2-127845695238";
+const FIGMA_HERO_BG = pazaLandingImg;
 const FIGMA_HERO_CENTER_IMG =
   "https://www.figma.com/api/mcp/asset/476027f9-ccbd-4a92-896d-3f865628283f";
 
