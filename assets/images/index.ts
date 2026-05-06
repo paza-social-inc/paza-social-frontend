@@ -28,5 +28,6 @@ export { default as pazadark } from "./paza-dark.png";
 export { default as pazalight } from "./paza-light.png";
 export { default as profile } from "./profile.jpg";
 export { default as service } from "./service.jpg";
+export { default as pazaLandingImg } from "./paza-landing-img.png";
 export { default as twitter } from "./twitter.png";
 export { default as youtube } from "./youtube.png";

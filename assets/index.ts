@@ -25,6 +25,7 @@ export {
   land,
   linkedin,
   pazadark,
+  pazaLandingImg,
   pazalight,
   profile,
   service,
