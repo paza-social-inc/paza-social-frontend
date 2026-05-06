@@ -24,7 +24,6 @@ import {
   Youtube,
 } from "lucide-react";
 import {
-  campaignConvertibleTrio,
   campaignMotionFocus,
   campaignPressStudio,
   campaignUrbanBodega,
