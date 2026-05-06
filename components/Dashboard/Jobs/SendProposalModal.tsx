@@ -35,6 +35,11 @@ const schema = z.object({
   description: z
     .string()
     .max(2000, "Description must be 2000 characters or less")
+    .refine((val) => {
+      if (!val) return true;
+      const wordCount = val.trim().split(/\s+/).filter(Boolean).length;
+      return wordCount <= 500;
+    }, "Description must be 500 words or less")
     .optional()
     .or(z.literal("")),
   proposedBudget: z
