@@ -365,7 +365,8 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
     }
 
     if (isJobOwner) {
-      body.collaboratorIds = collaborators.map((c) => c.id);
+      body.collaboratorIds = collaborators.map((c) => c.id).filter((id): id is number => id != null && Number.isFinite(id));
+      body.collaboratorEmails = collaborators.filter((c) => c.id == null && c.email).map((c) => c.email as string);
     }
 
     updateMutation.mutate({ id: jobId, body });
