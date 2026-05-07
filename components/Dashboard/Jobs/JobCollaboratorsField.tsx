@@ -238,7 +238,13 @@ export function JobCollaboratorsField({
                   key={id}
                   type="button"
                   className="flex w-full items-center gap-2 rounded px-2 py-2 text-left text-sm hover:bg-muted"
-                  onClick={() => addPick({ id, name: labelFromBaseUser(u) })}
+                  onClick={() =>
+                    addPick({
+                      id,
+                      email: u.email?.trim().toLowerCase(),
+                      name: labelFromBaseUser(u),
+                    })
+                  }
                 >
                   <span className="truncate font-medium">
                     {labelFromBaseUser(u)}
