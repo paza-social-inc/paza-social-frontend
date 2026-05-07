@@ -143,8 +143,6 @@ function normalizeApiTask(task: TaskListItem): Task {
     },
     labels: undefined,
     campaignTitle: task.campaign?.title,
-    recurTask: task.recurTask ?? false,
-    repeat: task.repeatFrequency ?? undefined,
     createdAt: toIsoTimestamp(
       (task as TaskListItem & { createdAt?: unknown }).createdAt,
     ),
@@ -227,7 +225,6 @@ export default function TasksPage() {
         description: c.description || "",
         createdByUserId: c.creatorId ?? null,
         priority: "medium", // Default priority for campaign markers
-        recurTask: false,
         createdAt: c.createdAt || new Date().toISOString(),
         updatedAt: c.updatedAt || new Date().toISOString(),
       });
@@ -409,8 +406,6 @@ export default function TasksPage() {
       status: payload.status,
       startDate: payload.startDate, // YYYY-MM-DD
       dueDate: payload.dueDate, // YYYY-MM-DD
-      recurTask: payload.recurTask,
-      repeat: payload.recurTask ? payload.repeat : undefined,
       description: payload.description,
       budgetKsh: payload.budgetKsh,
       attachmentName: payload.attachmentFile?.name ?? undefined,
@@ -429,8 +424,6 @@ export default function TasksPage() {
       createdBy: { name: creatorNameForNewTask },
       labels: undefined,
       campaignTitle: selectedCampaign?.title,
-      recurTask: payload.recurTask,
-      repeat: payload.repeat,
       createdAt: now,
       updatedAt: now,
     };

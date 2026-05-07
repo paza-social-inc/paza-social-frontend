@@ -208,6 +208,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CopyButton } from "@/components/ui/shadcn-io/copy-button";
+import { Switch } from "@/components/ui/switch";
 import { RiArrowRightSLine, RiSearch2Line, RiHandCoinLine, RiHistoryLine } from "@remixicon/react";
 import {
   ArrowLeft,
@@ -216,6 +217,7 @@ import {
   Loader2,
   MessageCircle,
   MoreVertical,
+  Paperclip,
   Pencil,
   Plus,
   Search,
@@ -790,6 +792,26 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
     enabled: !Number.isNaN(campaignId),
   });
 
+  // Compute which tabs have content (for responsive tab display)
+  const campaignTabs = useMemo(() => {
+    if (!campaign) return [];
+    const tabs: { value: string; label: string; count: number }[] = [
+      { value: "overview", label: "Overview", count: 0 },
+      { value: "milestones", label: "Milestones", count: campaign.milestones?.length ?? 0 },
+      { value: "tasks", label: "Tasks", count: campaignTasks.length },
+      { value: "team", label: "Team", count: campaign.teams?.length ?? 0 },
+      { value: "budget", label: "Budget", count: normalizedGoals.length > 0 ? normalizedGoals.length : (campaign.goals?.length ?? 0) },
+      { value: "attachments", label: "Attachments", count: campaign.attachments?.length ?? 0 },
+      { value: "feedback", label: "Feedback", count: sortedFeedback.length },
+      { value: "settings", label: "Settings", count: 0 },
+    ];
+    return tabs;
+  }, [campaign, campaignTasks.length, normalizedGoals.length, sortedFeedback.length]);
+
+  const visibleTabs = useMemo(() => {
+    return campaignTabs.filter((t) => t.value === "overview" || t.value === "settings" || t.count > 0);
+  }, [campaignTabs]);
+
   const overviewTaskStats = useMemo(() => {
     const list = campaignTasks ?? [];
     const completed = list.filter((t) => {
@@ -1284,15 +1306,11 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
         <div className="lg:col-span-2 space-y-4">
           <Tabs defaultValue="overview">
             <TabsList className="mb-2 flex h-auto w-full gap-1 overflow-x-auto rounded-lg border border-border bg-muted/50 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <TabsTrigger value="overview" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="tasks" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
-                Tasks ({campaignTasks.length})
-              </TabsTrigger>
-              <TabsTrigger value="feedback" className={CAMPAIGN_TAB_TRIGGER_CLASS}>
-                Feedback ({sortedFeedback.length})
-              </TabsTrigger>
+              {visibleTabs.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value} className={CAMPAIGN_TAB_TRIGGER_CLASS}>
+                  {tab.label} {tab.count > 0 ? `(${tab.count})` : null}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="overview" className="mt-4 space-y-6">
@@ -2302,6 +2320,198 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                 )}
               </section>
             </TabsContent>
+
+            {/* Milestones Tab */}
+            {visibleTabs.some((t) => t.value === "milestones") && (
+              <TabsContent value="milestones" className="mt-4 space-y-4">
+                <Card className="overflow-hidden border-border bg-card dark:bg-zinc-900/50">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <h3 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                          Milestones
+                        </h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                          Track campaign milestones and progress.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div className="space-y-3">
+                  {campaign.milestones?.map((milestone, idx) => (
+                    <div key={milestone.id ?? idx} className="flex items-center justify-between rounded-lg border border-border p-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-2 w-2 rounded-full ${milestone.status === "Completed" ? "bg-emerald-500" : milestone.status === "In Progress" ? "bg-orange-500" : "bg-muted-foreground/50"}`} />
+                        <span className="text-sm font-medium text-foreground">{milestone.title || milestone.status}</span>
+                      </div>
+                      <Badge variant={milestone.status === "Completed" ? "default" : "secondary"}>
+                        {milestone.status || "Not Started"}
+                      </Badge>
+                    </div>
+                  ))}
+                  {(!campaign.milestones || campaign.milestones.length === 0) && (
+                    <p className="text-sm text-muted-foreground text-center py-4">No milestones yet.</p>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
+            {/* Team Tab */}
+            {visibleTabs.some((t) => t.value === "team") && (
+              <TabsContent value="team" className="mt-4 space-y-4">
+                <Card className="overflow-hidden border-border bg-card dark:bg-zinc-900/50">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <h3 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                          Team
+                        </h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                          Manage your campaign team members.
+                        </p>
+                      </div>
+                      <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600" onClick={() => setCreateTeamOpen(true)}>
+                        <Plus className="mr-1 h-4 w-4" />
+                        Add Member
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div className="space-y-3">
+                  {myTeams.map((team) => (
+                    <div key={team.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                          <span className="text-xs font-semibold text-orange-600">{team.name?.[0]?.toUpperCase() || "T"}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{team.name}</p>
+                          <p className="text-xs text-muted-foreground">{team.members?.length || 0} members</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => { setTeamDetailTeam(team); setTeamDetailOpen(true); }}>
+                        View
+                      </Button>
+                    </div>
+                  ))}
+                  {myTeams.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">No team members yet.</p>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
+            {/* Budget Tab */}
+            {visibleTabs.some((t) => t.value === "budget") && (
+              <TabsContent value="budget" className="mt-4 space-y-4">
+                <Card className="overflow-hidden border-border bg-card dark:bg-zinc-900/50">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <h3 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                          Budget
+                        </h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                          Track campaign budget and goals.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div className="space-y-3">
+                  {normalizedGoals.map((goal, idx) => (
+                    <div key={idx} className="flex items-center justify-between rounded-lg border border-border p-3">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{goal.goal}</p>
+                        {goal.targetNumber && (
+                          <p className="text-xs text-muted-foreground">Target: {goal.targetNumber}</p>
+                        )}
+                      </div>
+                      {goal.deadline && (
+                        <Badge variant="secondary">{goal.deadline}</Badge>
+                      )}
+                    </div>
+                  ))}
+                  {(normalizedGoals.length === 0 && (!campaign.goals || campaign.goals.length === 0)) && (
+                    <p className="text-sm text-muted-foreground text-center py-4">No budget goals set.</p>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
+            {/* Attachments Tab */}
+            {visibleTabs.some((t) => t.value === "attachments") && (
+              <TabsContent value="attachments" className="mt-4 space-y-4">
+                <Card className="overflow-hidden border-border bg-card dark:bg-zinc-900/50">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <h3 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                          Attachments
+                        </h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                          Campaign files and documents.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div className="space-y-3">
+                  {campaign.attachments?.map((url, idx) => {
+                    const safeUrl = String(url ?? "").trim();
+                    if (!safeUrl) return null;
+                    return (
+                      <div key={idx} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                        <Paperclip className="h-4 w-4 text-muted-foreground" />
+                        <a href={safeUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-orange-500 hover:text-orange-400 truncate">
+                          {safeUrl.split("/").pop() || safeUrl}
+                        </a>
+                      </div>
+                    );
+                  })}
+                  {(!campaign.attachments || campaign.attachments.length === 0) && (
+                    <p className="text-sm text-muted-foreground text-center py-4">No attachments yet.</p>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
+            {/* Settings Tab */}
+            {visibleTabs.some((t) => t.value === "settings") && (
+              <TabsContent value="settings" className="mt-4 space-y-4">
+                <Card className="overflow-hidden border-border bg-card dark:bg-zinc-900/50">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                        Settings
+                      </h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                        Manage campaign settings and preferences.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-lg border border-border p-4">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Campaign Status</p>
+                      <p className="text-xs text-muted-foreground">{campaign.active ? "Active" : "Inactive"}</p>
+                    </div>
+                    <Switch checked={campaign.active} onCheckedChange={(checked) => toggleActiveMutation.mutate(checked)} />
+                  </div>
+                  {viewerOwnsCampaign && (
+                    <div className="flex items-center justify-between rounded-lg border border-border p-4">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Delete Campaign</p>
+                        <p className="text-xs text-muted-foreground">Permanently remove this campaign</p>
+                      </div>
+                      <Button variant="destructive" size="sm">Delete</Button>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
 
