@@ -2500,15 +2500,6 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                     </div>
                     <Switch checked={campaign.active} onCheckedChange={(checked) => toggleActiveMutation.mutate(checked)} />
                   </div>
-                  {viewerOwnsCampaign && (
-                    <div className="flex items-center justify-between rounded-lg border border-border p-4">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">Delete Campaign</p>
-                        <p className="text-xs text-muted-foreground">Permanently remove this campaign</p>
-                      </div>
-                      <Button variant="destructive" size="sm">Delete</Button>
-                    </div>
-                  )}
                 </div>
               </TabsContent>
             )}
