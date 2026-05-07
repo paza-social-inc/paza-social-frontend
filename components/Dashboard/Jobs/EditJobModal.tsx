@@ -51,13 +51,7 @@ import {
 /** Select value when no campaign should be linked on save. */
 const NO_CAMPAIGN = "__none__";
 
-const CREATOR_TYPES = [
-  "Micro-influencer",
-  "Mid-tier",
-  "Macro",
-  "Nano",
-  "Any",
-];
+const CREATOR_TYPES = ["Micro-influencer", "Mid-tier", "Macro", "Nano", "Any"];
 
 const BUDGET_OPTIONS = [
   "Open to Bids",
@@ -101,7 +95,10 @@ const schema = z
       if (!start || !end) return true;
       return new Date(end) >= new Date(start);
     },
-    { message: "End date must be on or after start date", path: ["timelineEnd"] }
+    {
+      message: "End date must be on or after start date",
+      path: ["timelineEnd"],
+    },
   );
 
 type FormData = z.infer<typeof schema>;
@@ -140,7 +137,12 @@ type ApiJob = {
   owner_id?: number;
   owner?: { id?: number };
   collaboratorIds?: number[] | null;
-  collaborators?: Array<{ id?: number; firstName?: string; lastName?: string; email?: string }>;
+  collaborators?: Array<{
+    id?: number;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  }>;
   campaign?: { id?: number; title?: string } | null;
   values?: {
     title?: string;
@@ -183,7 +185,11 @@ interface EditJobModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModalProps) {
+export default function EditJobModal({
+  jobId,
+  open,
+  onOpenChange,
+}: EditJobModalProps) {
   const queryClient = useQueryClient();
   const { user, token } = useAuth();
   const [deliverablesText, setDeliverablesText] = useState("");
@@ -193,19 +199,33 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
   const [collaborators, setCollaborators] = useState<JobCollaboratorPick[]>([]);
 
   const effectiveToken =
-    token ?? (typeof window !== "undefined" ? localStorage.getItem("token") : null);
-  const tokenPayload = useMemo(() => decodeJwtPayload(effectiveToken), [effectiveToken]);
-  const currentUserId = String(user?.id ?? getUserIdStringFromPayload(tokenPayload) ?? "");
-  const currentUserEmail = String(user?.email ?? getEmailFromPayload(tokenPayload) ?? "").toLowerCase();
+    token ??
+    (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+  const tokenPayload = useMemo(
+    () => decodeJwtPayload(effectiveToken),
+    [effectiveToken],
+  );
+  const currentUserId = String(
+    user?.id ?? getUserIdStringFromPayload(tokenPayload) ?? "",
+  );
+  const currentUserEmail = String(
+    user?.email ?? getEmailFromPayload(tokenPayload) ?? "",
+  ).toLowerCase();
   const campaignActor = useMemo(
     () => ({
       userId: currentUserId.trim(),
       emailLower: currentUserEmail.trim().toLowerCase(),
     }),
-    [currentUserId, currentUserEmail]
+    [currentUserId, currentUserEmail],
   );
-  const budgetOptions = useMemo(() => budgetSelectOptions(budgetRange), [budgetRange]);
-  const creatorOptions = useMemo(() => creatorSelectOptions(creatorType), [creatorType]);
+  const budgetOptions = useMemo(
+    () => budgetSelectOptions(budgetRange),
+    [budgetRange],
+  );
+  const creatorOptions = useMemo(
+    () => creatorSelectOptions(creatorType),
+    [creatorType],
+  );
 
   const { data: job, isLoading } = useQuery({
     queryKey: ["job", jobId],
@@ -215,7 +235,7 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
 
   const linkedCampaign = useMemo(
     () => (job ? getLinkedCampaign(job as ApiJob) : null),
-    [job]
+    [job],
   );
 
   const jobOwnerId = useMemo(() => {
@@ -235,7 +255,9 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
   });
 
   const editableCampaigns = useMemo(() => {
-    const raw = ((mineCampaigns ?? []) as Campaign[]).filter((c) => parseCampaignId(c.id) != null);
+    const raw = ((mineCampaigns ?? []) as Campaign[]).filter(
+      (c) => parseCampaignId(c.id) != null,
+    );
     return raw.filter((c) => canManageCampaign(c, campaignActor));
   }, [mineCampaigns, campaignActor]);
 
@@ -273,7 +295,8 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
             ? j.contents
             : []) ?? [];
     const delText = dels.join(", ");
-    const ct = j.creatorType ?? v?.creatorType ?? j.category ?? v?.category ?? "";
+    const ct =
+      j.creatorType ?? v?.creatorType ?? j.category ?? v?.category ?? "";
     const pay = j.payment ?? v?.payment ?? "";
     const sd = j.startDate ?? v?.startDate;
     const ed = j.endDate ?? v?.endDate;
@@ -298,30 +321,35 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
               [c.firstName, c.lastName].filter(Boolean).join(" ").trim() ||
               c.email ||
               `User ${id}`;
-            return { id, name };
+            return { id, name } as JobCollaboratorPick;
           })
-          .filter((x): x is JobCollaboratorPick => x != null)
+          .filter((x): x is JobCollaboratorPick => x != null),
       );
     } else {
       const ids = j.collaboratorIds;
       setCollaborators(
         Array.isArray(ids) && ids.length > 0
           ? ids.map((id) => ({ id: Number(id), name: `User ${id}` }))
-          : []
+          : [],
       );
     }
   }, [job, reset]);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, body }: { id: number; body: JobUpdateBody }) => jobsApi.update(id, body),
+    mutationFn: ({ id, body }: { id: number; body: JobUpdateBody }) =>
+      jobsApi.update(id, body),
     onSuccess: (_, variables) => {
       toast.success("Job updated");
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["jobs", "owner", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["job", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["user-jobs", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["all-user-jobs-stats", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["campaigns", "mine", "edit-job", user?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["all-user-jobs-stats", user?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["campaigns", "mine", "edit-job", user?.id],
+      });
       onOpenChange(false);
     },
     onError: (err: unknown) => {
@@ -337,13 +365,15 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
       toast.error("Please enter at least one deliverable");
       return;
     }
-    const goals = parsedDeliverables.length > 0 ? parsedDeliverables : [data.title];
+    const goals =
+      parsedDeliverables.length > 0 ? parsedDeliverables : [data.title];
     const skills: string[] = [];
     if (creatorType) skills.push(creatorType);
 
     const body: JobUpdateBody = {
       title: data.title,
-      description: data.description || parsedDeliverables.join(", ") || undefined,
+      description:
+        data.description || parsedDeliverables.join(", ") || undefined,
       deliverables: parsedDeliverables,
       creatorType: creatorType || undefined,
       startDate: data.timelineStart || undefined,
@@ -365,8 +395,12 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
     }
 
     if (isJobOwner) {
-      body.collaboratorIds = collaborators.map((c) => c.id).filter((id): id is number => id != null && Number.isFinite(id));
-      body.collaboratorEmails = collaborators.filter((c) => c.id == null && c.email).map((c) => c.email as string);
+      body.collaboratorIds = collaborators
+        .map((c) => c.id)
+        .filter((id): id is number => id != null && Number.isFinite(id));
+      body.collaboratorEmails = collaborators
+        .filter((c) => c.id == null && c.email)
+        .map((c) => c.email as string);
     }
 
     updateMutation.mutate({ id: jobId, body });
@@ -389,33 +423,52 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-4 py-4 sm:px-6 sm:py-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 px-4 py-4 sm:px-6 sm:py-5"
+          >
             <Card className="border-orange-500/25 bg-orange-500/5 dark:bg-orange-500/10">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Megaphone className="h-4 w-4 text-orange-600 dark:text-orange-400" aria-hidden />
+                  <Megaphone
+                    className="h-4 w-4 text-orange-600 dark:text-orange-400"
+                    aria-hidden
+                  />
                   Linked campaign
                 </CardTitle>
                 <FieldDescription>
-                  Link this job to a campaign you manage to keep work and reporting in one place.
+                  Link this job to a campaign you manage to keep work and
+                  reporting in one place.
                 </FieldDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {linkedCampaign ? (
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">{linkedCampaign.title}</p>
-                      <p className="text-xs text-muted-foreground">Campaign ID · {linkedCampaign.id}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {linkedCampaign.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Campaign ID · {linkedCampaign.id}
+                      </p>
                     </div>
-                    <Button type="button" variant="outline" size="sm" className="shrink-0" asChild>
-                      <Link href={`/campaigns/${linkedCampaign.id}`}>View campaign</Link>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      asChild
+                    >
+                      <Link href={`/campaigns/${linkedCampaign.id}`}>
+                        View campaign
+                      </Link>
                     </Button>
                   </div>
                 ) : (
                   <>
                     <p className="text-sm text-muted-foreground">
-                      No campaign linked yet. Choose one of your campaigns below and save—this job will
-                      appear under that campaign.
+                      No campaign linked yet. Choose one of your campaigns below
+                      and save—this job will appear under that campaign.
                     </p>
                     {campaignsLoading ? (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -436,12 +489,17 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
                     ) : (
                       <Field>
                         <FieldLabel>Link to campaign</FieldLabel>
-                        <Select value={linkCampaignChoice} onValueChange={setLinkCampaignChoice}>
+                        <Select
+                          value={linkCampaignChoice}
+                          onValueChange={setLinkCampaignChoice}
+                        >
                           <SelectTrigger className="min-h-11 w-full text-base">
                             <SelectValue placeholder="Select a campaign" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={NO_CAMPAIGN}>No campaign (skip)</SelectItem>
+                            <SelectItem value={NO_CAMPAIGN}>
+                              No campaign (skip)
+                            </SelectItem>
                             {editableCampaigns.map((c) => {
                               const cid = parseCampaignId(c.id);
                               if (cid == null) return null;
@@ -454,8 +512,8 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
                           </SelectContent>
                         </Select>
                         <FieldDescription>
-                          Choose a campaign you manage, then save. Leave on &quot;No campaign&quot; to
-                          keep this job unlinked.
+                          Choose a campaign you manage, then save. Leave on
+                          &quot;No campaign&quot; to keep this job unlinked.
                         </FieldDescription>
                       </Field>
                     )}
@@ -556,12 +614,22 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel>Start date</FieldLabel>
-                  <Input {...register("timelineStart")} type="date" className="min-h-11 text-base" />
+                  <Input
+                    {...register("timelineStart")}
+                    type="date"
+                    className="min-h-11 text-base"
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>End date</FieldLabel>
-                  <Input {...register("timelineEnd")} type="date" className="min-h-11 text-base" />
-                  <FieldError errors={errors.timelineEnd ? [errors.timelineEnd] : []} />
+                  <Input
+                    {...register("timelineEnd")}
+                    type="date"
+                    className="min-h-11 text-base"
+                  />
+                  <FieldError
+                    errors={errors.timelineEnd ? [errors.timelineEnd] : []}
+                  />
                 </Field>
               </CardContent>
             </Card>
@@ -570,12 +638,15 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
               <Card className="border-border">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Users className="h-4 w-4 text-muted-foreground" aria-hidden />
+                    <Users
+                      className="h-4 w-4 text-muted-foreground"
+                      aria-hidden
+                    />
                     Collaborators
                   </CardTitle>
                   <FieldDescription>
-                    Teammates who can view proposals and update proposal status with you. Remove all to clear
-                    collaborators.
+                    Teammates who can view proposals and update proposal status
+                    with you. Remove all to clear collaborators.
                   </FieldDescription>
                 </CardHeader>
                 <CardContent>
@@ -599,7 +670,11 @@ export default function EditJobModal({ jobId, open, onOpenChange }: EditJobModal
               >
                 Cancel
               </Button>
-              <Button type="submit" className="min-h-11 w-full sm:w-auto" disabled={updateMutation.isPending}>
+              <Button
+                type="submit"
+                className="min-h-11 w-full sm:w-auto"
+                disabled={updateMutation.isPending}
+              >
                 {updateMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

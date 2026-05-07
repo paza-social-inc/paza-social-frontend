@@ -4,19 +4,26 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import CalendarTab from "@/components/Dashboard/tasks/Calendar";
-import TasksTab, { type TaskColumnKey, type Task } from "@/components/Dashboard/tasks/TasksTab";
+import TasksTab, {
+  type TaskColumnKey,
+  type Task,
+} from "@/components/Dashboard/tasks/TasksTab";
 import { TaskDetailsModal } from "@/components/Dashboard/tasks/TaskDetailsModal";
 import { EditTaskModal } from "@/components/Dashboard/tasks/EditTaskModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { SelectCampaignForJobModal } from "@/components/Dashboard/tasks/SelectCampaignForJobModal";
-import { CreateTaskModal, type CreateTaskPayload } from "@/components/Dashboard/tasks/CreateTaskModal";
+import {
+  CreateTaskModal,
+  type CreateTaskPayload,
+} from "@/components/Dashboard/tasks/CreateTaskModal";
 import type { Campaign } from "@/types/campaigns/campaignTypes";
 import { parseCampaignId } from "@/lib/data/campaigns";
 import { tasksApi, type TaskListItem } from "@/lib/data/tasks";
 import { appendFrontendTaskNotification } from "@/lib/frontendTaskNotifications";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { DASHBOARD_TABS_LIST_TWO_UP_CLASS } from "@/components/layout/DashboardPageShell";
+import { campaignApi } from "@/lib/data/campaigns";
 
 function mapStatusToColumn(status?: string): TaskColumnKey {
   if (status === "In Progress") return "inProgress";
@@ -26,7 +33,7 @@ function mapStatusToColumn(status?: string): TaskColumnKey {
 }
 
 function displayUserName(
-  u?: TaskListItem["assignee"] | TaskListItem["createdBy"]
+  u?: TaskListItem["assignee"] | TaskListItem["createdBy"],
 ): string {
   if (!u) return "—";
   const fn = u.firstName ?? u.firstname;
@@ -43,53 +50,76 @@ function toIsoTimestamp(v: unknown): string | undefined {
 }
 
 function emailKey(u?: { email?: string } | null): string | null {
-  const e = String(u?.email ?? "").trim().toLowerCase();
+  const e = String(u?.email ?? "")
+    .trim()
+    .toLowerCase();
   return e || null;
 }
 
 /** True when the logged-in user created the task row (brand owner of the task). */
 function taskIsRecordCreator(
   task: Task,
-  user: { id?: string | number; email?: string } | null | undefined
+  user: { id?: string | number; email?: string } | null | undefined,
 ): boolean {
   if (!user) return false;
-  const uid = user.id != null && String(user.id).trim() !== "" ? Number(user.id) : NaN;
-  const uEmail = String(user.email ?? "").trim().toLowerCase();
+  const uid =
+    user.id != null && String(user.id).trim() !== "" ? Number(user.id) : NaN;
+  const uEmail = String(user.email ?? "")
+    .trim()
+    .toLowerCase();
   return (
-    (Number.isFinite(uid) && task.createdByUserId != null && Number(task.createdByUserId) === uid) ||
-    (Boolean(uEmail) && Boolean(task.createdByEmailLower) && task.createdByEmailLower === uEmail)
+    (Number.isFinite(uid) &&
+      task.createdByUserId != null &&
+      Number(task.createdByUserId) === uid) ||
+    (Boolean(uEmail) &&
+      Boolean(task.createdByEmailLower) &&
+      task.createdByEmailLower === uEmail)
   );
 }
 
-function isBrandLikeAccount(user: { accountType?: string } | null | undefined): boolean {
-  const t = String(user?.accountType ?? "").trim().toLowerCase();
+function isBrandLikeAccount(
+  user: { accountType?: string } | null | undefined,
+): boolean {
+  const t = String(user?.accountType ?? "")
+    .trim()
+    .toLowerCase();
   return t === "brand" || t === "business" || t === "individual";
 }
 
 /** True when the viewer is the assignee but did not create the task record (cannot edit metadata in UI). */
 function taskIsAssigneeNotCreator(
   task: Task,
-  user: { id?: string | number; email?: string } | null | undefined
+  user: { id?: string | number; email?: string } | null | undefined,
 ): boolean {
   if (!user) return false;
-  const uid = user.id != null && String(user.id).trim() !== "" ? Number(user.id) : NaN;
-  const uEmail = String(user.email ?? "").trim().toLowerCase();
+  const uid =
+    user.id != null && String(user.id).trim() !== "" ? Number(user.id) : NaN;
+  const uEmail = String(user.email ?? "")
+    .trim()
+    .toLowerCase();
 
   const isAssignee =
-    (Number.isFinite(uid) && task.assigneeUserId != null && Number(task.assigneeUserId) === uid) ||
-    (Boolean(uEmail) && Boolean(task.assigneeEmailLower) && task.assigneeEmailLower === uEmail);
+    (Number.isFinite(uid) &&
+      task.assigneeUserId != null &&
+      Number(task.assigneeUserId) === uid) ||
+    (Boolean(uEmail) &&
+      Boolean(task.assigneeEmailLower) &&
+      task.assigneeEmailLower === uEmail);
   if (!isAssignee) return false;
 
   const isRecordCreator =
-    (Number.isFinite(uid) && task.createdByUserId != null && Number(task.createdByUserId) === uid) ||
-    (Boolean(uEmail) && Boolean(task.createdByEmailLower) && task.createdByEmailLower === uEmail);
+    (Number.isFinite(uid) &&
+      task.createdByUserId != null &&
+      Number(task.createdByUserId) === uid) ||
+    (Boolean(uEmail) &&
+      Boolean(task.createdByEmailLower) &&
+      task.createdByEmailLower === uEmail);
   return !isRecordCreator;
 }
 
 function normalizeApiTask(task: TaskListItem): Task {
   const assigneeName = displayUserName(task.assignee ?? undefined);
-  const assigneeDisplay =
-    assigneeName === "—" ? undefined : assigneeName;
+  const assigneeDisplay = assigneeName === "—" ? undefined : assigneeName;
 
   return {
     id: String(task.id),
@@ -116,10 +146,10 @@ function normalizeApiTask(task: TaskListItem): Task {
     recurTask: task.recurTask ?? false,
     repeat: task.repeatFrequency ?? undefined,
     createdAt: toIsoTimestamp(
-      (task as TaskListItem & { createdAt?: unknown }).createdAt
+      (task as TaskListItem & { createdAt?: unknown }).createdAt,
     ),
     updatedAt: toIsoTimestamp(
-      (task as TaskListItem & { updatedAt?: unknown }).updatedAt
+      (task as TaskListItem & { updatedAt?: unknown }).updatedAt,
     ),
   };
 }
@@ -134,7 +164,9 @@ export default function TasksPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [campaignPickerOpen, setCampaignPickerOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null,
+  );
   const [columns, setColumns] = useState<Record<TaskColumnKey, Task[]>>(() => ({
     backlog: [],
     inProgress: [],
@@ -146,6 +178,13 @@ export default function TasksPage() {
     queryKey: ["tasks", "mine"],
     queryFn: () => tasksApi.getMine(),
     retry: false,
+  });
+
+  const { data: campaigns } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: () =>
+      isCreatorAccount ? Promise.resolve([]) : campaignApi.getAll(),
+    enabled: !!user && !isCreatorAccount,
   });
 
   useEffect(() => {
@@ -164,22 +203,53 @@ export default function TasksPage() {
     setColumns(next);
   }, [myTasks]);
 
-  const tasksForCalendar = useMemo(() => Object.values(columns).flat(), [columns]);
+  const tasksForCalendar = useMemo(() => {
+    const rawTasks = Object.values(columns).flat();
+
+    if (isCreatorAccount || !campaigns) return rawTasks;
+
+    const campaignItems: Task[] = [];
+    for (const c of campaigns || []) {
+      if (!c.startDate && !c.deadline && !c.createdAt) continue;
+
+      const start =
+        c.startDate || c.createdAt || c.deadline || new Date().toISOString();
+      const end = c.deadline || c.endDate || start;
+
+      // Transform campaign into a dummy task item so the calendar can render it natively
+      campaignItems.push({
+        id: `campaign-${c.id}`,
+        title: `Campaign ${c.title || "Untitled"}`,
+        status: "Not Started", // Put campaign marker in planned
+        campaignTitle: c.title,
+        startDate: start.slice(0, 10),
+        dueDate: end.slice(0, 10),
+        description: c.description || "",
+        createdByUserId: c.creatorId ?? null,
+        priority: "medium", // Default priority for campaign markers
+        recurTask: false,
+        createdAt: c.createdAt || new Date().toISOString(),
+        updatedAt: c.updatedAt || new Date().toISOString(),
+      });
+    }
+
+    return [...rawTasks, ...campaignItems];
+  }, [columns, campaigns, isCreatorAccount, user?.id]);
 
   const detailTaskReadOnlyMetadata = useMemo(
     () => (detailTask ? taskIsAssigneeNotCreator(detailTask, user) : false),
-    [detailTask, user]
+    [detailTask, user],
   );
 
   const brandCanCommentOnDetailTask = useMemo(
     () =>
       Boolean(
         detailTask &&
-          user &&
-          taskIsRecordCreator(detailTask, user) &&
-          isBrandLikeAccount(user)
+        user &&
+        taskIsRecordCreator(detailTask, user) &&
+        isBrandLikeAccount(user),
       ),
-    [detailTask, user]
+    [detailTask, user],
   );
 
   const taskCommentAuthorName = useMemo(() => {
@@ -206,7 +276,9 @@ export default function TasksPage() {
     const seen = new Set<string>();
     return rows
       .map((m) => {
-        const email = String(m.email ?? "").trim().toLowerCase();
+        const email = String(m.email ?? "")
+          .trim()
+          .toLowerCase();
         const name = String(m.name ?? "").trim() || email;
         return { name, email };
       })
@@ -242,7 +314,9 @@ export default function TasksPage() {
     });
   };
 
-  function milestonePercentForStatus(status: NonNullable<Task["status"]>): number {
+  function milestonePercentForStatus(
+    status: NonNullable<Task["status"]>,
+  ): number {
     if (status === "Done") return 100;
     if (status === "Review") return 85;
     if (status === "In Progress") return 65;
@@ -252,7 +326,7 @@ export default function TasksPage() {
   /** Creator assignee: update workflow from the detail modal (local state only, same as board drag). */
   const handleCreatorAssigneeWorkflowStatus = (
     task: Task,
-    status: NonNullable<Task["status"]>
+    status: NonNullable<Task["status"]>,
   ) => {
     if (task.status === status) return;
     const now = new Date().toISOString();
@@ -284,7 +358,7 @@ export default function TasksPage() {
             milestonePercent: milestonePercentForStatus(status),
             updatedAt: now,
           }
-        : dt
+        : dt,
     );
     toast.success(`Status: ${status}`);
     appendFrontendTaskNotification({
@@ -420,13 +494,17 @@ export default function TasksPage() {
             ? undefined
             : async (t) => {
                 await tasksApi.delete(Number(t.id));
-                await queryClient.invalidateQueries({ queryKey: ["tasks", "mine"] });
+                await queryClient.invalidateQueries({
+                  queryKey: ["tasks", "mine"],
+                });
               }
         }
       />
       <div className="flex flex-col gap-3 px-0 pb-1 pt-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-3">
         <div className="min-w-0">
-          <h1 className="text-base font-semibold text-foreground sm:text-lg">Tasks</h1>
+          <h1 className="text-base font-semibold text-foreground sm:text-lg">
+            Tasks
+          </h1>
           {isCreatorAccount ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
               Tasks assigned to you by brands appear here.
@@ -434,7 +512,11 @@ export default function TasksPage() {
           ) : null}
         </div>
         {!isCreatorAccount ? (
-          <Button size="sm" className="h-9 w-full shrink-0 sm:w-auto" onClick={handleOpenCreateJob}>
+          <Button
+            size="sm"
+            className="h-9 w-full shrink-0 sm:w-auto"
+            onClick={handleOpenCreateJob}
+          >
             Create task
           </Button>
         ) : null}
@@ -450,7 +532,9 @@ export default function TasksPage() {
         </TabsList>
         <TabsContent value="tasks">
           {isTasksLoading ? (
-            <div className="text-sm text-muted-foreground py-6">Loading tasks…</div>
+            <div className="text-sm text-muted-foreground py-6">
+              Loading tasks…
+            </div>
           ) : (
             <TasksTab
               columns={columns}
@@ -472,7 +556,11 @@ export default function TasksPage() {
       <CreateTaskModal
         open={createTaskOpen}
         onOpenChange={setCreateTaskOpen}
-        campaignId={selectedCampaign ? parseCampaignId(selectedCampaign.id) ?? undefined : undefined}
+        campaignId={
+          selectedCampaign
+            ? (parseCampaignId(selectedCampaign.id) ?? undefined)
+            : undefined
+        }
         campaignTitle={selectedCampaign?.title}
         assigneeOptions={assigneeOptions}
         onCreateTask={(payload) => handleCreateTask(payload)}
@@ -480,4 +568,3 @@ export default function TasksPage() {
     </>
   );
 }
-
