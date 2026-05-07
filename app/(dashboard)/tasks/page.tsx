@@ -213,8 +213,8 @@ export default function TasksPage() {
       const start =
         c.startDate ||
         c.createdAt ||
-        c.deadline ||
         c.endDate ||
+        c.deadline ||
         new Date().toISOString();
       const end = c.deadline || c.endDate || start;
 
