@@ -208,10 +208,14 @@ export default function TasksPage() {
 
     const campaignItems: Task[] = [];
     for (const c of campaigns || []) {
-      if (!c.startDate && !c.deadline && !c.createdAt) continue;
+      if (!c.startDate && !c.deadline && !c.endDate && !c.createdAt) continue;
 
       const start =
-        c.startDate || c.createdAt || c.deadline || new Date().toISOString();
+        c.startDate ||
+        c.createdAt ||
+        c.deadline ||
+        c.endDate ||
+        new Date().toISOString();
       const end = c.deadline || c.endDate || start;
 
       // Transform campaign into a dummy task item so the calendar can render it natively
