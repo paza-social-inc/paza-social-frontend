@@ -6,11 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,13 +34,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 
-const CREATOR_TYPES = [
-  "Micro-influencer",
-  "Mid-tier",
-  "Macro",
-  "Nano",
-  "Any",
-];
+const CREATOR_TYPES = ["Micro-influencer", "Mid-tier", "Macro", "Nano", "Any"];
 
 const BUDGET_OPTIONS = [
   "Open to Bids",
@@ -56,7 +46,10 @@ const BUDGET_OPTIONS = [
 
 const schema = z
   .object({
-    title: z.string().min(2, "Title must be at least 2 characters").max(200, "Title must be 200 characters or less"),
+    title: z
+      .string()
+      .min(2, "Title must be at least 2 characters")
+      .max(200, "Title must be 200 characters or less"),
     description: z.string().max(2000).optional().or(z.literal("")),
     budgetRange: z.string().optional(),
     timelineStart: z.string().optional(),
@@ -69,7 +62,10 @@ const schema = z
       if (!start || !end) return true;
       return new Date(end) >= new Date(start);
     },
-    { message: "End date must be on or after start date", path: ["timelineEnd"] }
+    {
+      message: "End date must be on or after start date",
+      path: ["timelineEnd"],
+    },
   );
 
 type FormData = z.infer<typeof schema>;
@@ -82,7 +78,12 @@ export interface CreateJobModalProps {
   campaignTitle?: string;
 }
 
-export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }: CreateJobModalProps) {
+export function CreateJobModal({
+  open,
+  onOpenChange,
+  campaignId,
+  campaignTitle,
+}: CreateJobModalProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -149,7 +150,8 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
     }
 
     // Backend requires at least one goal and one skill; derive them from form fields
-    const goals = parsedDeliverables.length > 0 ? parsedDeliverables : [data.title];
+    const goals =
+      parsedDeliverables.length > 0 ? parsedDeliverables : [data.title];
     const skills: string[] = [];
     if (creatorType) skills.push(creatorType);
 
@@ -158,13 +160,15 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
       values: {
         title: data.title,
         // If description is empty, fall back to deliverables as a detailed description
-        description: data.description || parsedDeliverables.join(", ") || undefined,
+        description:
+          data.description || parsedDeliverables.join(", ") || undefined,
         deliverables: parsedDeliverables,
         creatorType: creatorType || undefined,
         startDate: data.timelineStart || undefined,
         endDate: data.timelineEnd || undefined,
         payment: data.budgetRange || undefined,
-        paymentdesc: data.budgetRange === "Open to Bids" ? "Open to Bids" : undefined,
+        paymentdesc:
+          data.budgetRange === "Open to Bids" ? "Open to Bids" : undefined,
         category: creatorType || undefined,
         campaignId,
         campaignTitle: campaignTitle || undefined,
@@ -173,8 +177,19 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
       skills: skills.length > 0 ? skills : ["Content creation"],
       contents: parsedDeliverables,
       platforms: [],
-      ...(collaborators.length > 0
-        ? { collaboratorIds: collaborators.map((c) => c.id) }
+      ...(collaborators.some((c) => c.id != null)
+        ? {
+            collaboratorIds: collaborators
+              .map((c) => c.id)
+              .filter((id): id is number => id != null),
+          }
+        : {}),
+      ...(collaborators.some((c) => c.id == null && c.email)
+        ? {
+            collaboratorEmails: collaborators
+              .filter((c) => c.id == null && c.email)
+              .map((c) => c.email as string),
+          }
         : {}),
     };
     createMutation.mutate(payload);
@@ -208,7 +223,7 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
         showCloseButton={true}
         className={cn(
           "max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col p-0 gap-0",
-          "rounded-xl border-border bg-card"
+          "rounded-xl border-border bg-card",
         )}
         aria-describedby={undefined}
       >
@@ -227,14 +242,21 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
             <h2 className="text-lg font-semibold truncate">Create job</h2>
             {campaignTitle && (
               <p className="text-xs text-muted-foreground truncate">
-                For campaign: <span className="font-medium text-foreground">{campaignTitle}</span>
+                For campaign:{" "}
+                <span className="font-medium text-foreground">
+                  {campaignTitle}
+                </span>
               </p>
             )}
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" id="create-job-modal-form">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-5"
+            id="create-job-modal-form"
+          >
             <div className="space-y-4">
               <Field>
                 <FieldLabel>Title</FieldLabel>
@@ -263,7 +285,9 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
               <FieldDescription className="mb-2">
                 Enter deliverables separated by commas or new lines.
                 <br />
-                <span className="text-muted-foreground">Example: 1x Video Review, 2x Stories</span>
+                <span className="text-muted-foreground">
+                  Example: 1x Video Review, 2x Stories
+                </span>
               </FieldDescription>
               <Textarea
                 value={deliverablesText}
@@ -274,8 +298,12 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
               />
               {deliverablesText.trim().length > 0 && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Parsed {parseDeliverablesText(deliverablesText).length} deliverable
-                  {parseDeliverablesText(deliverablesText).length === 1 ? "" : "s"}.
+                  Parsed {parseDeliverablesText(deliverablesText).length}{" "}
+                  deliverable
+                  {parseDeliverablesText(deliverablesText).length === 1
+                    ? ""
+                    : "s"}
+                  .
                 </p>
               )}
             </div>
@@ -289,7 +317,9 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
                   </SelectTrigger>
                   <SelectContent>
                     {CREATOR_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -302,7 +332,9 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
                   </SelectTrigger>
                   <SelectContent>
                     {BUDGET_OPTIONS.map((b) => (
-                      <SelectItem key={b} value={b}>{b}</SelectItem>
+                      <SelectItem key={b} value={b}>
+                        {b}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -343,7 +375,12 @@ export function CreateJobModal({ open, onOpenChange, campaignId, campaignTitle }
             </div>
 
             <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="border-border" onClick={handleCancel}>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-border"
+                onClick={handleCancel}
+              >
                 Cancel
               </Button>
               <Button

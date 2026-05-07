@@ -22,8 +22,8 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { ProposalCollaboratorsField } from "./ProposalCollaboratorsField";
-import type { JobCollaboratorPick } from "./JobCollaboratorsField";
 import type { JobProposalListItem } from "@/lib/jobs/viewerProposalOnJob";
+import type { ProposalCollaboratorPick } from "./ProposalCollaboratorsField";
 
 const schema = z.object({
   title: z
@@ -78,7 +78,9 @@ export function SendProposalForm({
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [collaborators, setCollaborators] = useState<JobCollaboratorPick[]>([]);
+  const [collaborators, setCollaborators] = useState<
+    ProposalCollaboratorPick[]
+  >([]);
   const currentUserId = user?.id != null ? Number(user.id) : NaN;
 
   const {
@@ -102,6 +104,7 @@ export function SendProposalForm({
       proposedBudget?: string;
       deliverables?: string[];
       collaboratorIds?: number[];
+      collaboratorEmails?: string[];
     }) => jobsApi.createProposal(jobId, data),
     onSuccess: () => {
       toast.success("Proposal sent successfully");
@@ -111,20 +114,32 @@ export function SendProposalForm({
       router.push(`/jobs/${jobId}`);
     },
     onError: (err: unknown) => {
-      const res = err as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(res.response?.data?.message ?? res.message ?? "Failed to send proposal");
+      const res = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      toast.error(
+        res.response?.data?.message ?? res.message ?? "Failed to send proposal",
+      );
     },
   });
 
   const onSubmit = (data: FormData) => {
     const parsed = parseDeliverablesList(data.deliverablesText ?? "");
-    const collabIds = collaborators.map((c) => c.id);
+    const collabIds = collaborators
+      .map((c) => c.id)
+      .filter((id): id is number => id != null && Number.isFinite(id));
+    const collabEmails = collaborators
+      .filter((c) => c.id == null && c.email)
+      .map((c) => c.email as string);
+
     createProposalMutation.mutate({
       title: data.title,
       description: data.description || undefined,
       proposedBudget: data.proposedBudget?.trim() || undefined,
       deliverables: parsed.length > 0 ? parsed : undefined,
       collaboratorIds: collabIds.length > 0 ? collabIds : undefined,
+      collaboratorEmails: collabEmails.length > 0 ? collabEmails : undefined,
     });
   };
 
@@ -140,9 +155,13 @@ export function SendProposalForm({
         </Link>
         <Card className="min-w-0 overflow-x-hidden rounded-xl border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg sm:text-xl">Proposal already sent</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">
+              Proposal already sent
+            </CardTitle>
             {jobTitle ? (
-              <p className="mt-0.5 text-sm text-muted-foreground">Job: {jobTitle}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Job: {jobTitle}
+              </p>
             ) : null}
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
@@ -173,7 +192,9 @@ export function SendProposalForm({
         <CardHeader className="pb-2">
           <CardTitle className="text-lg sm:text-xl">Send a proposal</CardTitle>
           {jobTitle && (
-            <p className="text-sm text-muted-foreground mt-0.5">Applying to: {jobTitle}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Applying to: {jobTitle}
+            </p>
           )}
         </CardHeader>
         <CardContent className="min-w-0 space-y-6">
@@ -210,9 +231,12 @@ export function SendProposalForm({
             </Field>
 
             <Field>
-              <FieldLabel>Deliverables you&apos;re offering (optional)</FieldLabel>
+              <FieldLabel>
+                Deliverables you&apos;re offering (optional)
+              </FieldLabel>
               <FieldDescription>
-                Separate items with commas or new lines (e.g. 1x Video Review, 2x Stories).
+                Separate items with commas or new lines (e.g. 1x Video Review,
+                2x Stories).
               </FieldDescription>
               <Textarea
                 {...register("deliverablesText")}
@@ -233,7 +257,9 @@ export function SendProposalForm({
             ) : (
               <Field>
                 <FieldLabel>Collaborators (optional)</FieldLabel>
-                <FieldDescription>Sign in as a creator to add proposal collaborators.</FieldDescription>
+                <FieldDescription>
+                  Sign in as a creator to add proposal collaborators.
+                </FieldDescription>
               </Field>
             )}
 
