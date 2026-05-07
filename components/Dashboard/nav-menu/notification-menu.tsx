@@ -144,7 +144,7 @@ export default function NotificationMenu() {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-1">
+            <PopoverContent id="notification-popover" className="w-80 p-1">
                 <div className="flex items-baseline justify-between gap-4 px-3 py-2">
                     <div className="text-sm font-semibold">Notifications</div>
                     {(unreadNotifications.length > 0 ||

@@ -277,7 +277,7 @@ export default function OverviewPage() {
                                 progress: { label: "Progress", color: "hsl(var(--chart-2))" } 
                             };
                             return (
-                                <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[220px]">
+                                <ChartContainer id="campaign-progress" config={chartConfig} className="mx-auto aspect-square max-h-[220px]">
                                     <RadialBarChart 
                                         data={chartData} 
                                         startAngle={90} 

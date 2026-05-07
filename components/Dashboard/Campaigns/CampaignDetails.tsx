@@ -325,6 +325,8 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
   const [teamDetailOpen, setTeamDetailOpen] = useState(false);
   const [teamDetailTeam, setTeamDetailTeam] = useState<CampaignTeam | null>(null);
   const [briefExpanded, setBriefExpanded] = useState(false);
+  const [attachmentsExpanded, setAttachmentsExpanded] = useState(false);
+  const [goalsExpanded, setGoalsExpanded] = useState(false);
   const [editingGoalDetailIndex, setEditingGoalDetailIndex] = useState<number | null>(null);
   const [editingGoalTargetValue, setEditingGoalTargetValue] = useState("");
   const [editingGoalDeadlineValue, setEditingGoalDeadlineValue] = useState("");
@@ -1385,7 +1387,7 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                   <div className="mt-4 border-t border-border pt-4">
                     <h3 className="mb-2 text-sm font-semibold text-foreground">Attachments</h3>
                     <ul className="space-y-2">
-                      {campaign.attachments.map((url, idx) => {
+                      {(attachmentsExpanded ? campaign.attachments : campaign.attachments.slice(0, 3)).map((url, idx) => {
                         const safeUrl = String(url ?? "").trim();
                         if (!safeUrl) return null;
                         const isImage = /\.(png|jpe?g|gif|webp|svg)$/i.test(safeUrl);
@@ -1441,6 +1443,18 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                         );
                       })}
                     </ul>
+                    {campaign.attachments.length > 3 && (
+                      <button
+                        type="button"
+                        className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-orange-500 hover:text-orange-400"
+                        onClick={() => setAttachmentsExpanded((v) => !v)}
+                      >
+                        <ChevronDown
+                          className={cn("h-4 w-4 transition-transform", attachmentsExpanded && "rotate-180")}
+                        />
+                        {attachmentsExpanded ? "Show less" : `Show more (${campaign.attachments.length - 3} more)`}
+                      </button>
+                    )}
                   </div>
                 ) : null}
                 {showGoalsTargetSection && campaign != null && (
@@ -1466,13 +1480,14 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                     ) : null}
 
                     {normalizedGoals.length > 0 ? (
-                      <div
-                        className={cn(
-                          "mt-4 grid grid-cols-1 gap-3 md:grid-cols-2",
-                          normalizedGoals.length > 4 && "max-h-[21rem] overflow-y-auto pr-1"
-                        )}
-                      >
-                        {visibleGoalsData.map(({ goalDetail, index }) => (
+                      <>
+                        <div
+                          className={cn(
+                            "mt-4 grid grid-cols-1 gap-3 md:grid-cols-2",
+                            normalizedGoals.length > 4 && !goalsExpanded && "max-h-[21rem] overflow-y-auto pr-1"
+                          )}
+                        >
+                          {(goalsExpanded ? visibleGoalsData : visibleGoalsData.slice(0, 4)).map(({ goalDetail, index }) => (
                           <div
                             key={`goal-metrics-${goalDetail.goal}-${index}`}
                             className="rounded-lg border border-border bg-muted/20 p-3"
@@ -1569,7 +1584,20 @@ export default function CampaignDetails({ id }: CampaignDetailsProps) {
                             )}
                           </div>
                         ))}
-                      </div>
+                        </div>
+                        {normalizedGoals.length > 4 && (
+                          <button
+                            type="button"
+                            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-orange-500 hover:text-orange-400"
+                            onClick={() => setGoalsExpanded((v) => !v)}
+                          >
+                            <ChevronDown
+                              className={cn("h-4 w-4 transition-transform", goalsExpanded && "rotate-180")}
+                            />
+                            {goalsExpanded ? "Show less" : `Show more (${normalizedGoals.length - 4} more)`}
+                          </button>
+                        )}
+                      </>
                     ) : null}
                   </div>
                 )}
