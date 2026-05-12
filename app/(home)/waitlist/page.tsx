@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import HomeLayout from "@/components/Home/Layout";
 import WaitlistContainer from "@/components/Waitlist/WaitlistContainer";
 import WaitlistHero from "@/components/Waitlist/WaitlistHero";
@@ -33,13 +34,13 @@ export default function WaitlistPage() {
                 The creator economy is changing.{" "}
                 <span className="text-zinc-500">Be early.</span>
               </h2>
-              <a
+              <Link
                 href="/about"
                 className="inline-flex shrink-0 items-center gap-2 border-b border-zinc-500 pb-1 text-[14px] transition-colors hover:border-orange-500 hover:text-orange-500 sm:text-[16px]"
               >
                 Learn about Paza
                 <ArrowUpRight className="h-4 w-4" />
-              </a>
+              </Link>
             </div>
           </div>
         </WaitlistContainer>
