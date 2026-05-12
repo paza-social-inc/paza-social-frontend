@@ -26,12 +26,20 @@ export async function POST(req: Request) {
     }
 
     const [firstName, ...rest] = name.trim().split(" ");
-    await resend.contacts.create({
-      email,
-      firstName,
-      lastName: rest.join(" ") || undefined,
-      unsubscribed: false,
-    });
+
+    try {
+      await resend.contacts.create({
+        email,
+        firstName,
+        lastName: rest.join(" ") || undefined,
+        unsubscribed: false,
+      });
+    } catch (resendError) {
+      console.error("Failed to create Resend contact for waitlist signup", {
+        email,
+        error: resendError,
+      });
+    }
 
     return NextResponse.json({ message: "You're on the list. We'll be in touch soon." });
   } catch {
