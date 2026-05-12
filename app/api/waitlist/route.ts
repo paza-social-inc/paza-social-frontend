@@ -13,9 +13,32 @@ export async function POST(req: Request) {
     }>;
 
     const name = typeof payload.name === "string" ? payload.name.trim() : "";
-    const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+    const rawEmail = typeof payload.email === "string" ? payload.email.trim() : "";
     const role = payload.role === "creator" || payload.role === "brand" ? payload.role : null;
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const atIndex = rawEmail.lastIndexOf("@");
+
+    let email = "";
+    let isValidEmail = false;
+
+    if (atIndex > 0 && atIndex < rawEmail.length - 1) {
+      const localPart = rawEmail.slice(0, atIndex);
+      const domainPart = rawEmail.slice(atIndex + 1);
+      const domainSegments = domainPart.split(".");
+      const topLevelDomain = domainSegments[domainSegments.length - 1];
+
+      const hasValidDomainStructure =
+        !domainPart.startsWith(".") &&
+        !domainPart.endsWith(".") &&
+        domainPart.includes(".") &&
+        !domainPart.includes("..") &&
+        domainSegments.every((segment) => segment.length > 0) &&
+        topLevelDomain.length >= 2;
+
+      if (localPart && !localPart.includes("..") && hasValidDomainStructure) {
+        email = `${localPart}@${domainPart.toLowerCase()}`;
+        isValidEmail = true;
+      }
+    }
 
     if (!name || !email || !isValidEmail || !role) {
       return NextResponse.json(
