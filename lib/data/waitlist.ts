@@ -8,44 +8,20 @@ export const waitlistSchema = z.object({
 
 export type WaitlistPayload = zInfer<typeof waitlistSchema>;
 
-export async function joinWaitlist(data: WaitlistPayload): Promise<{ message: string }> {
+export async function joinWaitlist(
+  data: WaitlistPayload,
+): Promise<{ message: string }> {
   const res = await fetch("/api/waitlist", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
 
-  const contentType = res.headers.get("content-type") ?? "";
-  const responseBody = contentType.includes("application/json")
-    ? await res.json().catch(() => null)
-    : await res.text().catch(() => null);
+  const json = await res.json();
 
   if (!res.ok) {
-    const message =
-      typeof responseBody === "object" &&
-      responseBody !== null &&
-      "message" in responseBody &&
-      typeof responseBody.message === "string"
-        ? responseBody.message
-        : typeof responseBody === "string" && responseBody.trim().length > 0
-          ? responseBody
-          : "Something went wrong. Please try again.";
-
-    throw new Error(message);
+    throw new Error(json?.message ?? "Something went wrong. Please try again.");
   }
 
-  if (
-    typeof responseBody === "object" &&
-    responseBody !== null &&
-    "message" in responseBody &&
-    typeof responseBody.message === "string"
-  ) {
-    return { message: responseBody.message };
-  }
-
-  if (typeof responseBody === "string" && responseBody.trim().length > 0) {
-    return { message: responseBody };
-  }
-
-  return { message: "You're on the list. We'll be in touch soon." };
+  return json;
 }
