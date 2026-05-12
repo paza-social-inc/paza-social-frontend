@@ -1,17 +1,28 @@
 import { NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
     const { name, email, role } = await req.json();
 
-    if (!email || !name) {
+    if (!name || !email) {
       return NextResponse.json({ message: "Name and email are required." }, { status: 400 });
     }
 
-    // TODO: connect your ESP here (Brevo, Loops, Resend Audiences, etc.)
-    // e.g. await addContactToList({ name, email, role })
+    const supabase = createServerClient();
 
-    console.log("Waitlist signup:", { name, email, role });
+    const { error } = await supabase
+      .from("waitlist")
+      .insert({ name, email, role });
+
+    if (error) {
+      if (error.code === "23505") {
+        return NextResponse.json({ message: "This email is already on the waitlist." }, { status: 409 });
+      }
+      throw error;
+    }
+
+    // TODO: add to Resend Audience here
 
     return NextResponse.json({ message: "You're on the list. We'll be in touch soon." });
   } catch {
