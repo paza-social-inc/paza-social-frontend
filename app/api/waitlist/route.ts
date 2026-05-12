@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 import { createServerClient } from "@/lib/supabase/server";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +25,13 @@ export async function POST(req: Request) {
       throw error;
     }
 
-    // TODO: add to Resend Audience here
+    const [firstName, ...rest] = name.trim().split(" ");
+    await resend.contacts.create({
+      email,
+      firstName,
+      lastName: rest.join(" ") || undefined,
+      unsubscribed: false,
+    });
 
     return NextResponse.json({ message: "You're on the list. We'll be in touch soon." });
   } catch {
