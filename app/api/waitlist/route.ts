@@ -11,7 +11,10 @@ export async function POST(req: Request) {
     const parsed = waitlistSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ message: parsed.error.issues[0].message }, { status: 400 });
+      return NextResponse.json(
+        { message: parsed.error.issues[0].message },
+        { status: 400 },
+      );
     }
 
     const { name, email, role } = parsed.data;
@@ -24,21 +27,37 @@ export async function POST(req: Request) {
 
     if (error) {
       if (error.code === "23505") {
-        return NextResponse.json({ message: "This email is already on the waitlist." }, { status: 409 });
+        return NextResponse.json(
+          { message: "This email is already on the waitlist." },
+          { status: 409 },
+        );
       }
       throw error;
     }
 
     const [firstName, ...rest] = name.trim().split(" ");
-    await resend.contacts.create({
-      email,
-      firstName,
-      lastName: rest.join(" ") || undefined,
-      unsubscribed: false,
-    });
 
-    return NextResponse.json({ message: "You're on the list. We'll be in touch soon." });
+    try {
+      await resend.contacts.create({
+        email,
+        firstName,
+        lastName: rest.join(" ") || undefined,
+        unsubscribed: false,
+      });
+    } catch (resendError) {
+      console.error("Failed to create Resend contact for waitlist signup", {
+        email,
+        error: resendError,
+      });
+    }
+
+    return NextResponse.json({
+      message: "You're on the list. We'll be in touch soon.",
+    });
   } catch {
-    return NextResponse.json({ message: "Something went wrong." }, { status: 500 });
+    return NextResponse.json(
+      { message: "Something went wrong." },
+      { status: 500 },
+    );
   }
 }

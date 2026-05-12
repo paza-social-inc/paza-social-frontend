@@ -45,6 +45,7 @@ export default function WaitlistForm() {
       <div className="flex w-fit items-center border border-[#8c8c8c]">
         <button
           type="button"
+          aria-pressed={role === "creator"}
           onClick={() => setValue("role", "creator")}
           className={`px-5 py-2 text-[13px] font-medium uppercase tracking-wide transition-colors ${
             role === "creator"
@@ -56,6 +57,7 @@ export default function WaitlistForm() {
         </button>
         <button
           type="button"
+          aria-pressed={role === "brand"}
           onClick={() => setValue("role", "brand")}
           className={`px-5 py-2 text-[13px] font-medium uppercase tracking-wide transition-colors ${
             role === "brand"

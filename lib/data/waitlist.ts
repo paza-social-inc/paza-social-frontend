@@ -15,9 +15,37 @@ export async function joinWaitlist(data: WaitlistPayload): Promise<{ message: st
     body: JSON.stringify(data),
   });
 
-  const json = await res.json().catch(() => ({}));
+  const contentType = res.headers.get("content-type") ?? "";
+  const responseBody = contentType.includes("application/json")
+    ? await res.json().catch(() => null)
+    : await res.text().catch(() => null);
 
-  if (!res.ok) throw json;
+  if (!res.ok) {
+    const message =
+      typeof responseBody === "object" &&
+      responseBody !== null &&
+      "message" in responseBody &&
+      typeof responseBody.message === "string"
+        ? responseBody.message
+        : typeof responseBody === "string" && responseBody.trim().length > 0
+          ? responseBody
+          : "Something went wrong. Please try again.";
 
-  return json;
+    throw new Error(message);
+  }
+
+  if (
+    typeof responseBody === "object" &&
+    responseBody !== null &&
+    "message" in responseBody &&
+    typeof responseBody.message === "string"
+  ) {
+    return { message: responseBody.message };
+  }
+
+  if (typeof responseBody === "string" && responseBody.trim().length > 0) {
+    return { message: responseBody };
+  }
+
+  return { message: "You're on the list. We'll be in touch soon." };
 }
