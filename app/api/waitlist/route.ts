@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createServerClient } from "@/lib/supabase/server";
+import { waitlistSchema } from "@/lib/data/waitlist";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
-    const { name, email, role } = await req.json();
+    const body = await req.json();
+    const parsed = waitlistSchema.safeParse(body);
 
-    if (!name || !email) {
-      return NextResponse.json({ message: "Name and email are required." }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ message: parsed.error.issues[0].message }, { status: 400 });
     }
+
+    const { name, email, role } = parsed.data;
 
     const supabase = createServerClient();
 

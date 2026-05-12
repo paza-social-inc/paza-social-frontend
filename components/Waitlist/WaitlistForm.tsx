@@ -2,21 +2,12 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z, infer as zInfer } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { joinWaitlist } from "@/lib/data/waitlist";
-
-const schema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.email("Please enter a valid email address"),
-  role: z.enum(["creator", "brand"]),
-});
-
-type FormData = zInfer<typeof schema>;
+import { joinWaitlist, waitlistSchema, type WaitlistPayload } from "@/lib/data/waitlist";
 
 export default function WaitlistForm() {
   const {
@@ -26,8 +17,8 @@ export default function WaitlistForm() {
     setValue,
     reset,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
+  } = useForm<WaitlistPayload>({
+    resolver: zodResolver(waitlistSchema),
     defaultValues: { role: "creator" },
   });
 
