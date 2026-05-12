@@ -6,10 +6,22 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
-    const { name, email, role } = await req.json();
+    const payload = (await req.json()) as Partial<{
+      name: unknown;
+      email: unknown;
+      role: unknown;
+    }>;
 
-    if (!name || !email) {
-      return NextResponse.json({ message: "Name and email are required." }, { status: 400 });
+    const name = typeof payload.name === "string" ? payload.name.trim() : "";
+    const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+    const role = payload.role === "creator" || payload.role === "brand" ? payload.role : null;
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!name || !email || !isValidEmail || !role) {
+      return NextResponse.json(
+        { message: "Please provide a valid name, email, and role." },
+        { status: 400 }
+      );
     }
 
     const supabase = createServerClient();
