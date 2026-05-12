@@ -148,7 +148,7 @@ export function LoginForm({
                 </Field>
                 <FieldSeparator>Or continue with</FieldSeparator>
                 <Field>
-                    <Button disabled={loginMutation.isPending} variant="outline" type="button" onClick={() => window.location.href = `https://accounts.google.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}&response_type=code&scope=email%20profile`}>
+                    <Button disabled={loginMutation.isPending} variant="outline" type="button" onClick={() => window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile`}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
