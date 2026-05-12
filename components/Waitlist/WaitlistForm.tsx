@@ -8,6 +8,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { joinWaitlist } from "@/lib/data/waitlist";
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -33,15 +34,7 @@ export default function WaitlistForm() {
   const role = watch("role");
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) =>
-      fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((res) => {
-        if (!res.ok) return res.json().then((d) => Promise.reject(d));
-        return res.json();
-      }),
+    mutationFn: joinWaitlist,
     onSuccess: () => {
       toast.success("You're on the list! We'll be in touch soon.");
       reset();
