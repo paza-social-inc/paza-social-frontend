@@ -334,6 +334,21 @@ export default function CreateCampaignForm() {
                     aria-invalid={!!errors.budget}
                   />
                 </Field>
+
+                {/* <Button
+                  type="submit"
+                  disabled={createMutation.isPending || attachmentUploadPending}
+                  className="min-h-12 flex-1 touch-manipulation text-base font-medium sm:flex-none sm:px-8"
+                >
+                  {createMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating…
+                    </>
+                  ) : (
+                    "Create campaign"
+                  )}
+                </Button> */}
               </div>
             </CardContent>
           </Card>
