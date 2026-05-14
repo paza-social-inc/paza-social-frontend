@@ -16,11 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-interface AdminNavProps {
-  activeTab: string;
-}
-
-export default function AdminNav({ activeTab }: AdminNavProps) {
+export default function AdminNav() {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -52,7 +48,6 @@ export default function AdminNav({ activeTab }: AdminNavProps) {
             <div className="w-9 h-9 bg-orange-500/10 border border-orange-500/20 rounded-xl flex items-center justify-center group-hover:bg-orange-500/20 transition">
               <BarChart3 className="w-5 h-5 text-orange-400" />
             </div>
-
             <span className="text-white text-xl font-bold tracking-tight">
               Paza
             </span>
@@ -99,7 +94,6 @@ export default function AdminNav({ activeTab }: AdminNavProps) {
                 <div className="w-7 h-7 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                   <UserCircle className="w-4 h-4 text-orange-400" />
                 </div>
-
                 <span className="text-sm text-white hidden sm:inline font-medium">
                   Admin
                 </span>
@@ -108,7 +102,6 @@ export default function AdminNav({ activeTab }: AdminNavProps) {
               {/* DROPDOWN */}
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-52 bg-[#181C23] border border-[#262B36] rounded-xl shadow-lg overflow-hidden">
-                  
                   <Link
                     href="/admin/profile"
                     className="flex items-center gap-3 px-4 py-3 text-zinc-300 hover:bg-[#242B36] transition border-b border-[#262B36]"

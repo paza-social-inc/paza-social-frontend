@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  ChartData,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 
@@ -31,8 +32,64 @@ interface ChartCardProps {
   title: string;
   description: string;
   type: "line" | "bar";
-  data: any;
+  data: ChartData<"line"> | ChartData<"bar">;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sharedOptions: any = {
+  responsive: true,
+  maintainAspectRatio: true,
+  plugins: {
+    legend: {
+      position: "top" as const,
+      labels: {
+        color: "#9CA3AF",
+        font: {
+          size: 12,
+          weight: "500" as const,
+        },
+        padding: 15,
+        usePointStyle: true,
+      },
+    },
+    tooltip: {
+      backgroundColor: "rgba(15, 23, 42, 0.9)",
+      titleColor: "#FFF",
+      bodyColor: "#9CA3AF",
+      borderColor: "rgba(71, 85, 105, 0.5)",
+      borderWidth: 1,
+      padding: 12,
+      cornerRadius: 8,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: "rgba(71, 85, 105, 0.2)",
+      },
+      ticks: {
+        color: "#9CA3AF",
+        font: {
+          size: 11,
+        },
+        padding: 8,
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: "#9CA3AF",
+        font: {
+          size: 11,
+        },
+        padding: 8,
+      },
+    },
+  },
+};
 
 export default function ChartCard({
   title,
@@ -40,62 +97,6 @@ export default function ChartCard({
   type,
   data,
 }: ChartCardProps) {
-  const options = {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: {
-        position: "top" as const,
-        labels: {
-          color: "#9CA3AF",
-          font: {
-            size: 12,
-            weight: "500" as const,
-          },
-          padding: 15,
-          usePointStyle: true,
-        },
-      },
-      tooltip: {
-        backgroundColor: "rgba(15, 23, 42, 0.9)",
-        titleColor: "#FFF",
-        bodyColor: "#9CA3AF",
-        borderColor: "rgba(71, 85, 105, 0.5)",
-        borderWidth: 1,
-        padding: 12,
-        cornerRadius: 8,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: "rgba(71, 85, 105, 0.2)",
-          drawBorder: false,
-        },
-        ticks: {
-          color: "#9CA3AF",
-          font: {
-            size: 11,
-          },
-          padding: 8,
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: "#9CA3AF",
-          font: {
-            size: 11,
-          },
-          padding: 8,
-        },
-      },
-    },
-  };
-
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 backdrop-blur-sm">
       <div className="mb-6">
@@ -105,9 +106,15 @@ export default function ChartCard({
 
       <div className="relative h-64 md:h-80">
         {type === "line" ? (
-          <Line data={data} options={options} />
+          <Line
+            data={data as ChartData<"line">}
+            options={sharedOptions}
+          />
         ) : (
-          <Bar data={data} options={options} />
+          <Bar
+            data={data as ChartData<"bar">}
+            options={sharedOptions}
+          />
         )}
       </div>
     </div>
