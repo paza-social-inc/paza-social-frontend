@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Wallet,
   Activity,
+  LucideIcon,
 } from "lucide-react";
 
 import AdminNav from "@/components/Admin/AdminNav";
@@ -75,7 +76,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#0F1115] text-white">
       {/* NAVBAR */}
-      <AdminNav activeTab="dashboard" />
+      <AdminNav />
 
       {/* MAIN CONTENT */}
       <main className="px-4 md:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
@@ -311,7 +312,7 @@ function QuickActionButton({
   href,
 }: {
   label: string;
-  icon: any;
+  icon: LucideIcon;
   count: number;
   href: string;
 }) {
