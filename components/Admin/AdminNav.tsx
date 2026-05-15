@@ -107,7 +107,7 @@ export default function AdminNav() {
                     className="flex items-center gap-3 px-4 py-3 text-zinc-300 hover:bg-[#242B36] transition border-b border-[#262B36]"
                   >
                     <Settings className="w-4 h-4 text-orange-400" />
-                    Profile Settings
+                    Profile Settings Page
                   </Link>
 
                   <button
