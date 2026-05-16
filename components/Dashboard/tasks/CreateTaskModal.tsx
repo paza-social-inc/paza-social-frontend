@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
   FieldError,
@@ -21,7 +20,6 @@ import { cn } from "@/lib/utils";
 
 export type TaskPriority = "high" | "medium" | "low";
 export type TaskStatus = "Not Started" | "In Progress" | "Review" | "Done";
-export type TaskRepeat = "Daily" | "Weekly" | "Monthly" | "Yearly";
 
 const schema = z
   .object({
@@ -31,8 +29,6 @@ const schema = z
     status: z.enum(["Not Started", "In Progress", "Review", "Done"]),
     startDate: z.string().min(1, "Start date is required"),
     dueDate: z.string().min(1, "Due date is required"),
-    recurTask: z.boolean(),
-    repeat: z.enum(["Daily", "Weekly", "Monthly", "Yearly"]).optional(),
     assigneeEmail: z.string().optional(),
     description: z.string().min(1, "Task description is required").max(4000, "Description too long"),
   })
@@ -44,13 +40,6 @@ const schema = z
       return e >= s;
     },
     { message: "Due date must be on or after start date", path: ["dueDate"] }
-  )
-  .refine(
-    (data) => {
-      if (!data.recurTask) return true;
-      return !!data.repeat;
-    },
-    { message: "Please select a repeat frequency", path: ["repeat"] }
   );
 
 type FormData = z.infer<typeof schema>;
@@ -70,9 +59,7 @@ export interface CreateTaskPayload {
   status: TaskStatus;
   startDate: string;
   dueDate: string;
-  recurTask: boolean;
   description: string;
-  repeat?: TaskRepeat;
   budgetKsh?: string;
   assigneeEmail?: string;
   attachmentFile?: File | null;
@@ -109,14 +96,10 @@ export function CreateTaskModal({
       status: "Not Started",
       startDate: "",
       dueDate: "",
-      recurTask: false,
-      repeat: undefined,
       assigneeEmail: "",
       description: "",
     },
   });
-
-  const recurTask = watch("recurTask");
 
   React.useEffect(() => {
     if (!open) return;
@@ -127,8 +110,6 @@ export function CreateTaskModal({
       status: "Not Started",
       startDate: "",
       dueDate: "",
-      recurTask: false,
-      repeat: undefined,
       assigneeEmail: "",
       description: "",
     });
@@ -146,8 +127,6 @@ export function CreateTaskModal({
       status: data.status,
       startDate: data.startDate,
       dueDate: data.dueDate,
-      recurTask: data.recurTask,
-      repeat: data.recurTask ? data.repeat : undefined,
       description: data.description,
       budgetKsh: data.budgetKsh || undefined,
       assigneeEmail:
@@ -276,38 +255,6 @@ export function CreateTaskModal({
             <Textarea rows={4} placeholder="Deliverables, links, notes…" {...register("description")} />
             <FieldError>{errors.description?.message}</FieldError>
           </Field>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="recurTask"
-              checked={recurTask}
-              onCheckedChange={(c) => setValue("recurTask", c === true)}
-            />
-            <label htmlFor="recurTask" className="text-sm font-medium leading-none cursor-pointer">
-              Recurring task
-            </label>
-          </div>
-
-          {recurTask ? (
-            <Field>
-              <FieldLabel>Repeat</FieldLabel>
-              <Select
-                value={watch("repeat") ?? ""}
-                onValueChange={(v) => setValue("repeat", v as FormData["repeat"])}
-              >
-                <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder="How often?" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Daily">Daily</SelectItem>
-                  <SelectItem value="Weekly">Weekly</SelectItem>
-                  <SelectItem value="Monthly">Monthly</SelectItem>
-                  <SelectItem value="Yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldError>{errors.repeat?.message}</FieldError>
-            </Field>
-          ) : null}
 
           <Field>
             <FieldLabel className="flex items-center gap-2">

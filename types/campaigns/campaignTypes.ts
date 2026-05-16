@@ -58,6 +58,8 @@ export interface Campaign {
   targetNumber?: number | null;
   /** Optional campaign deadline (ISO date string from API). */
   deadline?: string | null;
+  startDate?: string;
+  endDate?: string;
   /** What the target number / KPI means (optional). */
   targetDescription?: string | null;
   budget?: string | number;
@@ -121,6 +123,4 @@ export interface CampaignListResponse {
   data: Campaign[];
 }
 
-export interface CampaignGetResponse extends Campaign { }
-
-
+export interface CampaignGetResponse extends Campaign {}
