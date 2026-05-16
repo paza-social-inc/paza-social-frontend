@@ -55,7 +55,7 @@ export default function UserDropDown() {
                     />}
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="max-w-72 w-full md:min-w-64!">
+            <DropdownMenuContent id="user-dropdown" className="max-w-72 w-full md:min-w-64!">
                 <DropdownMenuLabel className="flex min-w-0 flex-col">
                     <span className="text-foreground truncate text-sm font-medium">
                         {user?.firstname || user?.lastname

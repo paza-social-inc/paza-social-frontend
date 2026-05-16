@@ -12,7 +12,6 @@ import type { BaseUser } from "@/types/common";
 import { FieldDescription, FieldLabel } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
-import type { JobCollaboratorPick } from "./JobCollaboratorsField";
 
 function labelFromBaseUser(u: BaseUser): string {
   const fn = u.firstname ?? "";
@@ -26,11 +25,17 @@ function parseUserId(u: BaseUser): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+export type ProposalCollaboratorPick = {
+  id?: number;
+  email?: string;
+  name: string;
+};
+
 type Props = {
   currentUserId: number;
   jobOwnerUserId: number | null;
-  value: JobCollaboratorPick[];
-  onChange: React.Dispatch<React.SetStateAction<JobCollaboratorPick[]>>;
+  value: ProposalCollaboratorPick[];
+  onChange: React.Dispatch<React.SetStateAction<ProposalCollaboratorPick[]>>;
   className?: string;
 };
 
@@ -61,7 +66,14 @@ export function ProposalCollaboratorsField({
     queryFn: () => usersApi.suggestedCollaborators(),
   });
 
-  const selectedIds = useMemo(() => new Set(value.map((v) => v.id)), [value]);
+  const selectedIds = useMemo(
+    () => new Set(value.map((v) => v.id).filter(Boolean)),
+    [value],
+  );
+  const selectedEmails = useMemo(
+    () => new Set(value.map((v) => v.email?.toLowerCase()).filter(Boolean)),
+    [value],
+  );
 
   const excludeIds = useMemo(() => {
     const s = new Set<number>([currentUserId]);
@@ -72,79 +84,75 @@ export function ProposalCollaboratorsField({
   }, [currentUserId, jobOwnerUserId]);
 
   const suggested = useMemo(() => {
-    const out: JobCollaboratorPick[] = [];
+    const out: ProposalCollaboratorPick[] = [];
     const seen = new Set<number>();
     for (const u of rawSuggested) {
       const id = parseUserId(u);
-      if (id == null || excludeIds.has(id) || selectedIds.has(id) || seen.has(id)) continue;
+      if (
+        id == null ||
+        excludeIds.has(id) ||
+        selectedIds.has(id) ||
+        seen.has(id)
+      )
+        continue;
       if (u.accountType != null && u.accountType !== "Creator") continue;
       seen.add(id);
-      out.push({ id, name: labelFromBaseUser(u) });
+      out.push({ id, name: labelFromBaseUser(u), email: u.email });
     }
     return out;
   }, [rawSuggested, excludeIds, selectedIds]);
 
-  const addPick = (pick: JobCollaboratorPick) => {
-    if (excludeIds.has(pick.id)) return;
+  const addPick = (pick: ProposalCollaboratorPick) => {
+    if (pick.id != null && excludeIds.has(pick.id)) return;
     onChange((prev) => {
-      if (prev.some((p) => p.id === pick.id)) return prev;
+      if (pick.id != null && prev.some((p) => p.id === pick.id)) return prev;
+      if (
+        pick.email &&
+        prev.some((p) => p.email?.toLowerCase() === pick.email?.toLowerCase())
+      )
+        return prev;
       return [...prev, pick];
     });
     setSearchQuery("");
     setDebouncedQ("");
   };
 
-  const removeId = (id: number) => {
-    onChange((prev) => prev.filter((v) => v.id !== id));
+  const removePick = (pick: ProposalCollaboratorPick) => {
+    onChange((prev) =>
+      prev.filter((v) => {
+        if (pick.id != null) return v.id !== pick.id;
+        return v.email !== pick.email;
+      }),
+    );
   };
 
   const filteredSearch = useMemo(() => {
     return searchResults.filter((u) => {
       const id = parseUserId(u);
       if (id == null || excludeIds.has(id) || selectedIds.has(id)) return false;
+      if (u.email && selectedEmails.has(u.email.toLowerCase())) return false;
       if (u.accountType != null && u.accountType !== "Creator") return false;
       return true;
     });
-  }, [searchResults, excludeIds, selectedIds]);
+  }, [searchResults, excludeIds, selectedIds, selectedEmails]);
 
-  const lookupEmailMutation = useMutation({
-    mutationFn: (email: string) => usersApi.lookupByEmail(email),
-    onSuccess: (u) => {
-      if (!u) {
-        toast.error("No account found for that email.");
-        return;
-      }
-      if (u.accountType !== "Creator") {
-        toast.error("Collaborators must have creator accounts.");
-        return;
-      }
-      const id = parseUserId(u);
-      if (id == null) {
-        toast.error("Could not read user id.");
-        return;
-      }
-      if (excludeIds.has(id)) {
-        toast.error("You cannot add the job owner or yourself as a collaborator.");
-        return;
-      }
-      onChange((prev) => {
-        if (prev.some((p) => p.id === id)) return prev;
-        return [...prev, { id, name: labelFromBaseUser(u) }];
-      });
-      setEmailInput("");
-    },
-    onError: () => {
-      toast.error("Could not look up that email. Try again.");
-    },
-  });
-
-  const handleAddByEmail = () => {
+  const handleAddByEmail = async () => {
     const raw = emailInput.trim().toLowerCase();
     if (!raw.includes("@")) {
       toast.error("Enter a valid email address.");
       return;
     }
-    lookupEmailMutation.mutate(raw);
+    if (selectedEmails.has(raw)) {
+      toast.error("This email is already added.");
+      return;
+    }
+
+    // We add the email as a pick. SendProposalForm will segregate it into collaboratorEmails
+    onChange((prev) => {
+      if (prev.some((p) => p.email?.toLowerCase() === raw)) return prev;
+      return [...prev, { name: raw, email: raw }];
+    });
+    setEmailInput("");
   };
 
   return (
@@ -152,14 +160,17 @@ export function ProposalCollaboratorsField({
       <div>
         <FieldLabel>Collaborators (optional)</FieldLabel>
         <FieldDescription>
-          Add other creators joining this proposal. Search by name or email, pick from your showcase
-          teammates, or enter an email if they already use Paza.
+          Add other creators joining this proposal. Search by name or email,
+          pick from your showcase teammates, or enter an email if they already
+          use Paza.
         </FieldDescription>
       </div>
 
       {suggested.length > 0 || suggestedLoading ? (
         <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">From your showcase projects</p>
+          <p className="text-xs font-medium text-muted-foreground">
+            From your showcase projects
+          </p>
           {suggestedLoading ? (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -207,14 +218,10 @@ export function ProposalCollaboratorsField({
           type="button"
           variant="secondary"
           className="shrink-0"
-          disabled={lookupEmailMutation.isPending || !emailInput.trim().includes("@")}
+          disabled={!emailInput.trim().includes("@")}
           onClick={handleAddByEmail}
         >
-          {lookupEmailMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            "Add"
-          )}
+          Add
         </Button>
       </div>
 
@@ -237,7 +244,9 @@ export function ProposalCollaboratorsField({
               Searching…
             </div>
           ) : filteredSearch.length === 0 ? (
-            <p className="px-2 py-3 text-xs text-muted-foreground text-center">No creators found</p>
+            <p className="px-2 py-3 text-xs text-muted-foreground text-center">
+              No creators found
+            </p>
           ) : (
             filteredSearch.map((u) => {
               const id = parseUserId(u);
@@ -247,10 +256,20 @@ export function ProposalCollaboratorsField({
                   key={id}
                   type="button"
                   className="flex w-full items-center gap-2 rounded px-2 py-2 text-left text-sm hover:bg-muted"
-                  onClick={() => addPick({ id, name: labelFromBaseUser(u) })}
+                  onClick={() =>
+                    addPick({
+                      id,
+                      name: labelFromBaseUser(u),
+                      email: u.email?.toLowerCase(),
+                    })
+                  }
                 >
-                  <span className="truncate font-medium">{labelFromBaseUser(u)}</span>
-                  <span className="truncate text-xs text-muted-foreground">{u.email}</span>
+                  <span className="truncate font-medium">
+                    {labelFromBaseUser(u)}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {u.email}
+                  </span>
                 </button>
               );
             })
@@ -260,9 +279,9 @@ export function ProposalCollaboratorsField({
 
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {value.map((c) => (
+          {value.map((c, i) => (
             <Badge
-              key={c.id}
+              key={c.id ?? `email-${c.email}-${i}`}
               variant="secondary"
               className="gap-1 pr-1 py-1 pl-2 font-normal max-w-full"
             >
@@ -271,7 +290,7 @@ export function ProposalCollaboratorsField({
                 type="button"
                 className="rounded p-0.5 hover:bg-muted-foreground/20 touch-manipulation"
                 aria-label={`Remove ${c.name}`}
-                onClick={() => removeId(c.id)}
+                onClick={() => removePick(c)}
               >
                 <X className="h-3.5 w-3.5 shrink-0" />
               </button>

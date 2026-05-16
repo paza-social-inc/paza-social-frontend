@@ -18,12 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/components/Dashboard/tasks/TasksTab";
 import { tasksApi } from "@/lib/data/tasks";
-import type { TaskPriority, TaskStatus, TaskRepeat } from "./CreateTaskModal";
+import type { TaskPriority, TaskStatus } from "./CreateTaskModal";
 
 const schema = z
   .object({
@@ -33,8 +32,6 @@ const schema = z
     status: z.enum(["Not Started", "In Progress", "Review", "Done"]),
     startDate: z.string().min(1, "Start date is required"),
     dueDate: z.string().min(1, "Due date is required"),
-    recurTask: z.boolean(),
-    repeat: z.enum(["Daily", "Weekly", "Monthly", "Yearly"]).optional(),
     description: z.string().min(1, "Task description is required").max(4000, "Description too long"),
   })
   .refine(
@@ -45,13 +42,6 @@ const schema = z
       return e >= s;
     },
     { message: "Due date must be on or after start date", path: ["dueDate"] }
-  )
-  .refine(
-    (data) => {
-      if (!data.recurTask) return true;
-      return !!data.repeat;
-    },
-    { message: "Please select a repeat frequency", path: ["repeat"] }
   );
 
 type FormData = z.infer<typeof schema>;
@@ -94,13 +84,9 @@ export function EditTaskModal({
       status: "Not Started",
       startDate: "",
       dueDate: "",
-      recurTask: false,
-      repeat: undefined,
       description: "",
     },
   });
-
-  const recurTask = watch("recurTask");
 
   React.useEffect(() => {
     if (!open || !task) return;
@@ -111,8 +97,6 @@ export function EditTaskModal({
       status: (task.status as TaskStatus) ?? "Not Started",
       startDate: task.startDate ?? "",
       dueDate: task.dueDate ?? "",
-      recurTask: Boolean(task.recurTask),
-      repeat: (task.repeat as TaskRepeat | undefined) ?? undefined,
       description: task.description ?? "",
     });
     setAttachmentFile(null);
@@ -132,8 +116,6 @@ export function EditTaskModal({
         status: data.status,
         startDate: data.startDate,
         dueDate: data.dueDate,
-        recurTask: data.recurTask,
-        repeat: data.recurTask ? data.repeat : undefined,
         description: data.description,
         budgetKsh: data.budgetKsh || null,
         attachmentName: attachmentFile?.name ?? task.attachmentName ?? undefined,
@@ -252,41 +234,6 @@ export function EditTaskModal({
             />
             <FieldError>{errors.description?.message}</FieldError>
           </Field>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="edit-recurTask"
-              checked={recurTask}
-              onCheckedChange={(c) => setValue("recurTask", c === true)}
-            />
-            <label
-              htmlFor="edit-recurTask"
-              className="cursor-pointer text-sm font-medium leading-none"
-            >
-              Recurring task
-            </label>
-          </div>
-
-          {recurTask ? (
-            <Field>
-              <FieldLabel>Repeat</FieldLabel>
-              <Select
-                value={watch("repeat") ?? ""}
-                onValueChange={(v) => setValue("repeat", v as FormData["repeat"])}
-              >
-                <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder="How often?" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Daily">Daily</SelectItem>
-                  <SelectItem value="Weekly">Weekly</SelectItem>
-                  <SelectItem value="Monthly">Monthly</SelectItem>
-                  <SelectItem value="Yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldError>{errors.repeat?.message}</FieldError>
-            </Field>
-          ) : null}
 
           <Field>
             <FieldLabel className="flex items-center gap-2">

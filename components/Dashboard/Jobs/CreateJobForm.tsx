@@ -34,13 +34,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
-const CREATOR_TYPES = [
-  "Micro-influencer",
-  "Mid-tier",
-  "Macro",
-  "Nano",
-  "Any",
-];
+const CREATOR_TYPES = ["Micro-influencer", "Mid-tier", "Macro", "Nano", "Any"];
 
 const BUDGET_OPTIONS = [
   "Open to Bids",
@@ -56,7 +50,11 @@ const schema = z
       .string()
       .min(2, "Title must be at least 2 characters")
       .max(200, "Title must be 200 characters or less"),
-    description: z.string().max(2000, "Description must be 2000 characters or less").optional().or(z.literal("")),
+    description: z
+      .string()
+      .max(2000, "Description must be 2000 characters or less")
+      .optional()
+      .or(z.literal("")),
     budgetRange: z.string().optional(),
     timelineStart: z.string().optional(),
     timelineEnd: z.string().optional(),
@@ -68,7 +66,10 @@ const schema = z
       if (!start || !end) return true;
       return new Date(end) >= new Date(start);
     },
-    { message: "End date must be on or after start date", path: ["timelineEnd"] }
+    {
+      message: "End date must be on or after start date",
+      path: ["timelineEnd"],
+    },
   );
 
 type FormData = z.infer<typeof schema>;
@@ -142,7 +143,8 @@ export default function CreateJobForm() {
     }
 
     // Backend requires at least one goal and one skill; derive them from form fields
-    const goals = parsedDeliverables.length > 0 ? parsedDeliverables : [data.title];
+    const goals =
+      parsedDeliverables.length > 0 ? parsedDeliverables : [data.title];
     const skills: string[] = [];
     if (creatorType) skills.push(creatorType);
 
@@ -151,21 +153,34 @@ export default function CreateJobForm() {
       values: {
         title: data.title,
         // If description is empty, fall back to deliverables as a detailed description
-        description: data.description || parsedDeliverables.join(", ") || undefined,
+        description:
+          data.description || parsedDeliverables.join(", ") || undefined,
         deliverables: parsedDeliverables,
         creatorType: creatorType || undefined,
         startDate: data.timelineStart || undefined,
         endDate: data.timelineEnd || undefined,
         payment: data.budgetRange || undefined,
-        paymentdesc: data.budgetRange === "Open to Bids" ? "Open to Bids" : undefined,
+        paymentdesc:
+          data.budgetRange === "Open to Bids" ? "Open to Bids" : undefined,
         category: creatorType || undefined,
       },
       goals,
       skills: skills.length > 0 ? skills : ["Content creation"],
       contents: parsedDeliverables,
       platforms: [],
-      ...(collaborators.length > 0
-        ? { collaboratorIds: collaborators.map((c) => c.id) }
+      ...(collaborators.some((c) => c.id != null)
+        ? {
+            collaboratorIds: collaborators
+              .map((c) => c.id)
+              .filter((id): id is number => id != null),
+          }
+        : {}),
+      ...(collaborators.some((c) => c.id == null && c.email)
+        ? {
+            collaboratorEmails: collaborators
+              .filter((c) => c.id == null && c.email)
+              .map((c) => c.email as string),
+          }
         : {}),
     };
     createMutation.mutate(payload);
@@ -198,7 +213,9 @@ export default function CreateJobForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg">Job details</CardTitle>
+              <CardTitle className="text-base sm:text-lg">
+                Job details
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Field>
@@ -226,11 +243,16 @@ export default function CreateJobForm() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg">Deliverables</CardTitle>
+              <CardTitle className="text-base sm:text-lg">
+                Deliverables
+              </CardTitle>
               <FieldDescription>
                 Enter deliverables separated by commas or new lines.
                 <br />
-                Example: <span className="text-muted-foreground">1x Video Review, 2x Stories</span>
+                Example:{" "}
+                <span className="text-muted-foreground">
+                  1x Video Review, 2x Stories
+                </span>
               </FieldDescription>
             </CardHeader>
             <CardContent>
@@ -246,7 +268,8 @@ export default function CreateJobForm() {
                 />
                 {deliverables.length > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    Parsed {deliverables.length} deliverable{deliverables.length === 1 ? "" : "s"}.
+                    Parsed {deliverables.length} deliverable
+                    {deliverables.length === 1 ? "" : "s"}.
                   </p>
                 )}
               </div>
@@ -254,71 +277,84 @@ export default function CreateJobForm() {
           </Card>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg">Creator type</CardTitle>
-              <FieldDescription>Preferred creator tier.</FieldDescription>
-            </CardHeader>
-            <CardContent>
-              <Select value={creatorType} onValueChange={setCreatorType}>
-                <SelectTrigger className="min-h-12 w-full touch-manipulation text-base">
-                  <SelectValue placeholder="Select creator type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CREATOR_TYPES.map((t) => (
-                    <SelectItem key={t} value={t} className="min-h-11">
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg">Budget range</CardTitle>
-              <FieldDescription>e.g. $500 – $2,000 or Open to Bids.</FieldDescription>
-            </CardHeader>
-            <CardContent>
-              <Select value={budgetRange} onValueChange={setBudgetRange}>
-                <SelectTrigger className="min-h-12 w-full touch-manipulation text-base">
-                  <SelectValue placeholder="Select budget range" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUDGET_OPTIONS.map((b) => (
-                    <SelectItem key={b} value={b} className="min-h-11">
-                      {b}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-          </div>
-
-          {user?.id != null && Number.isFinite(Number(user.id)) && Number(user.id) > 0 && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base sm:text-lg">Brand collaborators</CardTitle>
+                <CardTitle className="text-base sm:text-lg">
+                  Creator type
+                </CardTitle>
+                <FieldDescription>Preferred creator tier.</FieldDescription>
+              </CardHeader>
+              <CardContent>
+                <Select value={creatorType} onValueChange={setCreatorType}>
+                  <SelectTrigger className="min-h-12 w-full touch-manipulation text-base">
+                    <SelectValue placeholder="Select creator type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CREATOR_TYPES.map((t) => (
+                      <SelectItem key={t} value={t} className="min-h-11">
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base sm:text-lg">
+                  Budget range
+                </CardTitle>
                 <FieldDescription>
-                  Optional teammates who can help manage proposals for this job.
+                  e.g. $500 – $2,000 or Open to Bids.
                 </FieldDescription>
               </CardHeader>
               <CardContent>
-                <JobCollaboratorsField
-                  ownerUserId={Number(user.id)}
-                  value={collaborators}
-                  onChange={setCollaborators}
-                />
+                <Select value={budgetRange} onValueChange={setBudgetRange}>
+                  <SelectTrigger className="min-h-12 w-full touch-manipulation text-base">
+                    <SelectValue placeholder="Select budget range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BUDGET_OPTIONS.map((b) => (
+                      <SelectItem key={b} value={b} className="min-h-11">
+                        {b}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </CardContent>
             </Card>
-          )}
+          </div>
+
+          {user?.id != null &&
+            Number.isFinite(Number(user.id)) &&
+            Number(user.id) > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base sm:text-lg">
+                    Brand collaborators
+                  </CardTitle>
+                  <FieldDescription>
+                    Optional teammates who can help manage proposals for this
+                    job.
+                  </FieldDescription>
+                </CardHeader>
+                <CardContent>
+                  <JobCollaboratorsField
+                    ownerUserId={Number(user.id)}
+                    value={collaborators}
+                    onChange={setCollaborators}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base sm:text-lg">Timeline</CardTitle>
-              <FieldDescription>Start and end dates for the collaboration.</FieldDescription>
+              <FieldDescription>
+                Start and end dates for the collaboration.
+              </FieldDescription>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <Field>
@@ -338,7 +374,9 @@ export default function CreateJobForm() {
                   className="min-h-12 text-base"
                   aria-invalid={!!errors.timelineEnd}
                 />
-                <FieldError errors={errors.timelineEnd ? [errors.timelineEnd] : []} />
+                <FieldError
+                  errors={errors.timelineEnd ? [errors.timelineEnd] : []}
+                />
               </Field>
             </CardContent>
           </Card>

@@ -126,7 +126,8 @@ export default function JobProposalsList({ jobId, campaignId }: JobProposalsList
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {proposals.map((p) => {
+        {/* Only show the top proposal to avoid continuous scrolling */}
+        {proposals.slice(0, 1).map((p) => {
           const pid = p.id;
           const proposerId = p.proposer?.id;
           const isPending = p.status?.toLowerCase() === "pending";
@@ -250,6 +251,17 @@ export default function JobProposalsList({ jobId, campaignId }: JobProposalsList
           );
         })}
       </div>
+
+      {/* Button to view all proposals on a separate page if there's more than one */}
+      {proposals.length > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Button variant="outline" asChild className="w-full sm:w-auto border-border">
+            <Link href={`/jobs/${jobId}/proposals`}>
+              View all {proposals.length} proposals
+            </Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

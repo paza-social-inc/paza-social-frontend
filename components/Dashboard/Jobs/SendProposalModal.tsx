@@ -5,11 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,8 +20,10 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/store/auth/useAuth";
-import { ProposalCollaboratorsField } from "./ProposalCollaboratorsField";
-import type { JobCollaboratorPick } from "./JobCollaboratorsField";
+import {
+  ProposalCollaboratorsField,
+  type ProposalCollaboratorPick,
+} from "./ProposalCollaboratorsField";
 
 const schema = z.object({
   title: z
@@ -35,6 +33,11 @@ const schema = z.object({
   description: z
     .string()
     .max(2000, "Description must be 2000 characters or less")
+    .refine((val) => {
+      if (!val) return true;
+      const wordCount = val.trim().split(/\s+/).filter(Boolean).length;
+      return wordCount <= 500;
+    }, "Description must be 500 words or less")
     .optional()
     .or(z.literal("")),
   proposedBudget: z
@@ -75,7 +78,9 @@ export function SendProposalModal({
 }: SendProposalModalProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [collaborators, setCollaborators] = useState<JobCollaboratorPick[]>([]);
+  const [collaborators, setCollaborators] = useState<
+    ProposalCollaboratorPick[]
+  >([]);
   const currentUserId = user?.id != null ? Number(user.id) : NaN;
 
   const {
@@ -100,6 +105,7 @@ export function SendProposalModal({
       proposedBudget?: string;
       deliverables?: string[];
       collaboratorIds?: number[];
+      collaboratorEmails?: string[];
     }) => jobsApi.createProposal(jobId, data),
     onSuccess: () => {
       toast.success("Proposal sent successfully");
@@ -111,20 +117,32 @@ export function SendProposalModal({
       onOpenChange(false);
     },
     onError: (err: unknown) => {
-      const res = err as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(res.response?.data?.message ?? res.message ?? "Failed to send proposal");
+      const res = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      toast.error(
+        res.response?.data?.message ?? res.message ?? "Failed to send proposal",
+      );
     },
   });
 
   const onSubmit = (data: FormData) => {
     const parsed = parseDeliverablesList(data.deliverablesText ?? "");
-    const collabIds = collaborators.map((c) => c.id);
+    const collabIds = collaborators
+      .map((c) => c.id)
+      .filter((id): id is number => id != null && Number.isFinite(id));
+    const collabEmails = collaborators
+      .filter((c) => c.id == null && c.email)
+      .map((c) => c.email as string);
+
     createProposalMutation.mutate({
       title: data.title,
       description: data.description || undefined,
       proposedBudget: data.proposedBudget?.trim() || undefined,
       deliverables: parsed.length > 0 ? parsed : undefined,
       collaboratorIds: collabIds.length > 0 ? collabIds : undefined,
+      collaboratorEmails: collabEmails.length > 0 ? collabEmails : undefined,
     });
   };
 
@@ -148,7 +166,7 @@ export function SendProposalModal({
         showCloseButton={true}
         className={cn(
           "max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[90dvh] min-w-0 overflow-x-hidden overflow-y-auto",
-          "rounded-xl border-border bg-card p-0 gap-0"
+          "rounded-xl border-border bg-card p-0 gap-0",
         )}
         aria-describedby={undefined}
       >
@@ -171,7 +189,10 @@ export function SendProposalModal({
             </p>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-6 min-w-0 max-w-full space-y-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="mt-6 min-w-0 max-w-full space-y-5"
+          >
             <Field>
               <FieldLabel>Proposal title *</FieldLabel>
               <Input
@@ -188,7 +209,7 @@ export function SendProposalModal({
                 {...register("description")}
                 placeholder="Describe your approach, experience, and why you're a good fit."
                 rows={5}
-                className="border-border bg-background min-h-[120px] resize-y"
+                className="border-border bg-background min-h-30 resize-y"
               />
               <FieldError>{errors.description?.message}</FieldError>
             </Field>
@@ -204,9 +225,12 @@ export function SendProposalModal({
             </Field>
 
             <Field>
-              <FieldLabel>Deliverables you&apos;re offering (optional)</FieldLabel>
+              <FieldLabel>
+                Deliverables you&apos;re offering (optional)
+              </FieldLabel>
               <FieldDescription>
-                Separate items with commas or new lines (e.g. 1x Video Review, 2x Stories).
+                Separate items with commas or new lines (e.g. 1x Video Review,
+                2x Stories).
               </FieldDescription>
               <Textarea
                 {...register("deliverablesText")}
@@ -227,7 +251,9 @@ export function SendProposalModal({
             ) : (
               <Field>
                 <FieldLabel>Collaborators (optional)</FieldLabel>
-                <FieldDescription>Sign in as a creator to add proposal collaborators.</FieldDescription>
+                <FieldDescription>
+                  Sign in as a creator to add proposal collaborators.
+                </FieldDescription>
               </Field>
             )}
 
