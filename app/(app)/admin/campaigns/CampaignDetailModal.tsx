@@ -12,13 +12,19 @@ import {
   Edit,
   Trash2,
   TrendingUp,
-  AlertCircle,
   CheckCircle2,
-  Eye,
 } from "lucide-react";
+import {
+  AssignedCreator,
+  Campaign,
+  ContentPipelineItem,
+  SuggestedCreator,
+} from "./campaign";
+
+type TabId = "overview" | "creators" | "matching" | "budget" | "pipeline";
 
 interface CampaignDetailModalProps {
-  campaign: any;
+  campaign: Campaign;
   onClose: () => void;
 }
 
@@ -27,9 +33,7 @@ export default function CampaignDetailModal({
   onClose,
 }: CampaignDetailModalProps) {
   const [editMode, setEditMode] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "creators" | "matching" | "budget" | "pipeline"
-  >("overview");
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [expandedMatchIndex, setExpandedMatchIndex] = useState<number | null>(null);
 
   return (
@@ -54,18 +58,20 @@ export default function CampaignDetailModal({
 
         {/* TABS */}
         <div className="bg-[#0F1115] border-b border-[#262B36] px-6 py-4 flex gap-2 overflow-x-auto">
-          {[
-            { id: "overview", label: "Overview", icon: Target },
-            { id: "creators", label: "Assigned Creators", icon: Users },
-            { id: "matching", label: "Matching Transparency", icon: TrendingUp },
-            { id: "budget", label: "Budget", icon: DollarSign },
-            { id: "pipeline", label: "Content Pipeline", icon: Clock },
-          ].map((tab) => {
+          {(
+            [
+              { id: "overview" as const, label: "Overview", icon: Target },
+              { id: "creators" as const, label: "Assigned Creators", icon: Users },
+              { id: "matching" as const, label: "Matching Transparency", icon: TrendingUp },
+              { id: "budget" as const, label: "Budget", icon: DollarSign },
+              { id: "pipeline" as const, label: "Content Pipeline", icon: Clock },
+            ] satisfies { id: TabId; label: string; icon: typeof Target }[]
+          ).map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition border ${
                   activeTab === tab.id
                     ? "bg-orange-500/20 border-orange-500/40 text-orange-300"
@@ -159,7 +165,7 @@ export default function CampaignDetailModal({
                 </h3>
                 {campaign.assignedCreators.length > 0 ? (
                   <div className="space-y-2">
-                    {campaign.assignedCreators.map((creator: any) => (
+                    {campaign.assignedCreators.map((creator: AssignedCreator) => (
                       <div
                         key={creator.id}
                         className="bg-[#1B2029] border border-[#2A3140] rounded-xl p-4 flex justify-between items-center"
@@ -198,11 +204,10 @@ export default function CampaignDetailModal({
                 </p>
 
                 <div className="space-y-4">
-                  {campaign.suggestedCreators.map((creator: any, idx: number) => (
+                  {campaign.suggestedCreators.map((creator: SuggestedCreator, idx: number) => (
                     <MatchingCreatorCard
                       key={idx}
                       creator={creator}
-                      campaign={campaign}
                       isExpanded={expandedMatchIndex === idx}
                       onToggle={() =>
                         setExpandedMatchIndex(
@@ -281,7 +286,7 @@ export default function CampaignDetailModal({
 
               {campaign.contentPipeline.length > 0 ? (
                 <div className="space-y-3">
-                  {campaign.contentPipeline.map((content: any, idx: number) => (
+                  {campaign.contentPipeline.map((content: ContentPipelineItem, idx: number) => (
                     <div
                       key={idx}
                       className="bg-[#1B2029] border border-[#2A3140] rounded-xl p-4"
@@ -313,12 +318,10 @@ export default function CampaignDetailModal({
 
 function MatchingCreatorCard({
   creator,
-  campaign,
   isExpanded,
   onToggle,
 }: {
-  creator: any;
-  campaign: any;
+  creator: SuggestedCreator;
   isExpanded: boolean;
   onToggle: () => void;
 }) {
