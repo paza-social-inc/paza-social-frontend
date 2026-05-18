@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Briefcase, Search, Users, Eye } from "lucide-react";
 import AdminNav from "@/components/Admin/AdminNav";
 import { CampaignStatusBadge } from "@/components/Admin/ui";
-import { CampaignDetailModal } from "./CampaignDetailModal";
+import CampaignDetailModal from "./CampaignDetailModal";
 import { MOCK_CAMPAIGNS } from "./mockCampaigns";
 import { Campaign, CampaignStatusFilter, CampaignSortField } from "./campaign";
 
