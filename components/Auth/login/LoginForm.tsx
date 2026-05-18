@@ -58,7 +58,7 @@ export function LoginForm({
     const setAuth = useAuthStore((s) => s.setAuth);
 
     const loginMutation = useMutation({
-        mutationFn: (data: FormData) => pazaApi.post("/api/auth/login", data),
+        mutationFn: (data: FormData) => pazaApi.post("/auth/login", data),
         onSuccess: async (res: AxiosResponse) => {
             toast.success("Login successful!");
             const token = res.data.token;
@@ -186,3 +186,5 @@ export function LoginForm({
         </form>
     )
 }
+
+// export default LoginForm;

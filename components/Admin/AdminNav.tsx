@@ -35,7 +35,7 @@ export default function AdminNav() {
     localStorage.removeItem("token");
     localStorage.removeItem("adminRole");
     localStorage.removeItem("adminId");
-    router.push("/admin-login");
+    router.push("/admin/log-in");
   };
 
   return (
@@ -59,9 +59,12 @@ export default function AdminNav() {
               const Icon = item.icon;
               const isActive = pathname === item.href;
 
+              // Ensure a unique, stable key: prefer item.key, fallback to href+name combo
+              const uniqueKey = item.key || `${item.href}-${item.name}`;
+
               return (
                 <Link
-                  key={item.key}
+                  key={uniqueKey}
                   href={item.href}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition border ${
                     isActive

@@ -16,7 +16,7 @@ import {
   Timer,
   Loader2,
 } from "lucide-react";
-import Calendar from "@/components/Dashboard/tasks/Calendar";
+import dynamic from "next/dynamic";
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import {
   RadialBarChart,
@@ -63,6 +63,13 @@ function formatShortDate(iso?: string): string {
     year: "numeric",
   });
 }
+
+const Calendar = dynamic(
+  () => import("@/components/Dashboard/tasks/Calendar"),
+  {
+    ssr: false,
+  }
+);
 
 export default function OverviewPage() {
   const { user } = useAuth();
