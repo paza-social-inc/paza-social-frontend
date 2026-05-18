@@ -4,12 +4,10 @@ import { useState } from "react";
 import {
   Lock,
   AlertCircle,
-  CheckCircle2,
   Clock,
-  TrendingDown,
-  Filter,
   Search,
 } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 const ESCROW_DATA = {
   totalEscrow: 2500000,
@@ -167,7 +165,7 @@ function EscrowCard({
   amount,
   color,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   amount: number;
   color: string;

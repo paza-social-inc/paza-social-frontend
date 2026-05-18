@@ -1,8 +1,7 @@
 "use client";
 
 import { DollarSign, TrendingUp, Lock, CheckCircle2, AlertCircle, Clock } from "lucide-react";
-// import { OverviewCard } from "@/app/(app)/admin/payments/shared/OverviewCard";
-
+import { LucideIcon } from "lucide-react";
 
 // dummy data
 const OVERVIEW_DATA = {
@@ -135,7 +134,7 @@ export default function FinancialOverview() {
           Financial Health Status
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <HealthItem
+          <HealthItem
             label="Suspicious Transactions"
             value={String(OVERVIEW_DATA.suspiciousTransactions)}
             status="warning"
@@ -167,7 +166,7 @@ function OverviewCard({
   color,
   trend,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
   subtext: string;
