@@ -235,7 +235,7 @@ export default function TasksPage() {
     }
 
     return [...rawTasks, ...campaignItems];
-  }, [columns, campaigns, isCreatorAccount, user?.id]);
+  }, [columns, campaigns, isCreatorAccount]);
 
   const detailTaskReadOnlyMetadata = useMemo(
     () => (detailTask ? taskIsAssigneeNotCreator(detailTask, user) : false),

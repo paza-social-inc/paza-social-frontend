@@ -20,7 +20,7 @@ import {
   ArrowUp,
   ArrowUpRight,
   Instagram,
-  Mouse,
+  // Mouse,
   Youtube,
 } from "lucide-react";
 import {
