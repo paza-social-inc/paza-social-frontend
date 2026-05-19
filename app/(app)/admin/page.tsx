@@ -73,7 +73,7 @@ const MOCK_CHART_DATA = {
 
 export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState("month");
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<typeof MOCK_STATS | null>(null);
 
     useEffect(() => {
     async function fetchStats() {
