@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 import {
   Users,
   Briefcase,
@@ -72,6 +73,21 @@ const MOCK_CHART_DATA = {
 
 export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState("month");
+  const [stats, setStats] = useState<any>(null);
+
+    useEffect(() => {
+    async function fetchStats() {
+      try {
+        const data = await apiFetch("/api/admin/dashboard");
+        setStats(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  if (!stats) return <p>Loading...</p>;
 
   return (
     <div className="min-h-screen bg-[#0F1115] text-white">

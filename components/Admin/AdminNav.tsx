@@ -35,7 +35,7 @@ export default function AdminNav() {
     localStorage.removeItem("token");
     localStorage.removeItem("adminRole");
     localStorage.removeItem("adminId");
-    router.push("/admin-login");
+    router.push("/admin/log-in");
   };
 
   return (
@@ -59,9 +59,12 @@ export default function AdminNav() {
               const Icon = item.icon;
               const isActive = pathname === item.href;
 
+              // Ensure a unique, stable key: prefer item.key, fallback to href+name combo
+              const uniqueKey = item.key || `${item.href}-${item.name}`;
+
               return (
                 <Link
-                  key={item.key}
+                  key={uniqueKey}
                   href={item.href}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition border ${
                     isActive
@@ -107,7 +110,7 @@ export default function AdminNav() {
                     className="flex items-center gap-3 px-4 py-3 text-zinc-300 hover:bg-[#242B36] transition border-b border-[#262B36]"
                   >
                     <Settings className="w-4 h-4 text-orange-400" />
-                    Profile Settings
+                    Profile Settings Page
                   </Link>
 
                   <button

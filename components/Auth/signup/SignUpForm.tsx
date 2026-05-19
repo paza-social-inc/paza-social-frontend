@@ -315,7 +315,7 @@ export function SignupForm({
 
 
 
-                    <Button disabled={signUpMutation.isPending} variant="outline" type="button" onClick={() => window.location.href = `https://accounts.google.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}&response_type=code&scope=email%20profile&state=${accountType}`} className="w-full">
+                    <Button disabled={signUpMutation.isPending} variant="outline" type="button" onClick={() => window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}&response_type=code&scope=email%20profile&state=${accountType}`} className="w-full">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
