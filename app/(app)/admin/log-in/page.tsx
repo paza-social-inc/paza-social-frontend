@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -21,7 +21,13 @@ export default function AdminLogin() {
       });
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem(
+          "admin_token",
+          data.token
+        );
+        document.cookie =
+          `admin_token=${data.token}; path=/`;
+
         window.location.href = "/admin";
       } else {
         setError(data.message || "Invalid credentials.");

@@ -23,17 +23,14 @@ import ChartCard from "@/components/Admin/ChartCard";
 
 // MOCK DATA
 const MOCK_STATS = {
-  totalCreators: 3542,
-  totalBrands: 256,
   liveCampaigns: 128,
   activeCampaigns: 45,
   inReviewCampaigns: 23,
   completedCampaigns: 891,
   flaggedCampaigns: 8,
   flaggedCreators: 12,
-  pendingApprovals: 15,
-  escrowHeld: 2500000,
   pendingPayments: 31,
+  pendingApprovals: 12,
   totalRevenue: 247890,
 };
 
@@ -73,19 +70,31 @@ const MOCK_CHART_DATA = {
 
 export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState("month");
-  const [stats, setStats] = useState<typeof MOCK_STATS | null>(null);
+  const [stats, setStats] = useState<{
+    activeCreators: number;
+    activeBrands: number;
+    pendingApprovals: number;
+    activeCampaigns: number;
+    escrowHeld: number;
+    escrowPending: number;
+    pendingPayments: number;
+    newCreatorsThisMonth: number;
+    newBrandsThisMonth: number;
+  } | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     async function fetchStats() {
       try {
         const data = await apiFetch("/api/admin/dashboard");
-        setStats(data);
+        setStats(data.stats);
       } catch (err) {
         console.error(err);
       }
     }
     fetchStats();
   }, []);
+  const creatorsJoined = stats?.newCreatorsThisMonth ?? 0;
+  const brandsJoined = stats?.newBrandsThisMonth ?? 0;
 
   if (!stats) return <p>Loading...</p>;
 
@@ -125,19 +134,19 @@ export default function AdminDashboard() {
           <StatCard
             icon={Users}
             label="Active Creators"
-            value={MOCK_STATS.totalCreators.toLocaleString()}
-            subtext="+425 this month"
+            value={stats.activeCreators.toLocaleString()}
+            subtext={`+${creatorsJoined} this month`}
             color="orange"
-            trend="up"
+            trend={creatorsJoined > 0 ? "up" : creatorsJoined < 0 ? "down" : "neutral"}
           />
 
           <StatCard
             icon={Users}
             label="Active Brands"
-            value={MOCK_STATS.totalBrands.toLocaleString()}
-            subtext="+21 this month"
+            value={stats.activeBrands.toLocaleString()}
+            subtext={`+${brandsJoined} this month`}
             color="amber"
-            trend="up"
+            trend={ brandsJoined > 0 ? "up" : brandsJoined < 0 ? "down" : "neutral"}
           />
 
           <StatCard
@@ -164,7 +173,7 @@ export default function AdminDashboard() {
           <StatCard
             icon={AlertCircle}
             label="Pending Approvals"
-            value={MOCK_STATS.pendingApprovals.toLocaleString()}
+            value={stats.pendingApprovals.toLocaleString()}
             subtext="Awaiting admin review"
             color="orange"
             trend="neutral"
@@ -173,8 +182,8 @@ export default function AdminDashboard() {
           <StatCard
             icon={BarChart3}
             label="Escrow Held"
-            value={`KES ${(MOCK_STATS.escrowHeld / 1000000).toFixed(1)}M`}
-            subtext={`${MOCK_STATS.pendingPayments} pending releases`}
+            value={`KES ${(stats.escrowHeld)}`}
+            subtext={`${stats.escrowPending} pending releases`}
             color="amber"
             trend="down"
           />
@@ -267,7 +276,7 @@ export default function AdminDashboard() {
               <QuickActionButton
                 label="Release Payments"
                 icon={Wallet}
-                count={MOCK_STATS.pendingPayments}
+                count= {stats.escrowPending}
                 href="/admin/payments"
               />
 

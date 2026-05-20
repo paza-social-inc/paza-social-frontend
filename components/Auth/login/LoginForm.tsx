@@ -58,13 +58,18 @@ export function LoginForm({
     const setAuth = useAuthStore((s) => s.setAuth);
 
     const loginMutation = useMutation({
-        mutationFn: (data: FormData) => pazaApi.post("/auth/login", data),
+        mutationFn: (data: FormData) => pazaApi.post("/api/auth/login", data),
         onSuccess: async (res: AxiosResponse) => {
             toast.success("Login successful!");
             const token = res.data.token;
             const user = res.data.user;
             await setAuthToken(token);
-            if (typeof window !== "undefined") window.localStorage.setItem("token", token);
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("admin_token");
+                localStorage.setItem("token", token);
+                document.cookie =
+                `token=${token}; path=/`;
+            }
             if (token && user) {
                 setAuth(token, {
                     id: user.id != null ? String(user.id) : undefined,
@@ -76,8 +81,16 @@ export function LoginForm({
             }
             window.location.href = "/overview";
         },
-        onError: (res: AxiosResponse) => {
-            toast.error(res.data || "Invalid Credentials")
+        onError: (error: any) => {
+
+            console.error(error);
+
+            const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            "Invalid credentials";
+
+            toast.error(message);
         }
     })
 
