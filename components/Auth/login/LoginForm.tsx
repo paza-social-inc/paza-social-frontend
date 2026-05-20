@@ -25,7 +25,7 @@ import {
     RiMailLine,
 } from "@remixicon/react";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -54,7 +54,6 @@ export function LoginForm({
         resolver: zodResolver(schema)
     })
 
-
     const setAuth = useAuthStore((s) => s.setAuth);
 
     const loginMutation = useMutation({
@@ -81,25 +80,21 @@ export function LoginForm({
             }
             window.location.href = "/overview";
         },
-        onError: (error: any) => {
-
+        onError: (error: AxiosError<{ message?: string; error?: string }>) => {
             console.error(error);
 
             const message =
-            error?.response?.data?.message ||
-            error?.response?.data?.error ||
-            "Invalid credentials";
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                "Invalid credentials";
 
             toast.error(message);
         }
     })
 
-
-
     const onSubmit = (data: FormData) => {
         loginMutation.mutate(data);
     }
-
 
     return (
         <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit(onSubmit)} {...props}>
