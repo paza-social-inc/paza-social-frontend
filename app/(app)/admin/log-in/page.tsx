@@ -14,7 +14,7 @@ export default function AdminLogin() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/log-in`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/log-in`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -26,12 +26,13 @@ export default function AdminLogin() {
           data.token
         );
         document.cookie =
-          `admin_token=${data.token}; path=/`;
+          `admin_token=${data.token}; path=/; secure; samesite=lax`;
         router.push("/admin");
       } else {
-        setError(data.message || "Invalid credentials.");
+          setError(data.message || "Invalid credentials.");
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Server unreachable. Try again.");
     } finally {
       setLoading(false);
