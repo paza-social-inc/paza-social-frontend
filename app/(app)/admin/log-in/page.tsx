@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  // const router = useRouter();
+  const router = useRouter();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -27,8 +27,8 @@ export default function AdminLogin() {
         );
         document.cookie =
           `admin_token=${data.token}; path=/`;
-
-        window.location.href = "/admin";
+          
+        router.push("/admin");
       } else {
         setError(data.message || "Invalid credentials.");
       }
