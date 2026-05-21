@@ -14,10 +14,6 @@ export async function apiFetch(
     localStorage.getItem("admin_token") ||
     localStorage.getItem("token");
 
-  console.log("API_URL:", API_URL);
-  console.log("ENDPOINT:", endpoint);
-  console.log("FINAL URL:", `${API_URL}${endpoint}`);
-
   const res = await fetch(
     `${API_URL}${endpoint}`,
     {
