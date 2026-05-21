@@ -23,7 +23,7 @@ import ChartCard from "@/components/Admin/ChartCard";
 
 // MOCK DATA
 const MOCK_STATS = {
-  liveCampaigns: 128,
+  // liveCampaigns: 128,
   activeCampaigns: 45,
   inReviewCampaigns: 23,
   completedCampaigns: 891,
@@ -31,42 +31,10 @@ const MOCK_STATS = {
   flaggedCreators: 12,
   pendingPayments: 31,
   pendingApprovals: 12,
-  totalRevenue: 247890,
+  // totalRevenue: 247890,
 };
 
-const MOCK_CHART_DATA = {
-  brandsVsCreators: {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Brands",
-        data: [32, 45, 52, 68, 76, 85],
-        backgroundColor: "rgba(249, 115, 22, 0.8)",
-        borderRadius: 8,
-      },
-      {
-        label: "Creators",
-        data: [128, 156, 201, 285, 342, 398],
-        backgroundColor: "rgba(251, 191, 36, 0.8)",
-        borderRadius: 8,
-      },
-    ],
-  },
 
-  revenueTrend: {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Revenue (KES)",
-        data: [45000, 52000, 61000, 78000, 92000, 124000],
-        borderColor: "rgba(249, 115, 22, 1)",
-        backgroundColor: "rgba(249, 115, 22, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
-  },
-};
 
 export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState("month");
@@ -78,8 +46,20 @@ export default function AdminDashboard() {
     escrowHeld: number;
     escrowPending: number;
     pendingPayments: number;
+    totalRevenue: number;
     newCreatorsThisMonth: number;
     newBrandsThisMonth: number;
+    platformGrowth: number;
+    chartData: {
+      label: string;
+      brands: number;
+      creators: number;
+      revenue: number;
+    }[];
+    inReviewCampaigns: number;
+    completedCampaigns: number;
+    flaggedCampaigns: number;
+    flaggedCreators: number;
   } | null>(null);
 
   useEffect(() => {
@@ -95,8 +75,42 @@ export default function AdminDashboard() {
   }, []);
   const creatorsJoined = stats?.newCreatorsThisMonth ?? 0;
   const brandsJoined = stats?.newBrandsThisMonth ?? 0;
+  const campaignsJoined = stats?.activeCampaigns ?? 0;
+  const revenue = stats?.totalRevenue ?? 0;
 
   if (!stats) return <p>Loading...</p>;
+  
+  const brandsVsCreatorsData = {
+    labels: stats.chartData.map((d) => d.label),
+    datasets: [
+      {
+        label: "Brands",
+        data: stats.chartData.map((d) => d.brands),
+        backgroundColor: "rgba(249, 115, 22, 0.8)",
+        borderRadius: 8,
+      },
+      {
+        label: "Creators",
+        data: stats.chartData.map((d) => d.creators),
+        backgroundColor: "rgba(251, 191, 36, 0.8)",
+        borderRadius: 8,
+      },
+    ],
+  };
+  
+  const revenueTrendData = {
+    labels: stats.chartData.map((d) => d.label),
+    datasets: [
+      {
+        label: "Revenue (KES)",
+        data: stats.chartData.map((d) => d.revenue),
+        borderColor: "rgba(249, 115, 22, 1)",
+        backgroundColor: "rgba(249, 115, 22, 0.1)",
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-[#0F1115] text-white">
@@ -152,19 +166,19 @@ export default function AdminDashboard() {
           <StatCard
             icon={Briefcase}
             label="Live Campaigns"
-            value={MOCK_STATS.liveCampaigns.toLocaleString()}
+            value={stats.activeCampaigns.toLocaleString()}
             subtext="32 pending approvals"
             color="orange"
-            trend="up"
+            trend={campaignsJoined > 0 ? "up" : campaignsJoined < 0 ? "down" : "neutral"}
           />
 
           <StatCard
             icon={CreditCard}
             label="Revenue"
-            value={`KES ${(MOCK_STATS.totalRevenue * 1000).toLocaleString()}`}
+            value={`KES ${stats.totalRevenue.toLocaleString()}`}
             subtext="+15% from last month"
             color="amber"
-            trend="up"
+            trend={revenue > 0 ? "up" : revenue < 0 ? "down" : "neutral"}
           />
         </div>
 
@@ -191,10 +205,10 @@ export default function AdminDashboard() {
           <StatCard
             icon={TrendingUp}
             label="Platform Growth"
-            value="+24%"
-            subtext="YoY growth rate"
+            value={`${stats.platformGrowth > 0 ? "+" : ""}${stats.platformGrowth}%`}
+            subtext="vs last month (users + campaigns + revenue)"
             color="orange"
-            trend="up"
+            trend={stats.platformGrowth > 0 ? "up" : stats.platformGrowth < 0 ? "down" : "neutral"}
           />
         </div>
 
@@ -204,14 +218,14 @@ export default function AdminDashboard() {
             title="Brands vs Creators Growth"
             description="Monthly comparison of platform participants"
             type="bar"
-            data={MOCK_CHART_DATA.brandsVsCreators}
+            data={brandsVsCreatorsData}
           />
 
           <ChartCard
             title="Revenue Trend"
             description="Monthly platform revenue"
             type="line"
-            data={MOCK_CHART_DATA.revenueTrend}
+            data={revenueTrendData}
           />
         </div>
 
@@ -227,25 +241,25 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               <CampaignStatusItem
                 name="Active Campaigns"
-                count={MOCK_STATS.activeCampaigns}
+                count={stats.activeCampaigns}
                 color="orange"
               />
 
               <CampaignStatusItem
                 name="In Review"
-                count={MOCK_STATS.inReviewCampaigns}
+                count={stats.inReviewCampaigns}
                 color="amber"
               />
 
               <CampaignStatusItem
                 name="Completed"
-                count={MOCK_STATS.completedCampaigns}
+                count={stats.completedCampaigns}
                 color="green"
               />
 
               <CampaignStatusItem
                 name="Flagged"
-                count={MOCK_STATS.flaggedCampaigns}
+                count={stats.flaggedCampaigns}
                 color="red"
               />
             </div>
@@ -262,7 +276,7 @@ export default function AdminDashboard() {
               <QuickActionButton
                 label="Review Flagged Items"
                 icon={ShieldAlert}
-                count={MOCK_STATS.flaggedCreators}
+                count={stats.flaggedCreators}
                 href="/admin/creators"
               />
 
