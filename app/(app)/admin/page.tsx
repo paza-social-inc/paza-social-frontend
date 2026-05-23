@@ -21,21 +21,6 @@ import AdminNav from "@/components/Admin/AdminNav";
 import StatCard from "@/components/Admin/StatCard";
 import ChartCard from "@/components/Admin/ChartCard";
 
-// MOCK DATA
-const MOCK_STATS = {
-  // liveCampaigns: 128,
-  activeCampaigns: 45,
-  inReviewCampaigns: 23,
-  completedCampaigns: 891,
-  flaggedCampaigns: 8,
-  flaggedCreators: 12,
-  pendingPayments: 31,
-  pendingApprovals: 12,
-  // totalRevenue: 247890,
-};
-
-
-
 export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState("month");
   const [stats, setStats] = useState<{
@@ -79,7 +64,7 @@ export default function AdminDashboard() {
   const revenue = stats?.totalRevenue ?? 0;
 
   if (!stats) return <p>Loading...</p>;
-  
+
   const brandsVsCreatorsData = {
     labels: stats.chartData.map((d) => d.label),
     datasets: [
@@ -97,7 +82,7 @@ export default function AdminDashboard() {
       },
     ],
   };
-  
+
   const revenueTrendData = {
     labels: stats.chartData.map((d) => d.label),
     datasets: [
@@ -131,16 +116,6 @@ export default function AdminDashboard() {
             </h2>
           </div>
 
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-4 py-2 bg-[#1A1F29] border border-[#2B3240] rounded-xl text-white text-sm hover:border-orange-400 transition focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="all">All Time</option>
-          </select>
         </div>
 
         {/* STATS ROW 1 */}
@@ -196,7 +171,7 @@ export default function AdminDashboard() {
           <StatCard
             icon={BarChart3}
             label="Escrow Held"
-            value={`KES ${(stats.escrowHeld)}`}
+            value={`KES ${(stats.escrowHeld).toLocaleString()}`}
             subtext={`${stats.escrowPending} pending releases`}
             color="amber"
             trend="down"
@@ -283,7 +258,7 @@ export default function AdminDashboard() {
               <QuickActionButton
                 label="Approve Campaigns"
                 icon={CheckCircle2}
-                count={MOCK_STATS.pendingApprovals}
+                count={0}
                 href="/admin/campaigns"
               />
 
