@@ -388,8 +388,8 @@ export default function CampaignList({ onOpenCreateCampaign }: CampaignListProps
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["campaigns"],
-    queryFn: () => campaignApi.getAll(),
+    queryKey: ["campaigns", "mine"],
+    queryFn: () => campaignApi.getMine(),
     staleTime: 0,
     // Ensure ownership changes in DB show up immediately (avoid stale cache
     // causing "modal shows more than list" discrepancies).

@@ -5,12 +5,6 @@ import { LucideIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 
-// dummy data
-const OVERVIEW_DATA = {
-  platformCommission: 247890,
-  brandPayments: 2500000,
-};
-
 export default function FinancialOverview() {
 
   const [stats, setStats] = useState<{
