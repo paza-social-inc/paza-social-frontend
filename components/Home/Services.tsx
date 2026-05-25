@@ -18,63 +18,128 @@ const CONTAINER = "px-4 sm:px-6 lg:px-10 xl:px-14 max-w-[1220px] mx-auto";
 const BRAND_SERVICE_DETAILS = [
   {
     idx: "(01)",
-    title: "Effortless collaboration",
+    title: "Audience Intelligence",
     description: [
-      "Smart Matching — AI-powered system connects brands with the right creators based on audience, style and engagement.",
-      "Seamless communication — in-app messaging & collaboration tools to keep discussions organized.",
-      "Approval workflows — brands can review, request edits, and approve content before it goes live.",
+      "Analyze audience behavior patterns across creator and community networks.",
     ],
   },
   {
     idx: "(02)",
-    title: "Campaign Management",
+    title: "Identity & Value Mapping",
     description: [
-      "End-to-End Dashboard — create, manage and track all influencer campaigns in one place.",
-      "Seamless communication — in-app messaging & collaboration tools to keep discussions organized.",
-      "Approval workflows — brands can review, request edits, and approve content before it goes live.",
+      "Map brand positioning, customer identity, and campaign objectives against creator positioning to identify aligned partnerships.",
     ],
   },
   {
     idx: "(03)",
-    title: "Transparent Payments & Rewards",
+    title: "Contextual Creator–Brand Matching",
     description: [
-      "Smart Matching — AI-powered system connects brands with the right creators based on audience, style and engagement.",
-      "Seamless communication — in-app messaging & collaboration tools to keep discussions organized.",
-      "Approval workflows — brands can review, request edits, and approve content before it goes live.",
+      "Identify creator partnerships based on audience relevance, behavioral signals, values, and campaign context.",
+    ],
+  },
+  {
+    idx: "(04)",
+    title: "Collaboration Workflow Management",
+    description: [
+      "Coordinate multi-stakeholder campaigns through structured collaboration systems. Assign tasks, set teams, communicate, and manage budgets.",
+    ],
+  },
+  {
+    idx: "(05)",
+    title: "Real-Time Collaboration Tracking",
+    description: [
+      "Monitor campaign activity, deliverables, and collaboration progress in real time.",
+    ],
+  },
+  {
+    idx: "(06)",
+    title: "Outcome Attribution & Analytics",
+    description: [
+      "Measure how creator-led interactions contribute to business outcomes and conversion activity.",
+    ],
+  },
+  {
+    idx: "(07)",
+    title: "Campaign Intelligence Reporting",
+    description: [
+      "Generate insights to refine audience targeting, messaging, and future collaboration performance.",
+    ],
+  },
+  {
+    idx: "(08)",
+    title: "Secure Payment Infrastructure",
+    description: [
+      "Manage trusted payouts and performance-linked payment coordination.",
     ],
   },
 ];
+
 
 const CREATOR_SERVICE_DETAILS = [
   {
     idx: "(01)",
-    title: "Discover high-fit opportunities",
+    title: "Creator Showcase & Portfolio Presentation",
     description: [
-      "Smart discovery — find campaigns matched to your niche, audience and creative style.",
-      "Clear briefs — understand deliverables, timelines and approval flow before you commit.",
-      "Faster pitching — submit polished proposals and track responses in one place.",
+      "Present work, audience positioning, partnerships, assets, and creative identity through structured creator profiles.",
     ],
   },
   {
     idx: "(02)",
-    title: "Create with confidence",
+    title: "Audience Intelligence",
     description: [
-      "Structured workflows — keep concepting, edits and feedback organized across collaborations.",
-      "Project visibility — track campaign progress, objectives and milestones in real time.",
-      "Professional presentation — showcase your work with a portfolio brands can review instantly.",
+      "Understand audience behavior, engagement patterns, and community alignment.",
     ],
   },
   {
     idx: "(03)",
-    title: "Reliable earnings",
+    title: "Identity & Value Mapping",
     description: [
-      "Transparent payments — know what you are earning and when each payout is scheduled.",
-      "Simple reconciliation — manage proposals, accepted work and completed deliverables clearly.",
-      "Growth-ready setup — scale from one-off jobs to long-term brand partnerships.",
+      "Position creator identity, values, and audience alignment for partnership discovery.",
+    ],
+  },
+  {
+    idx: "(04)",
+    title: "Brand Partnership Matching",
+    description: [
+      "Connect with brands aligned to audience relevance, content positioning, and collaboration intent.",
+    ],
+  },
+  {
+    idx: "(05)",
+    title: "Collaboration Workflow Management",
+    description: [
+      "Manage campaign requirements, deliverables, approvals, and communication in one system.",
+    ],
+  },
+  {
+    idx: "(06)",
+    title: "Real-Time Collaboration Tracking",
+    description: [
+      "Track collaboration progress, deadlines, approvals, and campaign activity.",
+    ],
+  },
+  {
+    idx: "(07)",
+    title: "Performance Analytics",
+    description: [
+      "Measure audience engagement, conversion activity, and campaign performance.",
+    ],
+  },
+  {
+    idx: "(08)",
+    title: "Secure Payment Infrastructure",
+    description: [
+      "Receive structured and transparent collaboration payouts.",
+    ],
+  },
+  {
+    idx: "(09)",
+    title: "Campaign Intelligence Insights",
+    description: [
+      "Access performance insights to improve future partnerships and audience alignment.",
     ],
   },
 ];
-
 const PRICING_PLANS = [
   {
     name: "Free plan",
@@ -191,8 +256,8 @@ export default function Services() {
   const pricingPlans = pricingTab === "brands" ? PRICING_PLANS : CREATOR_PRICING_PLANS;
 
   return (
-    <HomeLayout hideFooter>
-      <div className="min-h-screen bg-background pt-14 text-foreground">
+    <HomeLayout hideFooter >
+      <div className="min-h-screen bg-background pt-14 text-foreground" id="services">
         <section className="relative overflow-hidden">
           <div className={CONTAINER}>
             <div className="pt-8 sm:pt-10 pb-12 sm:pb-14">
@@ -218,12 +283,12 @@ export default function Services() {
                     </h1>
                   </div>
 
-                  <div className="absolute bottom-4 left-0 right-0 px-4 sm:bottom-10 sm:left-0 sm:right-auto lg:bottom-24 sm:max-w-sm sm:p-6">
-                    <p className="mx-auto max-w-[min(100%,22rem)] text-[13px] leading-relaxed text-white/90 sm:mx-0 sm:max-w-[280px] sm:text-sm">
-                      Together we create a powerful synergy that propels creativity, fuels innovation, and
-                      unlocks endless possibilities. Join us at Paza and embark on a transformative journey.
-                    </p>
-                  </div>
+                  {/* <div className="absolute bottom-4 left-0 right-0 px-4 sm:bottom-10 sm:left-0 sm:right-auto lg:bottom-24 sm:max-w-sm sm:p-6"> */}
+                  {/*   <p className="mx-auto max-w-[min(100%,22rem)] text-[13px] leading-relaxed text-white/90 sm:mx-0 sm:max-w-[280px] sm:text-sm"> */}
+                  {/*     Together we create a powerful synergy that propels creativity, fuels innovation, and */}
+                  {/*     unlocks endless possibilities. Join us at Paza and embark on a transformative journey. */}
+                  {/*   </p> */}
+                  {/* </div> */}
                 </div>
 
                 <div className="relative w-full lg:w-[460px] min-h-[260px] sm:min-h-[320px] lg:min-h-[560px]">
