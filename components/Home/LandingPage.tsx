@@ -109,8 +109,7 @@ function PazaSplashHero() {
         <div className="relative z-10 mx-auto flex h-full w-full max-w-[1440px] flex-col justify-between px-4 pb-0 pt-[min(20vh,8rem)] sm:px-6 md:px-10 lg:px-12 xl:px-[60px]">
           <MaskedReveal delay={0.06} className="block w-full">
             <p className={heroCopyClass}>
-              Collaborate with creators, communities, individuals, or brands that perfectly align with your
-              essence and goals.
+            identify high-trust audience clusters and run measurable campaigns.
             </p>
           </MaskedReveal>
 
@@ -213,8 +212,7 @@ function ConnectingHeroSection() {
                 className={`${bodyMicro} absolute right-0 top-0 text-right`}
                 style={{ maxWidth: "calc(100% - min(30vw, 116px) - 12px)" }}
               >
-                Build partnerships driven by mutual success, growth, and a shared passion to create
-                lasting impact — maximizing the value and potential of every campaign.
+              Detect environments where your topics of interest sits, deploy controlled inputs into those spaces, measure response, establish causality
               </p>
             </MaskedReveal>
           </div>
@@ -232,18 +230,21 @@ function ConnectingHeroSection() {
               </div>
             </MaskedReveal>
 
-            <MaskedReveal delay={0.06}>
-              <p
-                className="pl-0 font-normal uppercase text-neutral-900 dark:text-[#F9F9F9]"
-                style={connectingHeadlineMobile}
-              >
-                Connecting
-              </p>
-            </MaskedReveal>
+            {/* // <MaskedReveal delay={0.06}> */}
+            {/* //   <p */}
+            {/* //     className="pl-0 font-normal uppercase text-neutral-900 dark:text-[#F9F9F9]" */}
+            {/* //     style={connectingHeadlineMobile} */}
+            {/* //   > */}
+            {/* //   Map audience signals across brands, {" "} */}
+            {/* // */}
+            {/* //   </p> */}
+            {/* </MaskedReveal> */}
             <MaskedReveal delay={0.1}>
-              <p className="pl-[min(6vw,48px)] font-normal uppercase" style={connectingHeadlineMobile}>
-                <span className={ORANGE_CONNECTING}>Brands</span>{" "}
-                <span className="text-neutral-900 dark:text-[#F9F9F9]">And</span>
+              <p className="pl-[min(6vw,48px)] font-normal uppercase " style={connectingHeadlineMobile}>
+              {/* Map audience signals across brands, creators, and communities. */}
+                <span style={connectingHeadlineMobile} > Map audience signals across brands, </span>{" "} {'\n'}
+                <span className={ORANGE_CONNECTING}>  creators </span>{" "} {'\n'}
+                <span className="text-neutral-900 dark:text-[#F9F9F9]"> And </span>
               </p>
             </MaskedReveal>
             <MaskedReveal delay={0.14}>
@@ -264,8 +265,8 @@ function ConnectingHeroSection() {
                   className={cn("flex-1 pl-[min(4vw,24px)] font-normal uppercase", ORANGE_CONNECTING)}
                   style={connectingHeadlineMobile}
                 >
-                  Creators
-                </p>
+                </p >
+                communities.
               </div>
             </MaskedReveal>
           </div>
@@ -273,8 +274,9 @@ function ConnectingHeroSection() {
           <div className="mt-6 flex items-end justify-between gap-4">
             <MaskedReveal delay={0.17}>
               <p className={`${bodyMicro} max-w-[260px]`}>
-                Seamlessly manage projects of any scale, complexity, or team setup — across any
-                timeline, budget, or scope
+              Reach is no longer enough. Messages are far more effective when delivered through trusted voices operating within the right cultural, social, and emotional contexts.
+
+               
               </p>
             </MaskedReveal>
             <MaskedReveal delay={0.19}>
@@ -315,8 +317,8 @@ function ConnectingHeroSection() {
                 className={`${bodyMicro} absolute right-0 top-0 z-20 text-right`}
                 style={{ maxWidth: "clamp(220px, 22vw, 320px)" }}
               >
-                Build partnerships driven by mutual success, growth, and a shared passion to create
-                lasting impact — maximizing the value and potential of every campaign.
+                            Detect environments where your topics of interest sits, deploy controlled inputs into those spaces, measure response, establish causality
+
               </p>
             </MaskedReveal>
           </div>
@@ -339,12 +341,13 @@ function ConnectingHeroSection() {
                 className="pl-0 font-normal uppercase text-neutral-900 dark:text-[#F9F9F9]"
                 style={connectingHeadlineDesktop}
               >
-                Connecting
+                {/* Connecting */}
+                      Map audience signals across
               </p>
             </MaskedReveal>
             <MaskedReveal delay={0.11}>
               <p className="pl-[min(6vw,100px)] font-normal uppercase" style={connectingHeadlineDesktop}>
-                <span className={ORANGE_CONNECTING}>Brands</span>{" "}
+                   <span className={ORANGE_CONNECTING}>  creators </span>{" "}
                 <span className="text-neutral-900 dark:text-[#F9F9F9]">And</span>
               </p>
             </MaskedReveal>
@@ -366,7 +369,7 @@ function ConnectingHeroSection() {
                   className={cn("flex-1 pl-[min(5vw,80px)] font-normal uppercase", ORANGE_CONNECTING)}
                   style={connectingHeadlineDesktop}
                 >
-                  Creators
+                  Communities.
                 </p>
               </div>
             </MaskedReveal>
@@ -375,8 +378,9 @@ function ConnectingHeroSection() {
           <div className="mt-8 flex items-end justify-between gap-8">
             <MaskedReveal delay={0.18}>
               <p className={`${bodyMicro} max-w-[320px]`}>
-                Seamlessly manage projects of any scale, complexity, or team setup — across any
-                timeline, budget, or scope
+
+              Reach is no longer enough. Messages are far more effective when delivered through trusted voices operating within the right cultural, social, and emotional contexts.
+
               </p>
             </MaskedReveal>
             <MaskedReveal delay={0.2}>
@@ -508,15 +512,30 @@ function MissionIntroSection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.06}>
-          <p className="mt-8 max-w-[min(100%,1251px)] text-left text-[clamp(1.1rem,4.2vw,2.5rem)] font-bold uppercase leading-[1.72] tracking-[0.01em] text-neutral-900 dark:text-white sm:mt-10">
-            Paza is a collaboration management hub that delivers precision matches among brands,
-            creators and partners.
-            <br />
-            <span className="mt-2 block">
-              By aligning on identity, vision, values, and audience, Paza enables partnerships that
-              feel authentic, resonate deeply, and create lasting impact
-            </span>
-          </p>
+        
+<div className="mt-8 max-w-[1251px] sm:mt-10">
+  <h3 className="max-w-[1080px] text-balance text-[clamp(1.1rem,4vw+0.35rem,2.6rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
+    Paza is an{" "}
+    <span className="text-neutral-500 dark:text-zinc-500">
+      audience intelligence and collaboration infrastructure
+    </span>{" "}
+    for brands, creators, and community networks.
+  </h3>
+
+  <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
+    <p>
+      It maps audience identity, interests, intent, and behavior alongside
+      brand and creator identities, values, and positioning.
+    </p>
+
+    <p>
+      Paza identifies where specific audience topics, conditions, and needs
+      already exist across real-world and digital environments, then connects
+      brands to the creators and communities within them.
+    </p>
+  </div>
+</div>
+
         </MaskedReveal>
 
         <MaskedReveal delay={0.12}>
@@ -555,12 +574,48 @@ function StudioSecondarySection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.08}>
-          <p className="mt-10 max-w-[min(100%,1108px)] text-left text-[clamp(1rem,3.8vw,2.25rem)] font-bold uppercase leading-[1.72] tracking-[0.01em] text-neutral-900 dark:text-white sm:mt-14 md:mt-20">
-            Finding the right partner can be slow, unclear, and risky. we streamline
-            collaboration—from discovery and connection to campaign planning, real-time
-            communication, task management, and secure escrow payments— ensuring every collaboration
-            is aligned, transparent, and results-driven.
-          </p>
+
+<div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20">
+  <h3 className="max-w-[980px] text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
+    Digital advertising systems rely on fragmented proxy signals such as{" "}
+    <span className="text-neutral-500 dark:text-zinc-500">
+      demographics, clicks, views, likes, and engagement
+    </span>{" "}
+    to understand audiences and optimize campaigns.
+  </h3>
+
+  <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
+    <p>
+      While these signals help predict short-term conversion, they provide
+      limited understanding of why audiences respond to specific products,
+      messages, or creators, and often lose meaning outside the context in
+      which they are generated.
+    </p>
+
+    <p>
+      Privacy restrictions and fragmented platforms further reduce audience
+      visibility, making it difficult for brands to distinguish between
+      existing audiences, newly emerging audiences, and temporary engagement.
+      As a result, brands struggle to build stable models of audience behavior
+      and intent.
+    </p>
+
+    <p>
+      This limits their ability to understand who their audience is, track
+      audiences over time, understand what drives repeat interaction, adapt
+      messaging as familiarity increases, engage existing audiences more
+      effectively, and activate high-value audience segments across contexts.
+    </p>
+
+    <p>
+      <span className="text-neutral-900 dark:text-white">Paza</span> improves
+      audience understanding by linking audience signals to products, creators,
+      and community environments, then observing how those relationships
+      perform and evolve over time.
+    </p>
+  </div>
+</div>
+  
         </MaskedReveal>
 
         <MaskedReveal delay={0.14}>
@@ -580,10 +635,30 @@ function StudioSecondarySection() {
 
 /** Figma / reference — four rows, black plate (always), white type, orange keywords. */
 const SERVICE_ROWS = [
-  { index: "01", title: "Creator Partnerships" },
-  { index: "02", title: "Production" },
-  { index: "03", title: "Brand Strategy" },
-  { index: "04", title: "Content Production" },
+  {
+    index: "01",
+    title: "Audience Intelligence",
+    description:
+      "Audience clustering • Behavioral analysis • Community network mapping • Product demand environment",
+  },
+  {
+    index: "02",
+    title: "Identity & Value Mapping",
+    description:
+      "Creator–brand matching • Alignment scoring • Profile positioning",
+  },
+  {
+    index: "03",
+    title: "Collaboration Workflow Management",
+    description:
+      "Real-time collaboration tracking • Asset coordination • Campaign execution • Payment coordination",
+  },
+  {
+    index: "04",
+    title: "Attribution & Analytics",
+    description:
+      "Performance analytics • Conversion tracking • Outcome attribution • Campaign intelligence reporting",
+  },
 ] as const;
 
 function OurServicesSection() {
@@ -601,11 +676,12 @@ function OurServicesSection() {
         */}
         <div className="mb-10 flex flex-col items-start gap-8 sm:mb-12 sm:flex-row sm:items-center sm:gap-12 md:mb-24 md:gap-16 lg:gap-20 xl:gap-24">
           <MaskedReveal delay={0}>
-            <h2 className="m-0 shrink-0 p-0 font-[inherit] font-normal leading-none">
-              <EditorialLabel>Our Services</EditorialLabel>
+            <h2 className="m-6 shrink-0 p-0 font-[inherit] font-normal leading-none">
+              <EditorialLabel >Our Services</EditorialLabel>
             </h2>
           </MaskedReveal>
           <MaskedReveal delay={0.06}>
+          
             <div className="min-w-0 flex-1">
               <p
                 className="m-0 text-left uppercase text-neutral-900 dark:text-white"
@@ -613,16 +689,20 @@ function OurServicesSection() {
               >
                 <span className="block">
                   {'\u201c'}
-                  Dive into services built for{' '}
-                  <span style={servicesQuoteOrange}>creators</span>
+                  Infrastructure for mapping audience alignment,   
+                  <span style={servicesQuoteOrange}>  creator–brand  </span> 
                   {' and'}
                 </span>
                 <span className="block">
-                  <span style={servicesQuoteOrange}>brands</span>
-                  {' to convert and thrive together'}
+                  <span style={servicesQuoteOrange}>  connecting collaborations </span>
+                  {' measuring campaign outcomes. '}
+
+                  {'”'}
                 </span>
               </p>
             </div>
+
+
           </MaskedReveal>
         </div>
       </div>
@@ -632,7 +712,7 @@ function OurServicesSection() {
           {SERVICE_ROWS.map((row) => (
             <li key={`${row.index}-${row.title}`}>
               <Link
-                href="/services"
+                href="/services#our-services"
                 className={cn(
                   "group mx-auto grid w-full max-w-[1320px] touch-manipulation items-center",
                   PAGE_PAD,
@@ -647,12 +727,20 @@ function OurServicesSection() {
                 <span className="services-click hidden min-w-0 whitespace-nowrap text-[10px] font-medium leading-snug tracking-[0.04em] text-neutral-500 dark:text-zinc-500 sm:block sm:text-[11px] md:text-[12px]">
                   Click to open
                 </span>
-                <span
-                  className="services-title min-w-0 text-left text-neutral-900 dark:text-white"
-                  style={servicesRowTitle}
-                >
-                  {row.title}
-                </span>
+
+<div className="min-w-0">
+  <h3
+    className="services-title text-left text-neutral-900 dark:text-white"
+    style={servicesRowTitle}
+  >
+    {row.title}
+  </h3>
+
+  <p className="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-zinc-500 max-w-3xl">
+    {row.description}
+  </p>
+</div>
+
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center text-neutral-900 transition group-hover:text-[#FF6B00] dark:text-white sm:h-10 sm:w-10">
                   <ArrowUpRight className="h-5 w-5 stroke-[1.25] sm:h-[22px] sm:w-[22px]" aria-hidden />
                 </span>
@@ -665,7 +753,7 @@ function OurServicesSection() {
       <div className={PAGE}>
         <MaskedReveal delay={0.1}>
           <div className="mt-16 flex justify-center md:mt-20">
-            <EditorialRuleCta align="center" href="/services" invert={docIsDark}>
+            <EditorialRuleCta align="center" href="/services#our-services" invert={docIsDark}>
               <>
                 View Our Services
                 <ArrowRight
@@ -780,52 +868,59 @@ function WheelSteeredHorizontalScroll({ className, children }: WheelSteeredHoriz
 const HOW_PLATFORM_WORKS_STEPS = [
   {
     id: "01",
-    title: "Create Your Profile",
+    title: "Create Campaigns, Post Jobs or Showcase Projects",
     layout: "mockRight" as const,
     body: (
       <>
         <p className={howStepCopy}>
-          Sign up and set up your account, adding details about your brand or creator identity to
-          attract the right collaborators
+          Brands define their audience, campaign goals, brief, and budget, then post campaign
+          opportunities through job openings on the job board where creators can submit proposals.
+          Creators define their goals, interests, and identity, then publish project cards in the
+          showcase where brands can submit collaboration requests.
         </p>
       </>
     ),
   },
   {
     id: "02",
-    title: "Find & Connect",
+    title: "Discover Aligned Creators and Communities",
     layout: "stackMockTop" as const,
     body: (
       <>
         <p className={howStepCopy}>
-          Use Paza&apos;s job board to post campaigns (for brands) or apply to opportunities (for
-          creators), connecting with potential partners.
+          Paza maps creator identity, community alignment, and audience behavior signals to surface
+          relevant creators, brands, and audience groups. Brands discover creators aligned with
+          their audience and campaign goals, while creators discover brands aligned with their
+          values, identity, and interests.
         </p>
       </>
     ),
   },
   {
     id: "03",
-    title: "Manage Your Collaboration",
+    title: "Activate Audience-Led Campaigns",
     layout: "mockLeft" as const,
     body: (
       <>
         <p className={howStepCopy}>
-          Use Paza&apos;s tools to plan, execute, and track campaigns, including task assignment and
-          communication.
+          Brands collaborate with creators and audience advocates to distribute campaigns through
+          trusted communities and relationships. Once campaigns are accepted, participants can be
+          organized into teams, assigned tasks, communicate through the inbox, and coordinated
+          through shared workflows.
         </p>
       </>
     ),
   },
   {
     id: "04",
-    title: "Review and Improve",
+    title: "Track Engagement and Campaign Outcomes",
     layout: "mockLeft" as const,
     body: (
       <>
         <p className={howStepCopy}>
-          Review campaign metrics, gather feedback, and spot what to repeat or refine. Strong
-          partnerships compound when every launch teaches you something new.
+          Paza tracks campaign interactions, creator activity, audience engagement, and downstream
+          behavioral signals over time, then generates campaign performance reports and outcome
+          summaries after completion.
         </p>
       </>
     ),
@@ -991,7 +1086,7 @@ function HowItWorksDesktopScrollDriver() {
         <motion.div
           ref={trackRef}
           style={{ x }}
-          className={cn(PAGE_PAD, "flex w-max flex-nowrap gap-12 pb-4 pt-2 will-change-transform sm:gap-14 lg:gap-16")}
+          className={cn(PAGE_PAD, " smooth-scroll flex w-max flex-nowrap gap-12 pb-4 pt-2 will-change-transform sm:gap-14 lg:gap-16")}
         >
           {panels}
         </motion.div>
@@ -1011,24 +1106,21 @@ function HowItWorksSection() {
         <div className={PAGE}>
           <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:gap-12 md:gap-16 lg:gap-20 xl:gap-24">
             <MaskedReveal delay={0}>
-              <h2 className="m-0 shrink-0 p-0 font-[inherit] font-normal leading-none">
+              <h2 className="m-3 shrink-0 p-0 font-[inherit] font-normal leading-none">
                 <EditorialLabel>How It Works</EditorialLabel>
               </h2>
             </MaskedReveal>
             <MaskedReveal delay={0.06}>
-              <div className="flex min-w-0 flex-1 justify-center">
-                <p
-                  className="m-0 max-w-[min(100%,52rem)] text-center uppercase text-neutral-900 dark:text-white"
-                  style={servicesQuoteTypography}
-                >
-                  <span className="block">
-                    See how Paza works to <span style={servicesQuoteOrange}>connect</span>
-                  </span>
-                  <span className="block">
-                    and drive impactful <span style={servicesQuoteOrange}>campaigns</span>
-                  </span>
-                </p>
-              </div>
+            
+<div className="flex min-w-0 flex-1 justify-center">
+  <p
+    className="m-0 max-w-[min(100%,52rem)]  uppercase text-neutral-900 dark:text-white"
+    style={servicesQuoteTypography}
+  >
+    Identify, organize, activate, and track aligned audiences.
+  </p>
+</div>
+
             </MaskedReveal>
           </div>
         </div>

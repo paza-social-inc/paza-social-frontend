@@ -159,14 +159,45 @@ export default function About() {
             <div className="absolute inset-0 bg-black/70" />
             <div className="relative z-10 px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
               <SectionEyebrow label="About Us" />
-              <h3 className="mt-3 max-w-[980px] text-balance text-[clamp(1.15rem,3.9vw+0.4rem,2.75rem)] leading-[1.14] tracking-[-0.015em] text-white uppercase sm:mt-4 sm:text-[clamp(1.4rem,3.2vw+0.55rem,3.25rem)] sm:leading-[1.1] lg:text-[clamp(1.55rem,2.4vw+0.65rem,4rem)] lg:leading-[1.08]">
-                At our core, we are guided by{" "}
-                <span className="text-zinc-400 sm:text-zinc-500">
-                  collaboration, flexibility, transparency, performance, and authenticity
-                </span>
-                —values that empower us to nurture real connections, and shape partnerships that turn bold
-                ideas into lasting impact
-              </h3>
+
+<div className="mt-3 max-w-[1080px] space-y-6 sm:space-y-8">
+  <h3 className="text-balance text-[clamp(1.15rem,3.9vw+0.4rem,2.75rem)] leading-[1.14] tracking-[-0.015em] text-white sm:text-[clamp(1.4rem,3.2vw+0.55rem,3.25rem)] sm:leading-[1.1] lg:text-[clamp(1.55rem,2.4vw+0.65rem,4rem)] lg:leading-[1.08]">
+    Paza was born in{" "}
+    <span className="text-zinc-400 sm:text-zinc-500">Nairobi, Kenya</span>{" "}
+    from a simple but urgent insight: creators full of talent and vision lacked
+    structured access to meaningful opportunities, while brands struggled to
+    identify which creators could genuinely connect with the right audiences.
+  </h3>
+
+  <div className="max-w-[900px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-zinc-300 sm:text-[15px] md:text-[16px]">
+    <p>
+      Most digital advertising and creator platforms prioritize reach,
+      impressions, and transactions over trust, contextual relevance, and
+      authentic alignment — reducing creators to surface-level metrics like
+      follower counts and engagement rates.
+    </p>
+
+    <p>
+      At the same time, audiences are increasingly resistant to generic
+      advertising. Brands no longer just need visibility; they need trusted
+      voices capable of naturally translating products into the right cultural
+      and emotional contexts.
+    </p>
+
+    <p>
+      We envisioned a space where collaborations are shaped by deep alignment —
+      of identity, tone, values, audience, and purpose.
+    </p>
+
+    <p>
+      Hence{" "}
+      <span className="text-orange-500">Paza Social</span> — a creative
+      ecosystem designed to help brands and creators build more authentic,
+      effective, and lasting collaborations.
+    </p>
+  </div>
+</div>
+              
             </div>
           </div>
         </div>
