@@ -488,8 +488,8 @@ export default function EscrowManager() {
 
       {/* SUMMARY CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <EscrowCard icon={Lock}         label="Total Escrow Held"  value={`KES ${(stats.escrowHeld / 100).toLocaleString()}`}         color="blue" />
-        <EscrowCard icon={Clock}        label="Pending Release"    value={`KES ${(stats.totalFundsPending / 100).toLocaleString()}`}   color="orange" sub={`${stats.pendingRelease} transactions`} />
+        <EscrowCard icon={Lock}         label="Total Escrow Held"  value={`KES ${(stats.escrowHeld).toLocaleString()}`}         color="blue" />
+        <EscrowCard icon={Clock}        label="Pending Release"    value={`KES ${(stats.totalFundsPending).toLocaleString()}`}   color="orange" sub={`${stats.escrowCountHeld} transactions`} />
         <EscrowCard icon={AlertCircle}  label="On Hold"            value={stats.onHold.toString()}                                     color="yellow" sub="disputed" />
         <EscrowCard icon={AlertCircle}  label="Suspicious"         value={stats.suspiciousTransactions.toString()}                     color="red" sub="flagged" />
       </div>
