@@ -1,62 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Lock,
   AlertCircle,
   Clock,
   Search,
+  RefreshCw,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
-const ESCROW_DATA = {
-  totalEscrow: 2500000,
-  pendingRelease: 1200000,
-  onHold: 800000,
-  flagged: 500000,
-  transactions: [
-    {
-      id: 1,
-      creator: "Sarah Johnson",
-      amount: 250000,
-      held: 15,
-      reason: "Verification pending",
-      status: "pending",
-    },
-    {
-      id: 2,
-      creator: "Mike Chen",
-      amount: 180000,
-      held: 8,
-      reason: "Content review",
-      status: "pending",
-    },
-    {
-      id: 3,
-      creator: "Emma Wilson",
-      amount: 320000,
-      held: 22,
-      reason: "Suspicious engagement",
-      status: "flagged",
-    },
-    {
-      id: 4,
-      creator: "Alex Rodriguez",
-      amount: 150000,
-      held: 5,
-      reason: "Admin hold",
-      status: "held",
-    },
-  ],
+type FinancialStats = {
+  escrowHeld: number;
+  escrowCountHeld: number;
+  totalRevenue: number;
+  completedTransactions: number;
+  totalFundsReleased: number;
+  totalFundsPending: number;
+  activeCampaigns: number;
+  suspiciousTransactions: number;
+  pendingRelease: number;
+  onHold: number;
+};
+
+type EscrowTransaction = {
+  id: number;
+  creator: string;
+  amount: number;
+  held: number;
+  reason: string;
+  status: "pending" | "held" | "flagged";
 };
 
 export default function EscrowManager() {
+  const [stats, setStats] = useState<FinancialStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEscrow, setSelectedEscrow] = useState<(typeof ESCROW_DATA.transactions)[0] | null>(null);
+  const [selectedEscrow, setSelectedEscrow] = useState<EscrowTransaction | null>(null);
 
-  const filteredTransactions = ESCROW_DATA.transactions.filter((tx) =>
+  const transactions: EscrowTransaction[] = [
+    { id: 1, creator: "Sarah Johnson", amount: 250000, held: 15, reason: "Verification pending", status: "pending" },
+    { id: 2, creator: "Mike Chen", amount: 180000, held: 8, reason: "Content review", status: "pending" },
+    { id: 3, creator: "Emma Wilson", amount: 320000, held: 22, reason: "Suspicious engagement", status: "flagged" },
+    { id: 4, creator: "Alex Rodriguez", amount: 150000, held: 5, reason: "Admin hold", status: "held" },
+  ];
+
+  async function fetchStats() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiFetch("/api/admin/payments");
+      setStats(data.stats);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load financial stats.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const filteredTransactions = transactions.filter((tx) =>
     tx.creator.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-zinc-400">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        Loading escrow data...
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-zinc-400">
+        <AlertCircle className="w-6 h-6 text-red-400" />
+        <p>{error ?? "Something went wrong."}</p>
+        <button
+          onClick={fetchStats}
+          className="px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg text-orange-400 hover:bg-orange-500/20 transition text-sm"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -64,31 +99,56 @@ export default function EscrowManager() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <EscrowCard
           icon={Lock}
-          label="Total Escrow"
-          amount={ESCROW_DATA.totalEscrow}
+          label="Total Escrow Held"
+          amount={stats.escrowHeld}
           color="blue"
         />
         <EscrowCard
           icon={Clock}
           label="Pending Release"
-          amount={ESCROW_DATA.pendingRelease}
+          amount={stats.totalFundsPending}
           color="orange"
+          count={stats.pendingRelease}
         />
         <EscrowCard
           icon={AlertCircle}
           label="On Hold"
-          amount={ESCROW_DATA.onHold}
+          amount={stats.onHold}
           color="yellow"
+          isCount
         />
         <EscrowCard
           icon={AlertCircle}
-          label="Flagged"
-          amount={ESCROW_DATA.flagged}
+          label="Suspicious"
+          amount={stats.suspiciousTransactions}
           color="red"
+          isCount
         />
       </div>
 
-      {/* SEARCH & FILTER */}
+      {/* SECONDARY STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-[#181C23] border border-[#262B36] rounded-2xl p-4">
+          <p className="text-zinc-500 text-xs mb-1 uppercase tracking-wide">Total Revenue</p>
+          <p className="text-white text-xl font-bold">
+            KES {(stats.totalRevenue / 100).toLocaleString()}
+          </p>
+        </div>
+        <div className="bg-[#181C23] border border-[#262B36] rounded-2xl p-4">
+          <p className="text-zinc-500 text-xs mb-1 uppercase tracking-wide">Funds Released</p>
+          <p className="text-emerald-400 text-xl font-bold">
+            KES {(stats.totalFundsReleased / 100).toLocaleString()}
+          </p>
+        </div>
+        <div className="bg-[#181C23] border border-[#262B36] rounded-2xl p-4">
+          <p className="text-zinc-500 text-xs mb-1 uppercase tracking-wide">Completed Transactions</p>
+          <p className="text-white text-xl font-bold">
+            {stats.completedTransactions.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {/* SEARCH */}
       <div className="relative">
         <Search className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
         <input
@@ -100,7 +160,7 @@ export default function EscrowManager() {
         />
       </div>
 
-      {/* ESCROW LIST */}
+      {/* TRANSACTION LIST */}
       <div className="space-y-3">
         {filteredTransactions.map((escrow) => (
           <div
@@ -164,11 +224,15 @@ function EscrowCard({
   label,
   amount,
   color,
+  count,
+  isCount = false,
 }: {
   icon: LucideIcon;
   label: string;
   amount: number;
   color: string;
+  count?: number;
+  isCount?: boolean;
 }) {
   const colorClass = {
     blue: "bg-blue-500/10 border-blue-500/20",
@@ -184,6 +248,10 @@ function EscrowCard({
     red: "text-red-400",
   }[color];
 
+  const displayValue = isCount
+    ? amount.toLocaleString()
+    : `KES ${(amount / 100).toLocaleString()}`;
+
   return (
     <div className={`${colorClass} border rounded-2xl p-6`}>
       <div className="flex items-center justify-between mb-4">
@@ -192,9 +260,10 @@ function EscrowCard({
         </h3>
         <Icon className={`w-5 h-5 ${iconColor} opacity-50`} />
       </div>
-      <p className="text-2xl font-bold text-white">
-        KES {(amount / 1000000).toFixed(1)}M
-      </p>
+      <p className="text-2xl font-bold text-white">{displayValue}</p>
+      {count !== undefined && (
+        <p className="text-xs text-zinc-500 mt-1">{count} transactions</p>
+      )}
     </div>
   );
 }
@@ -219,7 +288,7 @@ function StatusBadge({ status }: { status: string }) {
       border: "border-red-500/20",
       label: "Flagged",
     },
-  }[status] || {
+  }[status] ?? {
     bg: "bg-zinc-500/10",
     text: "text-zinc-300",
     border: "border-zinc-500/20",
@@ -240,7 +309,7 @@ function ReleaseEscrowModal({
   escrow,
   onClose,
 }: {
-  escrow: (typeof ESCROW_DATA.transactions)[0];
+  escrow: EscrowTransaction;
   onClose: () => void;
 }) {
   return (
