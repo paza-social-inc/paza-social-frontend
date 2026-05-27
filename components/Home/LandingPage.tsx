@@ -13,7 +13,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { RiBriefcaseLine, RiUserLine } from "@remixicon/react";
 import {
   ArrowRight,
@@ -37,15 +37,19 @@ import { AnimatedThemeToggler } from "@/components/ui/theme-toggle";
 import HomeLayout from "./Layout";
 import { MaskedReveal } from "./MaskedReveal";
 import { LandingContactForm } from "./LandingContactForm";
+import { ConnectingHeroSection } from "./connectingHeroSection";
+import { HowItWorksDesktopScrollDriver } from "./HowItWorksDesktopScrollDriver";
+import { HowItWorksSections } from "./HowItWorksSection";
+import { HowItWorksSection } from "./HowItWorksSectionMain";
 
 /** Light: zinc plate; dark: near-black editorial (matches Services `bg-background` behavior) */
-const LANDING_PLATE =
+export const LANDING_PLATE =
   "border-t border-border bg-zinc-100 text-neutral-900 dark:border-white/[0.08] dark:bg-[#050505] dark:text-white";
-const LANDING_PLATE_DEEP =
+export const LANDING_PLATE_DEEP =
   "border-t border-border bg-zinc-100 text-neutral-900 dark:border-white/[0.08] dark:bg-black dark:text-white";
 
 /** Hero “PAZA” — heavy geometric display (Figma / Montserrat-Black class). */
-const archivoHero = Archivo_Black({
+export const archivoHero = Archivo_Black({
   weight: "400",
   subsets: ["latin"],
   display: "swap",
@@ -53,22 +57,22 @@ const archivoHero = Archivo_Black({
 
 /** Figma 1419:847 — label & UI accent */
 /** CONNECTING … BRANDS / CREATORS */
-const ORANGE_CONNECTING = "text-[#FF4D00]";
-const bodyMicro =
-  "text-[11px] leading-[1.65] text-neutral-600 sm:text-[12px] dark:text-white/90";
+export const ORANGE_CONNECTING = "text-[#FF4D00]";
+export const bodyMicro =
+  "text-base leading-[1.65] text-neutral-600 sm:text-[12px] dark:text-white/90";
 
 /** Figma body in How it works steps — mobile-first type scale */
-const howStepCopy =
+export const howStepCopy =
   "text-[14px] leading-[1.5] text-neutral-600 sm:text-[15px] dark:text-[rgba(255,255,255,0.88)]";
-const howStepTitle =
+export const howStepTitle =
   "text-[clamp(1.125rem,4.2vw,2.9rem)] font-medium tracking-[0.02em] text-neutral-900 dark:text-white";
 
 /** Aligns all sections to 1320 artboard — base = phone gutters, scale up at sm+ */
-const PAGE_PAD = "px-4 sm:px-6 md:px-10 lg:px-12 xl:px-[60px]";
-const PAGE = cn("mx-auto w-full max-w-[1320px]", PAGE_PAD);
+export const PAGE_PAD = "px-4 sm:px-6 md:px-10 lg:px-12 xl:px-[60px]";
+export const PAGE = cn("mx-auto w-full max-w-[1320px]", PAGE_PAD);
 
 /** Account picker → `/register?accountType=…` (register alone redirects without params) */
-const SIGNUP_HREF = "/account-type";
+export const SIGNUP_HREF = "/account-type";
 
 // ─── 1) Hero — Figma `1419:897` (1440×1024, node `1419:847` file) ───
 
@@ -157,7 +161,7 @@ const connectingHeadlineDesktop: CSSProperties = {
  * Our Services quote block — Figma: PP Neue Montreal, 400, 172% leading, uppercase, 40px cap;
  * orange keywords use #FF6B00 (same stack on white lines).
  */
-const servicesQuoteTypography: CSSProperties = {
+export const servicesQuoteTypography: CSSProperties = {
   fontFamily: CONNECTING_HEADLINE_FONT,
   fontSize: "clamp(0.875rem, 2.2vw + 0.5rem, 40px)",
   fontStyle: "normal",
@@ -178,227 +182,227 @@ const servicesRowTitle: CSSProperties = {
   fontSize: "clamp(0.9rem, 2.5vw + 0.2rem, 2.125rem)",
 };
 
-function ConnectingHeroSection() {
-  return (
-    <section
-      id="connecting"
-      className={cn("relative pb-12 pt-8 sm:pb-14 sm:pt-10 md:pb-20 md:pt-14", LANDING_PLATE_DEEP)}
-    >
-      <div className={PAGE}>
-        {/* Mobile / tablet */}
-        <div className="relative lg:hidden">
-          <div className="relative" style={{ height: PORTRAIT_H_MOBILE }}>
-            <MaskedReveal delay={0.04}>
-              <div
-                className="absolute left-0 top-0 z-[5] overflow-hidden"
-                style={{
-                  width: "min(30vw, 116px)",
-                  aspectRatio: "3/4",
-                  border: "2px solid #FF6B00",
-                }}
-              >
-                <Image
-                  src={campaignUrbanBodega}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="116px"
-                  priority
-                />
-              </div>
-            </MaskedReveal>
-            <MaskedReveal delay={0}>
-              <p
-                className={`${bodyMicro} absolute right-0 top-0 text-right`}
-                style={{ maxWidth: "calc(100% - min(30vw, 116px) - 12px)" }}
-              >
-              Detect environments where your topics of interest sits, deploy controlled inputs into those spaces, measure response, establish causality
-              </p>
-            </MaskedReveal>
-          </div>
+// function ConnectingHeroSection() {
+//   return (
+//     <section
+//       id="connecting"
+//       className={cn("relative pb-12 pt-8 sm:pb-14 sm:pt-10 md:pb-20 md:pt-14", LANDING_PLATE_DEEP)}
+//     >
+//       <div className={PAGE}>
+//         {/* Mobile / tablet */}
+//         <div className="relative lg:hidden">
+//           <div className="relative" style={{ height: PORTRAIT_H_MOBILE }}>
+//             <MaskedReveal delay={0.04}>
+//               <div
+//                 className="absolute left-0 top-0 z-[5] overflow-hidden"
+//                 style={{
+//                   width: "min(30vw, 116px)",
+//                   aspectRatio: "3/4",
+//                   border: "2px solid #FF6B00",
+//                 }}
+//               >
+//                 <Image
+//                   src={campaignUrbanBodega}
+//                   alt=""
+//                   fill
+//                   className="object-cover"
+//                   sizes="116px"
+//                   priority
+//                 />
+//               </div>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0}>
+//               <p
+//                 className={`${bodyMicro} absolute right-0 top-0 text-right`}
+//                 style={{ maxWidth: "calc(100% - min(30vw, 116px) - 12px)" }}
+//               >
+//               Detect environments where your topics of interest sits, deploy controlled inputs into those spaces, measure response, establish causality
+//               </p>
+//             </MaskedReveal>
+//           </div>
+//
+//           <div className="relative">
+//             <MaskedReveal delay={0.09}>
+//               <div
+//                 className="absolute right-0 top-0 z-30 overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.6)]"
+//                 style={{ width: PHOTO_W_MOBILE, aspectRatio: "1/1" }}
+//               >
+//                 <Image src={service} alt="" fill className="object-cover" sizes="130px" />
+//                 <span className="absolute bottom-1.5 left-1.5 text-[8px] font-semibold uppercase tracking-wider text-white drop-shadow">
+//                   StreetX
+//                 </span>
+//               </div>
+//             </MaskedReveal>
+//
+//             {/* // <MaskedReveal delay={0.06}> */}
+//             {/* //   <p */}
+//             {/* //     className="pl-0 font-normal uppercase text-neutral-900 dark:text-[#F9F9F9]" */}
+//             {/* //     style={connectingHeadlineMobile} */}
+//             {/* //   > */}
+//             {/* //   Map audience signals across brands, {" "} */}
+//             {/* // */}
+//             {/* //   </p> */}
+//             {/* </MaskedReveal> */}
+//             <MaskedReveal delay={0.1}>
+//               <p className="pl-[min(6vw,48px)] font-normal uppercase " style={connectingHeadlineMobile}>
+//               {/* Map audience signals across brands, creators, and communities. */}
+//                 <span style={connectingHeadlineMobile} > Map audience signals across brands, </span>{" "} {'\n'}
+//                 <span className={ORANGE_CONNECTING}>  creators </span>{" "} {'\n'}
+//                 <span className="text-neutral-900 dark:text-[#F9F9F9]"> And </span>
+//               </p>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0.14}>
+//               <div className="flex items-end">
+//                 <div
+//                   className="pointer-events-none relative shrink-0 overflow-hidden"
+//                   style={{ width: PHOTO_W_MOBILE, aspectRatio: "4/5" }}
+//                 >
+//                   <Image
+//                     src={campaignMotionFocus}
+//                     alt=""
+//                     fill
+//                     className="object-cover object-top blur-[2px] scale-110 saturate-[1.4] brightness-90"
+//                     sizes="130px"
+//                   />
+//                 </div>
+//                 <p
+//                   className={cn("flex-1 pl-[min(4vw,24px)] font-normal uppercase", ORANGE_CONNECTING)}
+//                   style={connectingHeadlineMobile}
+//                 >
+//                 </p >
+//                 communities.
+//               </div>
+//             </MaskedReveal>
+//           </div>
+//
+//           <div className="mt-6 flex items-end justify-between gap-4">
+//             <MaskedReveal delay={0.17}>
+//               <p className={`${bodyMicro} max-w-[260px]`}>
+//               Reach is no longer enough. Messages are far more effective when delivered through trusted voices operating within the right cultural, social, and emotional contexts.
+//
+//
+//               </p>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0.19}>
+//               <EditorialRuleCta align="end" href={SIGNUP_HREF}>
+//                 <>
+//                   Start your journey
+//                   <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
+//                 </>
+//               </EditorialRuleCta>
+//             </MaskedReveal>
+//           </div>
+//         </div>
+//
+//         {/* Desktop */}
+//         <div className="relative hidden lg:block">
+//           <div className="relative" style={{ height: PORTRAIT_H_DESKTOP }}>
+//             <MaskedReveal delay={0.04}>
+//               <div
+//                 className="absolute left-0 top-0 z-[5] overflow-hidden"
+//                 style={{
+//                   width: "clamp(150px, 17.5vw, 230px)",
+//                   aspectRatio: "3/4",
+//                   border: "2.5px solid #FF6B00",
+//                 }}
+//               >
+//                 <Image
+//                   src={campaignUrbanBodega}
+//                   alt=""
+//                   fill
+//                   className="object-cover"
+//                   priority
+//                   sizes="230px"
+//                 />
+//               </div>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0}>
+//               <p
+//                 className={`${bodyMicro} absolute right-0 top-0 z-20 text-right`}
+//                 style={{ maxWidth: "clamp(220px, 22vw, 320px)" }}
+//               >
+//                             Detect environments where your topics of interest sits, deploy controlled inputs into those spaces, measure response, establish causality
+//
+//               </p>
+//             </MaskedReveal>
+//           </div>
+//
+//           <div className="relative">
+//             <MaskedReveal delay={0.08}>
+//               <div
+//                 className="absolute right-0 top-0 z-30 overflow-hidden shadow-[0_16px_48px_rgba(0,0,0,0.65)]"
+//                 style={{ width: PHOTO_W_DESKTOP, aspectRatio: "1/1" }}
+//               >
+//                 <Image src={service} alt="" fill className="object-cover" sizes="230px" />
+//                 <span className="absolute bottom-2 left-2 text-[9px] font-semibold uppercase tracking-wider text-white drop-shadow">
+//                   StreetX
+//                 </span>
+//               </div>
+//             </MaskedReveal>
+//
+//             <MaskedReveal delay={0.06}>
+//               <p
+//                 className="pl-0 font-normal uppercase text-neutral-900 dark:text-[#F9F9F9]"
+//                 style={connectingHeadlineDesktop}
+//               >
+//                 {/* Connecting */}
+//                       Map audience signals across
+//               </p>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0.11}>
+//               <p className="pl-[min(6vw,100px)] font-normal uppercase" style={connectingHeadlineDesktop}>
+//                    <span className={ORANGE_CONNECTING}>  creators </span>{" "}
+//                 <span className="text-neutral-900 dark:text-[#F9F9F9]">And</span>
+//               </p>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0.15}>
+//               <div className="flex items-end">
+//                 <div
+//                   className="pointer-events-none relative shrink-0 overflow-hidden"
+//                   style={{ width: PHOTO_W_DESKTOP, aspectRatio: "4/5" }}
+//                 >
+//                   <Image
+//                     src={campaignMotionFocus}
+//                     alt=""
+//                     fill
+//                     className="object-cover object-top blur-[2px] scale-110 saturate-[1.4] brightness-90"
+//                     sizes="230px"
+//                   />
+//                 </div>
+//                 <p
+//                   className={cn("flex-1 pl-[min(5vw,80px)] font-normal uppercase", ORANGE_CONNECTING)}
+//                   style={connectingHeadlineDesktop}
+//                 >
+//                   Communities.
+//                 </p>
+//               </div>
+//             </MaskedReveal>
+//           </div>
+//
+//           <div className="mt-8 flex items-end justify-between gap-8">
+//             <MaskedReveal delay={0.18}>
+//               <p className={`${bodyMicro} max-w-[320px]`}>
+//
+//               Reach is no longer enough. Messages are far more effective when delivered through trusted voices operating within the right cultural, social, and emotional contexts.
+//
+//               </p>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0.2}>
+//               <EditorialRuleCta align="end" href={SIGNUP_HREF}>
+//                 <>
+//                   Start your journey
+//                   <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
+//                 </>
+//               </EditorialRuleCta>
+//             </MaskedReveal>
+//           </div>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
 
-          <div className="relative">
-            <MaskedReveal delay={0.09}>
-              <div
-                className="absolute right-0 top-0 z-30 overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.6)]"
-                style={{ width: PHOTO_W_MOBILE, aspectRatio: "1/1" }}
-              >
-                <Image src={service} alt="" fill className="object-cover" sizes="130px" />
-                <span className="absolute bottom-1.5 left-1.5 text-[8px] font-semibold uppercase tracking-wider text-white drop-shadow">
-                  StreetX
-                </span>
-              </div>
-            </MaskedReveal>
-
-            {/* // <MaskedReveal delay={0.06}> */}
-            {/* //   <p */}
-            {/* //     className="pl-0 font-normal uppercase text-neutral-900 dark:text-[#F9F9F9]" */}
-            {/* //     style={connectingHeadlineMobile} */}
-            {/* //   > */}
-            {/* //   Map audience signals across brands, {" "} */}
-            {/* // */}
-            {/* //   </p> */}
-            {/* </MaskedReveal> */}
-            <MaskedReveal delay={0.1}>
-              <p className="pl-[min(6vw,48px)] font-normal uppercase " style={connectingHeadlineMobile}>
-              {/* Map audience signals across brands, creators, and communities. */}
-                <span style={connectingHeadlineMobile} > Map audience signals across brands, </span>{" "} {'\n'}
-                <span className={ORANGE_CONNECTING}>  creators </span>{" "} {'\n'}
-                <span className="text-neutral-900 dark:text-[#F9F9F9]"> And </span>
-              </p>
-            </MaskedReveal>
-            <MaskedReveal delay={0.14}>
-              <div className="flex items-end">
-                <div
-                  className="pointer-events-none relative shrink-0 overflow-hidden"
-                  style={{ width: PHOTO_W_MOBILE, aspectRatio: "4/5" }}
-                >
-                  <Image
-                    src={campaignMotionFocus}
-                    alt=""
-                    fill
-                    className="object-cover object-top blur-[2px] scale-110 saturate-[1.4] brightness-90"
-                    sizes="130px"
-                  />
-                </div>
-                <p
-                  className={cn("flex-1 pl-[min(4vw,24px)] font-normal uppercase", ORANGE_CONNECTING)}
-                  style={connectingHeadlineMobile}
-                >
-                </p >
-                communities.
-              </div>
-            </MaskedReveal>
-          </div>
-
-          <div className="mt-6 flex items-end justify-between gap-4">
-            <MaskedReveal delay={0.17}>
-              <p className={`${bodyMicro} max-w-[260px]`}>
-              Reach is no longer enough. Messages are far more effective when delivered through trusted voices operating within the right cultural, social, and emotional contexts.
-
-               
-              </p>
-            </MaskedReveal>
-            <MaskedReveal delay={0.19}>
-              <EditorialRuleCta align="end" href={SIGNUP_HREF}>
-                <>
-                  Start your journey
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
-                </>
-              </EditorialRuleCta>
-            </MaskedReveal>
-          </div>
-        </div>
-
-        {/* Desktop */}
-        <div className="relative hidden lg:block">
-          <div className="relative" style={{ height: PORTRAIT_H_DESKTOP }}>
-            <MaskedReveal delay={0.04}>
-              <div
-                className="absolute left-0 top-0 z-[5] overflow-hidden"
-                style={{
-                  width: "clamp(150px, 17.5vw, 230px)",
-                  aspectRatio: "3/4",
-                  border: "2.5px solid #FF6B00",
-                }}
-              >
-                <Image
-                  src={campaignUrbanBodega}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  priority
-                  sizes="230px"
-                />
-              </div>
-            </MaskedReveal>
-            <MaskedReveal delay={0}>
-              <p
-                className={`${bodyMicro} absolute right-0 top-0 z-20 text-right`}
-                style={{ maxWidth: "clamp(220px, 22vw, 320px)" }}
-              >
-                            Detect environments where your topics of interest sits, deploy controlled inputs into those spaces, measure response, establish causality
-
-              </p>
-            </MaskedReveal>
-          </div>
-
-          <div className="relative">
-            <MaskedReveal delay={0.08}>
-              <div
-                className="absolute right-0 top-0 z-30 overflow-hidden shadow-[0_16px_48px_rgba(0,0,0,0.65)]"
-                style={{ width: PHOTO_W_DESKTOP, aspectRatio: "1/1" }}
-              >
-                <Image src={service} alt="" fill className="object-cover" sizes="230px" />
-                <span className="absolute bottom-2 left-2 text-[9px] font-semibold uppercase tracking-wider text-white drop-shadow">
-                  StreetX
-                </span>
-              </div>
-            </MaskedReveal>
-
-            <MaskedReveal delay={0.06}>
-              <p
-                className="pl-0 font-normal uppercase text-neutral-900 dark:text-[#F9F9F9]"
-                style={connectingHeadlineDesktop}
-              >
-                {/* Connecting */}
-                      Map audience signals across
-              </p>
-            </MaskedReveal>
-            <MaskedReveal delay={0.11}>
-              <p className="pl-[min(6vw,100px)] font-normal uppercase" style={connectingHeadlineDesktop}>
-                   <span className={ORANGE_CONNECTING}>  creators </span>{" "}
-                <span className="text-neutral-900 dark:text-[#F9F9F9]">And</span>
-              </p>
-            </MaskedReveal>
-            <MaskedReveal delay={0.15}>
-              <div className="flex items-end">
-                <div
-                  className="pointer-events-none relative shrink-0 overflow-hidden"
-                  style={{ width: PHOTO_W_DESKTOP, aspectRatio: "4/5" }}
-                >
-                  <Image
-                    src={campaignMotionFocus}
-                    alt=""
-                    fill
-                    className="object-cover object-top blur-[2px] scale-110 saturate-[1.4] brightness-90"
-                    sizes="230px"
-                  />
-                </div>
-                <p
-                  className={cn("flex-1 pl-[min(5vw,80px)] font-normal uppercase", ORANGE_CONNECTING)}
-                  style={connectingHeadlineDesktop}
-                >
-                  Communities.
-                </p>
-              </div>
-            </MaskedReveal>
-          </div>
-
-          <div className="mt-8 flex items-end justify-between gap-8">
-            <MaskedReveal delay={0.18}>
-              <p className={`${bodyMicro} max-w-[320px]`}>
-
-              Reach is no longer enough. Messages are far more effective when delivered through trusted voices operating within the right cultural, social, and emotional contexts.
-
-              </p>
-            </MaskedReveal>
-            <MaskedReveal delay={0.2}>
-              <EditorialRuleCta align="end" href={SIGNUP_HREF}>
-                <>
-                  Start your journey
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
-                </>
-              </EditorialRuleCta>
-            </MaskedReveal>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function EditorialLabel({
+export function EditorialLabel({
   children,
   uppercase,
 }: {
@@ -437,7 +441,7 @@ const editorialCtaLabelOnBlack =
 /**
  * CTA: label + arrow with a separate rule extending past the text (Figma spec).
  */
-function EditorialRuleCta(
+export function EditorialRuleCta(
   props:
     | {
       align: EditorialRuleAlign;
@@ -505,6 +509,7 @@ function MissionIntroSection() {
       className={cn("py-12 sm:py-16 md:py-24 lg:py-32", LANDING_PLATE)}
     >
       <div className={PAGE}>
+        
         <MaskedReveal delay={0}>
           <h2 className="m-0 flex justify-start p-0 font-[inherit] font-normal leading-none">
             <EditorialLabel>Who is Paza</EditorialLabel>
@@ -512,30 +517,27 @@ function MissionIntroSection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.06}>
-        
-<div className="mt-8 max-w-[1251px] sm:mt-10">
-  <h3 className="max-w-[1080px] text-balance text-[clamp(1.1rem,4vw+0.35rem,2.6rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-    Paza is an{" "}
-    <span className="text-neutral-500 dark:text-zinc-500">
-      audience intelligence and collaboration infrastructure
-    </span>{" "}
-    for brands, creators, and community networks.
-  </h3>
+          <div className="mx-auto mt-8 max-w-[980px] px-4 sm:px-6 lg:px-8 sm:mt-10">
+            <h3 className="text-balance text-[clamp(1.1rem,4vw+0.35rem,2.6rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
+              Paza is an{" "}
+              <span className="text-neutral-500 dark:text-zinc-500">
+                audience intelligence and collaboration infrastructure
+              </span>{" "}
+              for brands, creators, and community networks.
+            </h3>
 
-  <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
-    <p>
-      It maps audience identity, interests, intent, and behavior alongside
-      brand and creator identities, values, and positioning.
-    </p>
-
-    <p>
-      Paza identifies where specific audience topics, conditions, and needs
-      already exist across real-world and digital environments, then connects
-      brands to the creators and communities within them.
-    </p>
-  </div>
-</div>
-
+            <div className="mt-6 space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
+              <p>
+                It maps audience identity, interests, intent, and behavior alongside
+                brand and creator identities, values, and positioning.
+              </p>
+              <p>
+                Paza identifies where specific audience topics, conditions, and needs
+                already exist across real-world and digital environments, then connects
+                brands to the creators and communities within them.
+              </p>
+            </div>
+          </div>
         </MaskedReveal>
 
         <MaskedReveal delay={0.12}>
@@ -548,16 +550,19 @@ function MissionIntroSection() {
             </EditorialRuleCta>
           </div>
         </MaskedReveal>
+
       </div>
     </section>
   );
 }
-
 /** Section 4 — studio image + secondary mission (Figma 1419:1036). */
+
 function StudioSecondarySection() {
   return (
     <section className={cn("py-12 sm:py-16 md:py-20 lg:py-24", LANDING_PLATE)}>
       <div className={PAGE}>
+        
+        {/* Image - Already well centered */}
         <MaskedReveal delay={0}>
           <div className="relative mx-auto w-full max-w-[min(92%,720px)] overflow-hidden border border-zinc-800/90">
             <div className="relative aspect-[16/10] w-full sm:aspect-[5/3]">
@@ -573,51 +578,48 @@ function StudioSecondarySection() {
           </div>
         </MaskedReveal>
 
+        {/* Text Content - Improved centering */}
         <MaskedReveal delay={0.08}>
+          <div className="mx-auto mt-10 max-w-[980px] px-4 sm:px-6 lg:px-8 sm:mt-14 md:mt-20">
+            <h3 className="text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
+              Digital advertising systems rely on fragmented proxy signals such as{" "}
+              <span className="text-neutral-500 dark:text-zinc-500">
+                demographics, clicks, views, likes, and engagement
+              </span>{" "}
+              to understand audiences and optimize campaigns.
+            </h3>
 
-<div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20">
-  <h3 className="max-w-[980px] text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-    Digital advertising systems rely on fragmented proxy signals such as{" "}
-    <span className="text-neutral-500 dark:text-zinc-500">
-      demographics, clicks, views, likes, and engagement
-    </span>{" "}
-    to understand audiences and optimize campaigns.
-  </h3>
-
-  <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
-    <p>
-      While these signals help predict short-term conversion, they provide
-      limited understanding of why audiences respond to specific products,
-      messages, or creators, and often lose meaning outside the context in
-      which they are generated.
-    </p>
-
-    <p>
-      Privacy restrictions and fragmented platforms further reduce audience
-      visibility, making it difficult for brands to distinguish between
-      existing audiences, newly emerging audiences, and temporary engagement.
-      As a result, brands struggle to build stable models of audience behavior
-      and intent.
-    </p>
-
-    <p>
-      This limits their ability to understand who their audience is, track
-      audiences over time, understand what drives repeat interaction, adapt
-      messaging as familiarity increases, engage existing audiences more
-      effectively, and activate high-value audience segments across contexts.
-    </p>
-
-    <p>
-      <span className="text-neutral-900 dark:text-white">Paza</span> improves
-      audience understanding by linking audience signals to products, creators,
-      and community environments, then observing how those relationships
-      perform and evolve over time.
-    </p>
-  </div>
-</div>
-  
+            <div className="mt-6 space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
+              <p>
+                While these signals help predict short-term conversion, they provide
+                limited understanding of why audiences respond to specific products,
+                messages, or creators, and often lose meaning outside the context in
+                which they are generated.
+              </p>
+              <p>
+                Privacy restrictions and fragmented platforms further reduce audience
+                visibility, making it difficult for brands to distinguish between
+                existing audiences, newly emerging audiences, and temporary engagement.
+                As a result, brands struggle to build stable models of audience behavior
+                and intent.
+              </p>
+              <p>
+                This limits their ability to understand who their audience is, track
+                audiences over time, understand what drives repeat interaction, adapt
+                messaging as familiarity increases, engage existing audiences more
+                effectively, and activate high-value audience segments across contexts.
+              </p>
+              <p>
+                <span className="text-neutral-900 dark:text-white">Paza</span> improves
+                audience understanding by linking audience signals to products, creators,
+                and community environments, then observing how those relationships
+                perform and evolve over time.
+              </p>
+            </div>
+          </div>
         </MaskedReveal>
 
+        {/* CTA */}
         <MaskedReveal delay={0.14}>
           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
             <EditorialRuleCta align="end" href={SIGNUP_HREF}>
@@ -628,10 +630,92 @@ function StudioSecondarySection() {
             </EditorialRuleCta>
           </div>
         </MaskedReveal>
+
       </div>
     </section>
   );
 }
+
+
+// function StudioSecondarySection() {
+//   return (
+//     <section className={cn("py-12 sm:py-16 md:py-20 lg:py-24", LANDING_PLATE)}>
+//       <div className={PAGE}>
+//         <MaskedReveal delay={0}>
+//           <div className="relative mx-auto w-full max-w-[min(92%,720px)] overflow-hidden border border-zinc-800/90">
+//             <div className="relative aspect-[16/10] w-full sm:aspect-[5/3]">
+//               <Image
+//                 src={campaignPressStudio}
+//                 alt="Collaborators reviewing work at a desk in a studio"
+//                 fill
+//                 className="object-cover object-center grayscale"
+//                 sizes="(max-width: 768px) 92vw, 720px"
+//                 loading="lazy"
+//               />
+//             </div>
+//           </div>
+//         </MaskedReveal>
+//
+//         <MaskedReveal delay={0.08}>
+//
+// {/* <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20"> */}
+// <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20 mx-auto px-4 sm:px-6 lg:px-8">
+//   <h3 className="max-w-[980px] text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
+//     Digital advertising systems rely on fragmented proxy signals such as{" "}
+//     <span className="text-neutral-500 dark:text-zinc-500">
+//       demographics, clicks, views, likes, and engagement
+//     </span>{" "}
+//     to understand audiences and optimize campaigns.
+//   </h3>
+//
+//   <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
+//     <p>
+//       While these signals help predict short-term conversion, they provide
+//       limited understanding of why audiences respond to specific products,
+//       messages, or creators, and often lose meaning outside the context in
+//       which they are generated.
+//     </p>
+//
+//     <p>
+//       Privacy restrictions and fragmented platforms further reduce audience
+//       visibility, making it difficult for brands to distinguish between
+//       existing audiences, newly emerging audiences, and temporary engagement.
+//       As a result, brands struggle to build stable models of audience behavior
+//       and intent.
+//     </p>
+//
+//     <p>
+//       This limits their ability to understand who their audience is, track
+//       audiences over time, understand what drives repeat interaction, adapt
+//       messaging as familiarity increases, engage existing audiences more
+//       effectively, and activate high-value audience segments across contexts.
+//     </p>
+//
+//     <p>
+//       <span className="text-neutral-900 dark:text-white">Paza</span> improves
+//       audience understanding by linking audience signals to products, creators,
+//       and community environments, then observing how those relationships
+//       perform and evolve over time.
+//     </p>
+//   </div>
+// </div>
+//
+//         </MaskedReveal>
+//
+//         <MaskedReveal delay={0.14}>
+//           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
+//             <EditorialRuleCta align="end" href={SIGNUP_HREF}>
+//               <>
+//                 Start your journey
+//                 <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
+//               </>
+//             </EditorialRuleCta>
+//           </div>
+//         </MaskedReveal>
+//       </div>
+//     </section>
+//   );
+// }
 
 /** Figma / reference — four rows, black plate (always), white type, orange keywords. */
 const SERVICE_ROWS = [
@@ -725,7 +809,7 @@ function OurServicesSection() {
                   {row.index}
                 </span>
                 <span className="services-click hidden min-w-0 whitespace-nowrap text-[10px] font-medium leading-snug tracking-[0.04em] text-neutral-500 dark:text-zinc-500 sm:block sm:text-[11px] md:text-[12px]">
-                  Click to open
+                  {/* Click to open */}
                 </span>
 
 <div className="min-w-0">
@@ -773,7 +857,7 @@ function OurServicesSection() {
 }
 
 /** Account-type modal mock — matches “Please select your account type” + Continue (comp). */
-function AccountTypeMockupCard({
+export function AccountTypeMockupCard({
   className,
   href = "/account-type",
 }: {
@@ -819,7 +903,7 @@ type WheelSteeredHorizontalScrollProps = {
  * At the start/end of the strip, the event is not intercepted so the page can scroll normally.
  * When fully scrolled right, wheel up is not mapped to horizontal (so the page can scroll up).
  */
-function WheelSteeredHorizontalScroll({ className, children }: WheelSteeredHorizontalScrollProps) {
+export function WheelSteeredHorizontalScroll({ className, children }: WheelSteeredHorizontalScrollProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -865,7 +949,7 @@ function WheelSteeredHorizontalScroll({ className, children }: WheelSteeredHoriz
   );
 }
 
-const HOW_PLATFORM_WORKS_STEPS = [
+export const HOW_PLATFORM_WORKS_STEPS = [
   {
     id: "01",
     title: "Create Campaigns, Post Jobs or Showcase Projects",
@@ -927,7 +1011,7 @@ const HOW_PLATFORM_WORKS_STEPS = [
   },
 ];
 
-function HowItWorksStepPanel({
+export function HowItWorksStepPanel({
   stepNumber,
   title,
   layout,
@@ -999,178 +1083,184 @@ function HowItWorksStepPanel({
 }
 
 /** lg+: vertical scroll maps to horizontal translate; clamped at start/end. */
-function HowItWorksDesktopScrollDriver() {
-  const driverRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [maxOffset, setMaxOffset] = useState(0);
-  const reduceMotion = useReducedMotion();
 
-  const measure = useCallback(() => {
-    const track = trackRef.current;
-    const viewport = track?.parentElement;
-    if (!track || !viewport) return;
-    setMaxOffset(Math.max(0, track.scrollWidth - viewport.clientWidth));
-  }, []);
 
-  useLayoutEffect(() => {
-    measure();
-    const ro = new ResizeObserver(() => measure());
-    const track = trackRef.current;
-    const viewport = track?.parentElement;
-    if (track) ro.observe(track);
-    if (viewport) ro.observe(viewport);
-    window.addEventListener("resize", measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [measure]);
 
-  const { scrollYProgress } = useScroll({
-    target: driverRef,
-    offset: ["start start", "end end"],
-  });
 
-  const x = useTransform(scrollYProgress, (p) => -p * maxOffset);
+// function HowItWorksDesktopScrollDriver() {
+//   const driverRef = useRef<HTMLDivElement>(null);
+//   const trackRef = useRef<HTMLDivElement>(null);
+//   const [maxOffset, setMaxOffset] = useState(0);
+//   const reduceMotion = useReducedMotion();
+//
+//   const measure = useCallback(() => {
+//     const track = trackRef.current;
+//     const viewport = track?.parentElement;
+//     if (!track || !viewport) return;
+//     setMaxOffset(Math.max(0, track.scrollWidth - viewport.clientWidth));
+//   }, []);
+//
+//   useLayoutEffect(() => {
+//     measure();
+//     const ro = new ResizeObserver(() => measure());
+//     const track = trackRef.current;
+//     const viewport = track?.parentElement;
+//     if (track) ro.observe(track);
+//     if (viewport) ro.observe(viewport);
+//     window.addEventListener("resize", measure);
+//     return () => {
+//       ro.disconnect();
+//       window.removeEventListener("resize", measure);
+//     };
+//   }, [measure]);
+//
+//   const { scrollYProgress } = useScroll({
+//     target: driverRef,
+//     offset: ["start start", "end end"],
+//   });
+//
+//   const rawX = useTransform(scrollYProgress, (p) => -p * maxOffset * 0.42 + vh * 0.55 );
+// const x = useSpring(rawX, { stiffness: 85, damping: 22, mass: 0.5 });
+//   // const x = useTransform(scrollYProgress, (p) => -p * maxOffset);
+//
+//   const panels = (
+//     <>
+//       {HOW_PLATFORM_WORKS_STEPS.map((step) => (
+//         <HowItWorksStepPanel
+//           key={step.id}
+//           stepNumber={step.id}
+//           title={step.title}
+//           layout={step.layout}
+//         >
+//           {step.body}
+//         </HowItWorksStepPanel>
+//       ))}
+//       <div className="w-4 shrink-0 sm:w-8" aria-hidden />
+//     </>
+//   );
+//
+//   if (reduceMotion) {
+//     return (
+//       <div className="hidden touch-pan-x lg:block" role="region" aria-label="Platform workflow steps">
+//         <WheelSteeredHorizontalScroll
+//           className={cn(
+//             PAGE_PAD,
+//             "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
+//             "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
+//             "snap-x snap-mandatory scroll-smooth",
+//           )}
+//         >
+//           {panels}
+//         </WheelSteeredHorizontalScroll>
+//       </div>
+//     );
+//   }
+//
+//   const vh = typeof window !== "undefined" ? window.innerHeight : 900;
+//   /**
+//    * Shorter vertical scroll track than `maxOffset + vh` so less empty space before the CTA,
+//    * while `useTransform` still maps full horizontal distance across scroll progress 0→1.
+//    */
+//   const driverHeightPx =
+//     maxOffset > 0 ? Math.max(Math.round(vh * 0.85), Math.round(maxOffset * 0.42 + vh * 0.55)) : undefined;
+//
+//   return (
+//     <div
+//       ref={driverRef}
+//       className="relative hidden lg:block"
+//       style={driverHeightPx ? { height: driverHeightPx } : { minHeight: "100dvh" }}
+//       role="region"
+//       aria-label="Platform workflow steps"
+//     >
+//       <div className="sticky top-0 flex h-[100dvh] max-h-[100dvh] w-full items-center overflow-hidden bg-zinc-100 dark:bg-[#050505]">
+//         <motion.div
+//           ref={trackRef}
+//           style={{ x }}
+//           className={cn(PAGE_PAD, " smooth-scroll flex w-max flex-nowrap gap-12 pb-4 pt-2 will-change-transform sm:gap-14 lg:gap-16")}
+//         >
+//           {panels}
+//         </motion.div>
+//       </div>
+//     </div>
+//   );
+// }
 
-  const panels = (
-    <>
-      {HOW_PLATFORM_WORKS_STEPS.map((step) => (
-        <HowItWorksStepPanel
-          key={step.id}
-          stepNumber={step.id}
-          title={step.title}
-          layout={step.layout}
-        >
-          {step.body}
-        </HowItWorksStepPanel>
-      ))}
-      <div className="w-4 shrink-0 sm:w-8" aria-hidden />
-    </>
-  );
-
-  if (reduceMotion) {
-    return (
-      <div className="hidden touch-pan-x lg:block" role="region" aria-label="Platform workflow steps">
-        <WheelSteeredHorizontalScroll
-          className={cn(
-            PAGE_PAD,
-            "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
-            "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
-            "snap-x snap-mandatory scroll-smooth",
-          )}
-        >
-          {panels}
-        </WheelSteeredHorizontalScroll>
-      </div>
-    );
-  }
-
-  const vh = typeof window !== "undefined" ? window.innerHeight : 900;
-  /**
-   * Shorter vertical scroll track than `maxOffset + vh` so less empty space before the CTA,
-   * while `useTransform` still maps full horizontal distance across scroll progress 0→1.
-   */
-  const driverHeightPx =
-    maxOffset > 0 ? Math.max(Math.round(vh * 0.85), Math.round(maxOffset * 0.42 + vh * 0.55)) : undefined;
-
-  return (
-    <div
-      ref={driverRef}
-      className="relative hidden lg:block"
-      style={driverHeightPx ? { height: driverHeightPx } : { minHeight: "100dvh" }}
-      role="region"
-      aria-label="Platform workflow steps"
-    >
-      <div className="sticky top-0 flex h-[100dvh] max-h-[100dvh] w-full items-center overflow-hidden bg-zinc-100 dark:bg-[#050505]">
-        <motion.div
-          ref={trackRef}
-          style={{ x }}
-          className={cn(PAGE_PAD, " smooth-scroll flex w-max flex-nowrap gap-12 pb-4 pt-2 will-change-transform sm:gap-14 lg:gap-16")}
-        >
-          {panels}
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-function HowItWorksSection() {
-  return (
-    <section id="how-it-works" className="relative">
-      {/*
-        Figma header: black strip, label left + centered 2-line headline (40px / 172% / PP Neue),
-        #FFFFFF + #FF6B00 on CONNECT / CAMPAIGNS.
-      */}
-      <div className="border-b border-border bg-zinc-100 py-10 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:py-12 md:py-16 lg:py-20">
-        <div className={PAGE}>
-          <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:gap-12 md:gap-16 lg:gap-20 xl:gap-24">
-            <MaskedReveal delay={0}>
-              <h2 className="m-3 shrink-0 p-0 font-[inherit] font-normal leading-none">
-                <EditorialLabel>How It Works</EditorialLabel>
-              </h2>
-            </MaskedReveal>
-            <MaskedReveal delay={0.06}>
-            
-<div className="flex min-w-0 flex-1 justify-center">
-  <p
-    className="m-0 max-w-[min(100%,52rem)]  uppercase text-neutral-900 dark:text-white"
-    style={servicesQuoteTypography}
-  >
-    Identify, organize, activate, and track aligned audiences.
-  </p>
-</div>
-
-            </MaskedReveal>
-          </div>
-        </div>
-      </div>
-
-      <div className={cn("py-6 sm:py-8 md:py-10 lg:py-12", LANDING_PLATE)}>
-      <div className="touch-pan-x lg:hidden" role="region" aria-label="Platform workflow steps">
-        <WheelSteeredHorizontalScroll
-          className={cn(
-            PAGE_PAD,
-            "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
-            "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
-            "snap-x snap-mandatory scroll-smooth",
-          )}
-        >
-          {HOW_PLATFORM_WORKS_STEPS.map((step) => (
-            <HowItWorksStepPanel
-              key={step.id}
-              stepNumber={step.id}
-              title={step.title}
-              layout={step.layout}
-            >
-              {step.body}
-            </HowItWorksStepPanel>
-          ))}
-          <div className="w-4 shrink-0 snap-end sm:w-8" aria-hidden />
-        </WheelSteeredHorizontalScroll>
-      </div>
-
-        <HowItWorksDesktopScrollDriver />
-
-        <div className={PAGE}>
-          <div className="mt-6 flex flex-col items-center gap-2.5 sm:mt-8 sm:gap-3 md:mt-10 md:items-end">
-            <EditorialRuleCta align="end" href={SIGNUP_HREF}>
-              <>
-                Start your journey
-                <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
-              </>
-            </EditorialRuleCta>
-            <p className="max-w-sm text-center text-[11px] leading-relaxed text-neutral-900/75 md:text-right dark:text-white/80">
-              Start today and see how your vision can shape the world
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 h-px w-full bg-border sm:mt-8 md:mt-10 dark:bg-white/10" aria-hidden />
-      </div>
-    </section>
-  );
-}
+// function HowItWorksSection() {
+//   return (
+//     <section id="how-it-works" className="relative">
+//       {/*
+//         Figma header: black strip, label left + centered 2-line headline (40px / 172% / PP Neue),
+//         #FFFFFF + #FF6B00 on CONNECT / CAMPAIGNS.
+//       */}
+//       <div className="border-b border-border bg-zinc-100 py-10 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:py-12 md:py-16 lg:py-20">
+//         <div className={PAGE}>
+//           <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:gap-12 md:gap-16 lg:gap-20 xl:gap-24">
+//             <MaskedReveal delay={0}>
+//               <h2 className="m-3 shrink-0 p-0 font-[inherit] font-normal leading-none">
+//                 <EditorialLabel>How It Works</EditorialLabel>
+//               </h2>
+//             </MaskedReveal>
+//             <MaskedReveal delay={0.06}>
+//
+// <div className="flex min-w-0 flex-1 justify-center">
+//   <p
+//     className="m-0 max-w-[min(100%,52rem)]  uppercase text-neutral-900 dark:text-white"
+//     style={servicesQuoteTypography}
+//   >
+//     Identify, organize, activate, and track aligned audiences.
+//   </p>
+// </div>
+//
+//             </MaskedReveal>
+//           </div>
+//         </div>
+//       </div>
+//
+//       <div className={cn("py-6 sm:py-8 md:py-10 lg:py-12", LANDING_PLATE)}>
+//       <div className="touch-pan-x lg:hidden" role="region" aria-label="Platform workflow steps">
+//         <WheelSteeredHorizontalScroll
+//           className={cn(
+//             PAGE_PAD,
+//             "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
+//             "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
+//             "snap-x snap-mandatory scroll-smooth",
+//           )}
+//         >
+//           {HOW_PLATFORM_WORKS_STEPS.map((step) => (
+//             <HowItWorksStepPanel
+//               key={step.id}
+//               stepNumber={step.id}
+//               title={step.title}
+//               layout={step.layout}
+//             >
+//               {step.body}
+//             </HowItWorksStepPanel>
+//           ))}
+//           <div className="w-4 shrink-0 snap-end sm:w-8" aria-hidden />
+//         </WheelSteeredHorizontalScroll>
+//       </div>
+//
+//         <HowItWorksSections/>
+//
+//         <div className={PAGE}>
+//           <div className="mt-6 flex flex-col items-center gap-2.5 sm:mt-8 sm:gap-3 md:mt-10 md:items-end">
+//             <EditorialRuleCta align="end" href={SIGNUP_HREF}>
+//               <>
+//                 Start your journey
+//                 <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
+//               </>
+//             </EditorialRuleCta>
+//             <p className="max-w-sm text-center text-[11px] leading-relaxed text-neutral-900/75 md:text-right dark:text-white/80">
+//               Start today and see how your vision can shape the world
+//             </p>
+//           </div>
+//         </div>
+//
+//         <div className="mt-6 h-px w-full bg-border sm:mt-8 md:mt-10 dark:bg-white/10" aria-hidden />
+//       </div>
+//     </section>
+//   );
+// }
 
 /** Figma 1419:925 — form + contact grid in one #050505 plate */
 function FigmaContactSection() {
@@ -1335,9 +1425,9 @@ function LandingPageFooter() {
             </button>
           </div>
           <div className="flex flex-1 flex-col gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-12">
-            <p className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl dark:text-white">
-              PAZA
-            </p>
+          <p className="text-8xl font-extrabold tracking-tighter text-foreground sm:text-6xl md:text-7xl dark:text-white">
+  PAZA
+</p>
             <nav className="grid grid-cols-2 gap-x-12 gap-y-10 sm:flex sm:flex-1 sm:justify-end sm:gap-16 md:gap-24" aria-label="Footer">
               <div>
                 <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -1434,7 +1524,8 @@ export default function LandingPage() {
 
           <OurServicesSection />
 
-          <HowItWorksSection />
+          {/* <HowItWorksSection /> */}
+          <HowItWorksSection/>
 
           <FigmaContactSection />
 

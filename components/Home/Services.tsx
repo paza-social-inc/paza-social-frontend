@@ -388,103 +388,103 @@ export default function Services() {
                   {i < serviceDetails.length - 1 && <div className="h-5 sm:h-6" />}
                 </div>
               ))}
-              <div className="flex justify-center mt-10 sm:mt-14">
-                <Link
-                  href="/#contact"
-                  className="text-[14px] text-foreground dark:text-zinc-200 underline underline-offset-4 decoration-zinc-500"
-                >
-                  More
-                </Link>
-              </div>
+              {/* <div className="flex justify-center mt-10 sm:mt-14"> */}
+              {/*   <Link */}
+              {/*     href="/#contact" */}
+              {/*     className="text-[14px] text-foreground dark:text-zinc-200 underline underline-offset-4 decoration-zinc-500" */}
+              {/*   > */}
+              {/*     More */}
+              {/*   </Link> */}
+              {/* </div> */}
             </div>
 
             {/* Pricing */}
-            <div className="relative mt-16 sm:mt-24">
-              <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12]">
-                <Image src={campaignAerialSuits} alt="" fill className="object-cover object-top" />
-              </div>
-              <div className="flex items-end gap-8">
-                <div className="flex items-center gap-3">
-                  <span className="w-2 h-2 bg-orange-500 block" />
-                  <span className="text-[12px] uppercase tracking-[0.18em] text-orange-500">
-                    Pricing
-                  </span>
-                </div>
-              </div>
-
-              <h2 className="mt-5 sm:mt-6 text-[26px] sm:text-[38px] md:text-[52px] leading-[0.95] tracking-[-0.02em]">
-                LET VALUE DRIVEN{" "}
-                <span className="text-orange-500">PATNERSHIPS</span>
-                <br />
-                <span className="text-foreground dark:text-white">POWER YOUR REVENUE</span>
-              </h2>
-
-              <div className="mt-8 sm:mt-10 flex items-center justify-between font-medium text-[16px] sm:text-[18px]">
-                <button
-                  type="button"
-                  onClick={() => setPricingTab("brands")}
-                  className={[
-                    "w-1/2 text-center pb-3 border-b-4 transition-colors",
-                    pricingTab === "brands"
-                      ? "border-orange-500 text-foreground dark:text-zinc-100"
-                      : "border-transparent text-foreground dark:text-zinc-500 hover:text-foreground dark:hover:text-zinc-300",
-                  ].join(" ")}
-                >
-                  Brands
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPricingTab("creators")}
-                  className={[
-                    "w-1/2 text-center pb-3 border-b-4 transition-colors",
-                    pricingTab === "creators"
-                      ? "border-orange-500 text-foreground dark:text-zinc-100"
-                      : "border-transparent text-foreground dark:text-zinc-500 hover:text-foreground dark:hover:text-zinc-300",
-                  ].join(" ")}
-                >
-                  Creator
-                </button>
-              </div>
-
-              <div className="mt-7 sm:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-0">
-                {pricingPlans.map((p, idx) => (
-                  <div
-                    key={p.name}
-                    className={[
-                      "px-4 sm:px-6 py-7 sm:py-8 border-t border-zinc-900/40",
-                      "bg-black/10",
-                      idx === 0 ? "border-l border-zinc-900/40" : "border-l border-zinc-900/40",
-                    ].join(" ")}
-                  >
-                    <div className="text-[12px] uppercase tracking-[0.18em] text-foreground dark:text-zinc-500">
-                      {p.name}
-                    </div>
-                    <div className="mt-2 text-[16px] sm:text-[18px] text-foreground dark:text-zinc-400">
-                      Sh{" "}
-                      <span className="text-[34px] sm:text-[42px] font-semibold text-foreground dark:text-white leading-none">
-                        {p.price}
-                      </span>{" "}
-                      {p.period}
-                    </div>
-                    <div className="mt-5 space-y-2 text-[11px] sm:text-[12px] text-foreground dark:text-zinc-500 leading-relaxed uppercase">
-                      {p.items.slice(0, 6).map((it) => (
-                        <p key={it}>{it}</p>
-                      ))}
-                    </div>
-
-                    <div className="mt-6">
-                      <Link
-                        href="/account-type"
-                        className="group inline-flex w-full items-center justify-between bg-orange-500 text-black px-5 py-4 text-[12px] font-medium"
-                      >
-                        <span>GET STARTED</span>
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* <div className="relative mt-16 sm:mt-24"> */}
+            {/*   <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12]"> */}
+            {/*     <Image src={campaignAerialSuits} alt="" fill className="object-cover object-top" /> */}
+            {/*   </div> */}
+            {/*   <div className="flex items-end gap-8"> */}
+            {/*     <div className="flex items-center gap-3"> */}
+            {/*       <span className="w-2 h-2 bg-orange-500 block" /> */}
+            {/*       <span className="text-[12px] uppercase tracking-[0.18em] text-orange-500"> */}
+            {/*         Pricing */}
+            {/*       </span> */}
+            {/*     </div> */}
+            {/*   </div> */}
+            {/**/}
+            {/*   <h2 className="mt-5 sm:mt-6 text-[26px] sm:text-[38px] md:text-[52px] leading-[0.95] tracking-[-0.02em]"> */}
+            {/*     LET VALUE DRIVEN{" "} */}
+            {/*     <span className="text-orange-500">PATNERSHIPS</span> */}
+            {/*     <br /> */}
+            {/*     <span className="text-foreground dark:text-white">POWER YOUR REVENUE</span> */}
+            {/*   </h2> */}
+            {/**/}
+            {/*   <div className="mt-8 sm:mt-10 flex items-center justify-between font-medium text-[16px] sm:text-[18px]"> */}
+            {/*     <button */}
+            {/*       type="button" */}
+            {/*       onClick={() => setPricingTab("brands")} */}
+            {/*       className={[ */}
+            {/*         "w-1/2 text-center pb-3 border-b-4 transition-colors", */}
+            {/*         pricingTab === "brands" */}
+            {/*           ? "border-orange-500 text-foreground dark:text-zinc-100" */}
+            {/*           : "border-transparent text-foreground dark:text-zinc-500 hover:text-foreground dark:hover:text-zinc-300", */}
+            {/*       ].join(" ")} */}
+            {/*     > */}
+            {/*       Brands */}
+            {/*     </button> */}
+            {/*     <button */}
+            {/*       type="button" */}
+            {/*       onClick={() => setPricingTab("creators")} */}
+            {/*       className={[ */}
+            {/*         "w-1/2 text-center pb-3 border-b-4 transition-colors", */}
+            {/*         pricingTab === "creators" */}
+            {/*           ? "border-orange-500 text-foreground dark:text-zinc-100" */}
+            {/*           : "border-transparent text-foreground dark:text-zinc-500 hover:text-foreground dark:hover:text-zinc-300", */}
+            {/*       ].join(" ")} */}
+            {/*     > */}
+            {/*       Creator */}
+            {/*     </button> */}
+            {/*   </div> */}
+            {/**/}
+            {/*   <div className="mt-7 sm:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-0"> */}
+            {/*     {pricingPlans.map((p, idx) => ( */}
+            {/*       <div */}
+            {/*         key={p.name} */}
+            {/*         className={[ */}
+            {/*           "px-4 sm:px-6 py-7 sm:py-8 border-t border-zinc-900/40", */}
+            {/*           "bg-black/10", */}
+            {/*           idx === 0 ? "border-l border-zinc-900/40" : "border-l border-zinc-900/40", */}
+            {/*         ].join(" ")} */}
+            {/*       > */}
+            {/*         <div className="text-[12px] uppercase tracking-[0.18em] text-foreground dark:text-zinc-500"> */}
+            {/*           {p.name} */}
+            {/*         </div> */}
+            {/*         <div className="mt-2 text-[16px] sm:text-[18px] text-foreground dark:text-zinc-400"> */}
+            {/*           Sh{" "} */}
+            {/*           <span className="text-[34px] sm:text-[42px] font-semibold text-foreground dark:text-white leading-none"> */}
+            {/*             {p.price} */}
+            {/*           </span>{" "} */}
+            {/*           {p.period} */}
+            {/*         </div> */}
+            {/*         <div className="mt-5 space-y-2 text-[11px] sm:text-[12px] text-foreground dark:text-zinc-500 leading-relaxed uppercase"> */}
+            {/*           {p.items.slice(0, 6).map((it) => ( */}
+            {/*             <p key={it}>{it}</p> */}
+            {/*           ))} */}
+            {/*         </div> */}
+            {/**/}
+            {/*         <div className="mt-6"> */}
+            {/*           <Link */}
+            {/*             href="/account-type" */}
+            {/*             className="group inline-flex w-full items-center justify-between bg-orange-500 text-black px-5 py-4 text-[12px] font-medium" */}
+            {/*           > */}
+            {/*             <span>GET STARTED</span> */}
+            {/*             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /> */}
+            {/*           </Link> */}
+            {/*         </div> */}
+            {/*       </div> */}
+            {/*     ))} */}
+            {/*   </div> */}
+            {/* </div> */}
 
             {/* Final CTA */}
             <div className="relative mt-20 sm:mt-28 pb-16 sm:pb-20">
