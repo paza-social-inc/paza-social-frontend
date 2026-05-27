@@ -101,7 +101,7 @@ export default function NavBar() {
     /* Full-width fixed wrapper — lets page content scroll behind the nav so backdrop-blur works */
     <div
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 pt-[env(safe-area-inset-top,0px)]",
+        "fixed top-0 left-0 right-0 z-50 backdrop-filter transition-all duration-500 pt-[env(safe-area-inset-top,0px)]",
         darkMarketingChrome
           ? scrolled
             ? "bg-black/60 backdrop-blur-xl border-b border-white/8 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]"

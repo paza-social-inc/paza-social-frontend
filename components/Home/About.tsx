@@ -45,48 +45,77 @@ export default function About() {
           </div>
         </div>
 
-        <div className={`${CONTAINER} mt-10 sm:mt-16`}>
-          <h1 className="text-[clamp(2.1rem,10vw,3.9rem)] leading-[1.08] sm:leading-[1.18] tracking-[-0.02em] max-w-[1120px]">
-            We believe in nurturing relationships built on trust, shared values and a mutual understanding and commitment to success
-          </h1>
-        </div>
+<div className={`${CONTAINER} mt-12 sm:mt-24`}>
+  <div className="grid grid-cols-1 md:grid-cols-[120px_160px_1fr] lg:grid-cols-[130px_180px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
+    <SectionEyebrow label="Our Story" />
 
-        <div className={`${CONTAINER} mt-12 sm:mt-24`}>
-          <div className="grid grid-cols-1 md:grid-cols-[120px_160px_1fr] lg:grid-cols-[130px_180px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
-            <SectionEyebrow label="Our Story" />
-            <p className="text-[28px] sm:text-[36px] tracking-[-0.01em]">PAZA SOCIAL</p>
-            <p className="text-[14px] sm:text-[17px] text-foreground dark:text-zinc-300 leading-[1.75] sm:leading-[1.8] max-w-[780px]">
-              Paza was born in Nairobi from a simple but urgent insight: creators-full of talent and vision-lacked
-              structured access to meaningful, lasting opportunities. The digital space was crowded with platforms
-              built for transactions, prioritizing quantitative reach over qualitative alignment.
-              <br />
-              We envisioned a space where collaborations are shaped by deep alignment-of identity, tone, goals, and purpose.
-              <br />
-              Hence <span className="text-orange-500">Paza Social</span>-not just a tool, but a creative ecosystem.
-              <br />
-              We&apos;re continuously expanding our platform with the essential tools needed to support structured,
-              successful campaigns-ensuring that every collaboration is meaningful and built to last.
-            </p>
-          </div>
-        </div>
+    <p className="text-[28px] sm:text-[36px] tracking-[-0.01em]">
+      PAZA SOCIAL
+    </p>
 
-        <div className={`${CONTAINER} mt-12 sm:mt-16`}>
-          <div className="grid grid-cols-1 md:grid-cols-[120px_160px_1fr] lg:grid-cols-[130px_180px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
-            <div />
-            <p className="text-[28px] sm:text-[36px] tracking-[-0.01em]">VISION</p>
-            <p className="text-[14px] sm:text-[17px] text-foreground dark:text-zinc-300 leading-[1.75] sm:leading-[1.8] max-w-[780px]">
-              Be the premier space for collaboration in the creator economy, enabling strategic brand
-              integration across diverse creative content. while allowing creators to connect with
-              like minded talents to elevate their projects.
-            </p>
-          </div>
-          <div className="mt-6 sm:mt-10 flex justify-start sm:justify-end">
-            <Link href="/#contact" className="inline-flex items-center gap-2 text-[23px] sm:text-[34px] border-b border-zinc-500 pb-1">
-              Start your journey
-              <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />
-            </Link>
-          </div>
-        </div>
+    <div className="max-w-[820px] space-y-5 text-[14px] sm:text-[17px] text-foreground dark:text-zinc-300 leading-[1.85]">
+      <p>
+        Paza was born in{" "}
+        <span className="text-orange-500">Nairobi, Kenya</span> from a
+        simple but urgent insight: creators full of talent and vision lacked
+        structured access to meaningful opportunities, while brands struggled
+        to identify which creators could genuinely connect with the right
+        audiences.
+      </p>
+
+      <p>
+        Most digital advertising and creator platforms prioritize reach,
+        impressions, and transactions over trust, contextual relevance, and
+        authentic alignment — reducing creators to surface-level metrics like
+        follower counts and engagement rates.
+      </p>
+
+      <p>
+        At the same time, audiences are increasingly resistant to generic
+        advertising. Brands no longer just need visibility; they need trusted
+        voices capable of naturally translating products into the right
+        cultural and emotional contexts.
+      </p>
+
+      <p>
+        We envisioned a space where collaborations are shaped by deep alignment
+        — of identity, tone, values, audience, and purpose.
+      </p>
+
+      <p>
+        Hence{" "}
+        <span className="text-orange-500">Paza Social</span> — a creative
+        ecosystem designed to help brands and creators build more authentic,
+        effective, and lasting collaborations.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div className={`${CONTAINER} mt-12 sm:mt-16`}>
+  <div className="grid grid-cols-1 md:grid-cols-[120px_160px_1fr] lg:grid-cols-[130px_180px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
+    <div />
+
+    <p className="text-[28px] sm:text-[36px] tracking-[-0.01em]">
+      VISION
+    </p>
+
+    <p className="max-w-[780px] text-[14px] sm:text-[17px] text-foreground dark:text-zinc-300 leading-[1.85]">
+      To become the infrastructure that powers how collaboration is formed
+      around audience understanding across digital and real-world ecosystems.
+    </p>
+  </div>
+
+  <div className="mt-6 sm:mt-10 flex justify-start sm:justify-end">
+    <Link
+      href="/#contact"
+      className="inline-flex items-center gap-2 text-[23px] sm:text-[34px] border-b border-zinc-500 pb-1"
+    >
+      Start your journey
+      <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />
+    </Link>
+  </div>
+</div>
 
         <div className={`${CONTAINER} mt-14 sm:mt-20`}>
           <h2 className="text-[clamp(2rem,10vw,5.2rem)] leading-[1.04] sm:leading-[1.06] tracking-[-0.02em] uppercase max-w-[980px]">
@@ -111,9 +140,9 @@ export default function About() {
             <div>
               <SectionEyebrow label="Our Mission" />
               <p className="mt-2 max-w-[min(100%,38rem)] text-[0.9375rem] leading-[1.65] tracking-[-0.01em] text-foreground sm:mt-3 sm:max-w-[760px] sm:text-[1rem] sm:leading-relaxed md:text-[1.0625rem]">
-                Make it easy to collaborate with anyone around the world while maximizing the
-                potential of every collaboration fostering a win-win scenario where creativity thrives
-                and all the parties involved get to achieve their goals and objectives.
+
+To better understand audience identity, interests, intent, and behavior in order to maximize the effectiveness of collaborations and outcomes.
+
               </p>
               <div className="mt-6 flex justify-start sm:justify-end">
                 <Link href="/#contact" className="inline-flex items-center gap-2 text-[13px] sm:text-[14px] border-b border-zinc-500 pb-1">
@@ -126,32 +155,56 @@ export default function About() {
         </div>
 
         <div className={`${CONTAINER} mt-12 sm:mt-16 pb-8 sm:pb-10`}>
-          <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] lg:grid-cols-[170px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
-            <SectionEyebrow label="Why choose us" />
-            <div>
-              <p className="max-w-[min(100%,38rem)] text-[0.9375rem] leading-[1.65] tracking-[-0.01em] text-black dark:text-zinc-100 sm:max-w-[900px] sm:text-[1rem] sm:leading-relaxed md:text-[1.0625rem]">
-                At Paza, it&apos;s not just about connecting—it&apos;s about forging collaborations where
-                identity, tone, purpose, and vision converge, delivering campaigns that achieve their goals
-                as well as shape culture. Paza supports long-term synergy and empowers any type of
-                collaboration to thrive.
-                <br />
-                <br />
-                Whether scaling, experimenting, or fine-tuning your strategy, Paza evolves with
-                you—equipping you to co-create with intention and build lasting impact, one genuine
-                story at a time.
-              </p>
-              <div className="mt-6 sm:mt-7 flex justify-start sm:justify-end">
-                <Link
-                  href="/#contact"
-                  className="inline-flex items-center gap-2 border-b border-zinc-500 pb-1 text-[17px] font-medium text-black dark:text-zinc-100 sm:text-[22px] md:text-[26px]"
-                >
-                  Start your journey
-                  <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-                </Link>
-              </div>
-            </div>
-          </div>
+
+
+<div className="grid grid-cols-1 md:grid-cols-[140px_1fr] lg:grid-cols-[170px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
+  <SectionEyebrow label="Why choose us" />
+
+  <div>
+    <div className="max-w-[900px] space-y-5 text-[0.9375rem] leading-[1.8] tracking-[-0.01em] text-black dark:text-zinc-100 sm:text-[1rem] md:text-[1.0625rem]">
+      <p>
+        Paza maps the intersection of{" "}
+        <span className="text-orange-500">
+          creator identity, audience behavior, and brand intent
+        </span>
+        . By using behavioral clustering, we ensure collaborations are rooted
+        in actual audience compatibility before a campaign begins.
+      </p>
+
+      <p>
+        We don&apos;t just facilitate connections; we provide the continuous
+        feedback loop necessary for long-term synergy.
+      </p>
+
+      <p>
+        By closing the gap between discovery and attribution, Paza enables
+        creators, brands, and communities to scale with intentionality and
+        verified impact.
+      </p>
+
+      <p>
+        Whether testing new market segments or scaling proven partnerships,
+        Paza enables teams to build with precision, consistency, and long-term
+        synergy — turning every collaboration into a measurable and improving
+        system rooted in real audience compatibility and intent.
+      </p>
+    </div>
+
+    <div className="mt-6 sm:mt-7 flex justify-start sm:justify-end">
+      <Link
+        href="/#contact"
+        className="inline-flex items-center gap-2 border-b border-zinc-500 pb-1 text-[17px] font-medium text-black dark:text-zinc-100 sm:text-[22px] md:text-[26px]"
+      >
+        Start your journey
+        <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
+      </Link>
+    </div>
+  </div>
+</div>
+
         </div>
+
+
 
         <div className={`${CONTAINER} mt-8 sm:mt-10 border-t border-zinc-900 pt-6 sm:pt-8`}>
           <div className="relative min-h-[560px] sm:min-h-[880px] overflow-hidden">
