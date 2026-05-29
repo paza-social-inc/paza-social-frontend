@@ -155,10 +155,11 @@ const connectingHeadlineDesktop: CSSProperties = {
  */
 export const servicesQuoteTypography: CSSProperties = {
   fontFamily: CONNECTING_HEADLINE_FONT,
-  fontSize: "clamp(0.875rem, 2.2vw + 0.5rem, 40px)",
+  // fontSize: "clamp(0.850rem, 2.2vw + 0.5rem, 40px)",
+  fontSize: "clamp(0.8125rem, 1.8vw + 0.45rem, 2rem)",
   fontStyle: "normal",
   fontWeight: 400,
-  lineHeight: 1.72,
+  lineHeight: 1.52,
 };
 
 const servicesQuoteOrange: CSSProperties = {
@@ -498,7 +499,7 @@ function MissionIntroSection() {
   return (
     <section
       id="who-is-paza"
-      className={cn("py-12 sm:py-16 md:py-24 lg:py-32", LANDING_PLATE)}
+      className={cn("py-10 sm:py-16 md:py-24 lg:py-32", LANDING_PLATE)}
     >
       <div className={PAGE}>
         
@@ -509,27 +510,43 @@ function MissionIntroSection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.06}>
-          <div className="mx-auto mt-8 max-w-[980px] px-4 sm:px-6 lg:px-8 sm:mt-10 text-center">
-            <h3 className="text-balance text-[clamp(1.1rem,4vw+0.35rem,2.6rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-              Paza is an{" "}
-              <span className="text-neutral-500 dark:text-zinc-500">
-                audience intelligence and collaboration infrastructure
-              </span>{" "}
-              for brands, creators, and community networks.
-            </h3>
+<div className="mx-auto mt-2 max-w-[1400px] px-2 text-left sm:mt-10 sm:px-8 lg:px-12">
+  {/* The Ultra-Clean, Explicit Two-Line Cinematic Headline */}
+  <h2 className="text-[clamp(1.2rem,3.8vw+0.5rem,2.2rem)] leading-[1.05] tracking-[-0.05em] text-neutral-900 dark:text-neutral-50">
+    Paza is an{" "}
+    <span className="text-neutral-400 dark:text-neutral-600">
+      audience intelligence and collaboration infrastructure
+    </span>
+    <br className="hidden xl:inline" />{" "}
+    {/* Clean break to line two at desktop */}
+    for brands, creators, and{" "}
+    <span className="whitespace-nowrap">community networks.</span>
+  </h2>
 
-            <div className="mt-6 space-y-3 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
-              <p>
-                It maps audience identity, interests, intent, and behavior alongside
-                brand and creator identities, values, and positioning.
-              </p>
-              <p>
-                Paza identifies where specific audience topics, conditions, and needs
-                already exist across real-world and digital environments, then connects
-                brands to the creators and communities within them.
-              </p>
-            </div>
-          </div>
+  {/* Perfectly Proportioned Editorial Body Copy */}
+  <div className="mt-5 max-w-4xl space-y-2 text-[16px] leading-[1.8] tracking-[-0.01em] text-neutral-600 dark:text-neutral-400 sm:text-[18px] md:text-[19px]">
+    <p>
+      It maps audience identity, interests, intent, and behavior alongside
+      brand and creator identities, values, and positioning.
+    </p>
+
+    <p>
+      Paza identifies where specific audience topics, conditions, and needs
+      already exist across real-world and digital environments, then connects
+      brands to the creators and communities within them.
+    </p>
+
+    <p>
+      By observing how these relationships perform and evolve over time,{" "}
+      <strong className="font-semibold text-neutral-900 dark:text-neutral-200">
+        Paza
+      </strong>{" "}
+      enables stable models of audience behavior and intent.
+    </p>
+  </div>
+</div>
+
+
         </MaskedReveal>
 
         <MaskedReveal delay={0.12}>
@@ -745,43 +762,45 @@ function OurServicesSection() {
       id="our-services"
       className="border-t border-border bg-zinc-100 py-14 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:py-20 md:py-24 lg:py-32"
     >
-      <div className={PAGE}>
-        {/*
-          Figma header: row, items-center, gap between label and headline.
-          Headline = 2 lines, 40px / 172% / PP Neue / uppercase; #fff + #FF6B00 on CREATORS & BRANDS.
-        */}
-        <div className="mb-10 flex flex-col items-start gap-8 sm:mb-12 sm:flex-row sm:items-center sm:gap-12 md:mb-24 md:gap-16 lg:gap-20 xl:gap-24">
-          <MaskedReveal delay={0}>
-            <h2 className="m-6 shrink-0 p-0 font-[inherit] font-normal leading-none">
-              <EditorialLabel >Our Services</EditorialLabel>
-            </h2>
-          </MaskedReveal>
-          <MaskedReveal delay={0.06}>
-          
-            <div className="min-w-0 flex-1">
-              <p
-                className="m-0 text-left uppercase text-neutral-900 dark:text-white"
-                style={servicesQuoteTypography}
-              >
-                <span className="block">
-                  {'\u201c'}
-                  Infrastructure for mapping audience alignment,   
-                  <span style={servicesQuoteOrange}>  creator–brand  </span> 
-                  {' and'}
-                </span>
-                <span className="block">
-                  <span style={servicesQuoteOrange}>  connecting collaborations </span>
-                  {' measuring campaign outcomes. '}
 
-                  {'”'}
-                </span>
-              </p>
-            </div>
-
-
-          </MaskedReveal>
-        </div>
+<div className={PAGE}>
+  {/* Figma Header Container */}
+  <div className="mb-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-12 md:mb-20 lg:gap-16">
+    
+    {/* Clean, zero-margin wrapper for Editorial Label */}
+    <MaskedReveal delay={0}>
+      <div className="shrink-0">
+        <EditorialLabel>Our Services</EditorialLabel>
       </div>
+    </MaskedReveal>
+
+    {/* The Two-Line Fluid Headline */}
+    <MaskedReveal delay={0.06} className="min-w-0 flex-1">
+      <p
+        className="m-0 text-left uppercase text-neutral-900 dark:text-white"
+        style={{
+          ...servicesQuoteTypography,
+          lineHeight: "1.72", // Matches the 172% specification precisely
+        }}
+      >
+        <span>
+          {'\u201c'}Infrastructure for mapping audience alignment,{" "}
+          <span style={servicesQuoteOrange}>creator–brand</span>{" "}
+          and
+        </span>
+        
+        <span className="block">
+          <span style={servicesQuoteOrange}>connecting collaborations</span>{" "}
+          measuring campaign outcomes.{'\u201d'}
+        </span>
+      </p>
+    </MaskedReveal>
+
+  </div>
+</div>
+
+      {/*   </div> */}
+      {/* </div> */}
 
       <div className="w-full border-y border-border bg-zinc-100 dark:border-white/10 dark:bg-black">
         <ul className="m-0 list-none divide-y divide-border dark:divide-white/10 p-0">

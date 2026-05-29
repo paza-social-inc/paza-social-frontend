@@ -52,7 +52,7 @@ const MUTED_CLS = "text-neutral-500 dark:text-neutral-600";
 const TEXT_CLS = "text-neutral-900 dark:text-[#EDE8DF]";
 
 const DISPLAY: React.CSSProperties = {
-  fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
+  // fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
   textTransform: "uppercase",
   letterSpacing: "0.02em",
 };
