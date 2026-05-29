@@ -5,31 +5,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
-  useState,
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { RiBriefcaseLine, RiUserLine } from "@remixicon/react";
 import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
   Instagram,
-  // Mouse,
   Youtube,
 } from "lucide-react";
+
 import {
-  campaignMotionFocus,
   campaignPressStudio,
-  campaignUrbanBodega,
   pazaLandingImg,
-  service,
 } from "@/assets";
+
 import { cn } from "@/lib/utils";
 import { useDocumentThemeIsDark } from "@/lib/useDocumentThemeIsDark";
 import { scrollPageToTop } from "@/lib/scrollWithLenis";
@@ -38,8 +32,6 @@ import HomeLayout from "./Layout";
 import { MaskedReveal } from "./MaskedReveal";
 import { LandingContactForm } from "./LandingContactForm";
 import { ConnectingHeroSection } from "./connectingHeroSection";
-import { HowItWorksDesktopScrollDriver } from "./HowItWorksDesktopScrollDriver";
-import { HowItWorksSections } from "./HowItWorksSection";
 import { HowItWorksSection } from "./HowItWorksSectionMain";
 
 /** Light: zinc plate; dark: near-black editorial (matches Services `bg-background` behavior) */
@@ -517,7 +509,7 @@ function MissionIntroSection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.06}>
-          <div className="mx-auto mt-8 max-w-[980px] px-4 sm:px-6 lg:px-8 sm:mt-10">
+          <div className="mx-auto mt-8 max-w-[980px] px-4 sm:px-6 lg:px-8 sm:mt-10 text-center">
             <h3 className="text-balance text-[clamp(1.1rem,4vw+0.35rem,2.6rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
               Paza is an{" "}
               <span className="text-neutral-500 dark:text-zinc-500">
@@ -526,7 +518,7 @@ function MissionIntroSection() {
               for brands, creators, and community networks.
             </h3>
 
-            <div className="mt-6 space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
+            <div className="mt-6 space-y-3 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
               <p>
                 It maps audience identity, interests, intent, and behavior alongside
                 brand and creator identities, values, and positioning.
@@ -580,8 +572,8 @@ function StudioSecondarySection() {
 
         {/* Text Content - Improved centering */}
         <MaskedReveal delay={0.08}>
-          <div className="mx-auto mt-10 max-w-[980px] px-4 sm:px-6 lg:px-8 sm:mt-14 md:mt-20">
-            <h3 className="text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
+          <div className="mx-auto mt-10 text-base max-w-[1080px] px-4 sm:px-6 lg:px-8 sm:mt-14 md:mt-20 text-justify" >
+            <h3 className=" text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
               Digital advertising systems rely on fragmented proxy signals such as{" "}
               <span className="text-neutral-500 dark:text-zinc-500">
                 demographics, clicks, views, likes, and engagement
@@ -589,7 +581,7 @@ function StudioSecondarySection() {
               to understand audiences and optimize campaigns.
             </h3>
 
-            <div className="mt-6 space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
+            <div className="mt-6 text-justify space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
               <p>
                 While these signals help predict short-term conversion, they provide
                 limited understanding of why audiences respond to specific products,
@@ -1425,9 +1417,15 @@ function LandingPageFooter() {
             </button>
           </div>
           <div className="flex flex-1 flex-col gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-12">
-          <p className="text-8xl font-extrabold tracking-tighter text-foreground sm:text-6xl md:text-7xl dark:text-white">
+{/*           <h2 className="text-18vw font-extrabold tracking-tighter text-foreground sm:text-6xl md:text-7xl dark:text-white"> */}
+{/*   PAZA */}
+{/* </h2> */}
+
+
+<h2 className="text-[clamp(5rem,18vw,16rem)] font-extrabold tracking-[-0.08em] text-foreground dark:text-white">
   PAZA
-</p>
+</h2>
+
             <nav className="grid grid-cols-2 gap-x-12 gap-y-10 sm:flex sm:flex-1 sm:justify-end sm:gap-16 md:gap-24" aria-label="Footer">
               <div>
                 <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
