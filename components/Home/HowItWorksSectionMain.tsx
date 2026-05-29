@@ -113,9 +113,9 @@ function DesktopStepSlide({
       aria-hidden={index !== 0}
     >
       <motion.span
-        style={{ x: ghostX }}
         className="pointer-events-none absolute -left-2 top-[10%] select-none font-semibold leading-[0.82] text-[clamp(140px,22vw,200px)] text-neutral-200 dark:text-white/[0.04]"
         style={{
+          x: ghostX,
           fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
           letterSpacing: "-0.02em",
         }}

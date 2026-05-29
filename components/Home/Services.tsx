@@ -501,7 +501,8 @@ export default function Services() {
               </p>
               <div className="mt-8 sm:mt-10 flex justify-center">
                 <Link
-                  href="/#contact"
+                  href="#waitlist"
+
                   className="inline-flex items-center gap-3 border border-white px-6 sm:px-8 py-3 sm:py-4 text-[13px] sm:text-[14px] hover:bg-white/5 transition-colors"
                 >
                   <span>Get Early Access</span>
