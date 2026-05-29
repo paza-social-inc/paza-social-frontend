@@ -213,6 +213,7 @@ To better understand audience identity, interests, intent, and behavior in order
             <div className="relative z-10 px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
               <SectionEyebrow label="About Us" />
 
+
 <div className="mt-3 max-w-[1080px] space-y-6 sm:space-y-8">
   <h3 className="text-balance text-[clamp(1.15rem,3.9vw+0.4rem,2.75rem)] leading-[1.14] tracking-[-0.015em] text-white sm:text-[clamp(1.4rem,3.2vw+0.55rem,3.25rem)] sm:leading-[1.1] lg:text-[clamp(1.55rem,2.4vw+0.65rem,4rem)] lg:leading-[1.08]">
     Paza was born in{" "}
@@ -221,36 +222,39 @@ To better understand audience identity, interests, intent, and behavior in order
     structured access to meaningful opportunities, while brands struggled to
     identify which creators could genuinely connect with the right audiences.
   </h3>
-
   <div className="max-w-[900px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-zinc-300 sm:text-[15px] md:text-[16px]">
     <p>
-      Most digital advertising and creator platforms prioritize reach,
-      impressions, and transactions over trust, contextual relevance, and
-      authentic alignment — reducing creators to surface-level metrics like
-      follower counts and engagement rates.
+      Current growth systems are constrained by high customer acquisition costs,
+      inefficient ad spend, and overdependence on short form metrics like views,
+      clicks, and engagement rates. These signals fail to represent actual
+      audience intent, likelihood to convert or cultural alignment.
     </p>
-
     <p>
-      At the same time, audiences are increasingly resistant to generic
-      advertising. Brands no longer just need visibility; they need trusted
-      voices capable of naturally translating products into the right cultural
-      and emotional contexts.
+      At the same time, audiences have fragmented across creators, niche
+      communities, and multi-platform content ecosystems. Brands are still forced
+      to buy attention through centralized ad networks, even though real influence
+      and decision-making now happens in distributed spaces.
     </p>
-
     <p>
-      We envisioned a space where collaborations are shaped by deep alignment —
-      of identity, tone, values, audience, and purpose.
+      Paza replaces this model by shifting from targeting to locating. It
+      analyzes behavioral signals across creators and communities to identify
+      where relevant audiences already exist, what they care about, and how they
+      engage with products and culture.
     </p>
-
     <p>
-      Hence{" "}
-      <span className="text-orange-500">Paza Social</span> — a creative
-      ecosystem designed to help brands and creators build more authentic,
-      effective, and lasting collaborations.
+      It replaces surface-level targeting with behavioral signal analysis, mapping
+      real audience intent, values, and consumption patterns across creators and
+      communities. Brands can discover creators whose audiences already match
+      their ideal customers, reducing wasted spend and improving conversion
+      efficiency.
+    </p>
+    <p>
+      It also enables continuous collaboration between brands and creator
+      networks, allowing campaigns to be shaped by real audience behavior rather
+      than static demographic assumptions.
     </p>
   </div>
-</div>
-              
+</div>              
             </div>
           </div>
         </div>

@@ -9,7 +9,7 @@ import WaitlistPerks from "@/components/Waitlist/WaitlistPerks";
 export default function WaitlistPage() {
   return (
     <HomeLayout>
-      <section className="bg-background pt-14 pb-16 text-foreground sm:pb-24" id="waitlist">
+      <section className="bg-background pt-14 pb-16 text-foreground sm:pb-24" >
 
         <WaitlistHero />
 
