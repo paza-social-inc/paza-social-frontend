@@ -15,131 +15,93 @@ import {
 
 const CONTAINER = "px-4 sm:px-6 lg:px-10 xl:px-14 max-w-[1220px] mx-auto";
 
+
+
 const BRAND_SERVICE_DETAILS = [
   {
     idx: "(01)",
     title: "Audience Intelligence",
     description: [
-      "Analyze audience behavior patterns across creator and community networks.",
+      "Behavioral and community-level audience analysis across creators, channels, and networks.",
     ],
   },
   {
     idx: "(02)",
-    title: "Identity & Value Mapping",
+    title: "Creator Intelligence & Matching",
     description: [
-      "Map brand positioning, customer identity, and campaign objectives against creator positioning to identify aligned partnerships.",
+      "Identity, value, and audience alignment engine for discovering relevant creator partnerships.",
     ],
   },
   {
     idx: "(03)",
-    title: "Contextual Creator–Brand Matching",
+    title: "Campaign Orchestration",
     description: [
-      "Identify creator partnerships based on audience relevance, behavioral signals, values, and campaign context.",
+      "End-to-end workflow for planning, assigning, coordinating, and managing collaboration execution across stakeholders.",
     ],
   },
   {
     idx: "(04)",
-    title: "Collaboration Workflow Management",
+    title: "Performance & Attribution Analytics",
     description: [
-      "Coordinate multi-stakeholder campaigns through structured collaboration systems. Assign tasks, set teams, communicate, and manage budgets.",
+      "Measurement of outcomes from creator activity, including conversion linkage, engagement impact, and campaign effectiveness.",
     ],
   },
   {
     idx: "(05)",
-    title: "Real-Time Collaboration Tracking",
+    title: "Payments & Settlement Layer",
     description: [
-      "Monitor campaign activity, deliverables, and collaboration progress in real time.",
-    ],
-  },
-  {
-    idx: "(06)",
-    title: "Outcome Attribution & Analytics",
-    description: [
-      "Measure how creator-led interactions contribute to business outcomes and conversion activity.",
-    ],
-  },
-  {
-    idx: "(07)",
-    title: "Campaign Intelligence Reporting",
-    description: [
-      "Generate insights to refine audience targeting, messaging, and future collaboration performance.",
-    ],
-  },
-  {
-    idx: "(08)",
-    title: "Secure Payment Infrastructure",
-    description: [
-      "Manage trusted payouts and performance-linked payment coordination.",
+      "Controlled payout system tied to campaign completion, performance conditions, and trust constraints.",
     ],
   },
 ];
 
-
 const CREATOR_SERVICE_DETAILS = [
   {
     idx: "(01)",
-    title: "Creator Showcase & Portfolio Presentation",
+    title: "Creator Identity & Portfolio System",
     description: [
-      "Present work, audience positioning, partnerships, assets, and creative identity through structured creator profiles.",
+      "Structured presentation of creator profile, work, audience positioning, and collaboration history.",
     ],
   },
   {
     idx: "(02)",
     title: "Audience Intelligence",
     description: [
-      "Understand audience behavior, engagement patterns, and community alignment.",
+      "Audience behavior, engagement patterns, and community alignment insights.",
     ],
   },
   {
     idx: "(03)",
-    title: "Identity & Value Mapping",
+    title: "Opportunity Matching",
     description: [
-      "Position creator identity, values, and audience alignment for partnership discovery.",
+      "Discovery and connection to brands based on audience fit, values, and collaboration intent.",
     ],
   },
   {
     idx: "(04)",
-    title: "Brand Partnership Matching",
+    title: "Campaign Execution Hub",
     description: [
-      "Connect with brands aligned to audience relevance, content positioning, and collaboration intent.",
+      "Management of briefs, deliverables, communication, approvals, and deadlines.",
     ],
   },
   {
     idx: "(05)",
-    title: "Collaboration Workflow Management",
+    title: "Performance Insights",
     description: [
-      "Manage campaign requirements, deliverables, approvals, and communication in one system.",
+      "Analytics on engagement, conversions, and campaign effectiveness.",
     ],
   },
   {
     idx: "(06)",
-    title: "Real-Time Collaboration Tracking",
+    title: "Payments & Earnings System",
     description: [
-      "Track collaboration progress, deadlines, approvals, and campaign activity.",
-    ],
-  },
-  {
-    idx: "(07)",
-    title: "Performance Analytics",
-    description: [
-      "Measure audience engagement, conversion activity, and campaign performance.",
-    ],
-  },
-  {
-    idx: "(08)",
-    title: "Secure Payment Infrastructure",
-    description: [
-      "Receive structured and transparent collaboration payouts.",
-    ],
-  },
-  {
-    idx: "(09)",
-    title: "Campaign Intelligence Insights",
-    description: [
-      "Access performance insights to improve future partnerships and audience alignment.",
+      "Transparent payout tracking and structured settlement from collaborations.",
     ],
   },
 ];
+
+
+
 const PRICING_PLANS = [
   {
     name: "Free plan",
