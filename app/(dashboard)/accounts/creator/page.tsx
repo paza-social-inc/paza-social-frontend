@@ -1,6 +1,6 @@
 
-export default function page() {
-    return (
-        <div>creator</div>
-    )
-}
+// export default function page() {
+//     return (
+//         <div>creator</div>
+//     )
+// }
