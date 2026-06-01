@@ -136,8 +136,8 @@ export default function NavBar() {
         <Link
           href="/"
           className={cn(
-            "font-extrabold tracking-tight leading-none transition-colors",
-            "text-xl max-[380px]:text-lg sm:text-[26px] lg:text-[28px]",
+            "font-extrabold text-base tracking-tight leading-none transition-colors",
+            "text-xl max-[380px]:text-lg sm:text-[30px] lg:text-[28px]",
             darkMarketingChrome ? "text-white hover:text-[#FF6B00]" : "text-foreground hover:text-primary"
           )}
         >
