@@ -29,7 +29,7 @@ export default function About() {
   return (
     <HomeLayout hideFooter>
       <section className="bg-background pt-14 text-foreground pb-16 sm:pb-20">
-        <div className={`${CONTAINER} border-x border-zinc-800`}>
+        <div className={`${CONTAINER} sm:border-x sm:border-zinc-800`}>
           <div className="relative h-[250px] sm:h-[420px] md:h-[560px] overflow-hidden">
             <Image src={campaignPortraitElder} alt="About hero" fill className="object-cover" />
             <div className="absolute inset-0 bg-black/40" />
@@ -94,7 +94,7 @@ export default function About() {
 
 <div className={`${CONTAINER} mt-12 sm:mt-16`}>
   <div className="grid grid-cols-1 md:grid-cols-[120px_160px_1fr] lg:grid-cols-[130px_180px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
-    <div />
+    <div className="hidden md:block" />
 
     <p className="text-[28px] sm:text-[36px] tracking-[-0.01em]">
       VISION
