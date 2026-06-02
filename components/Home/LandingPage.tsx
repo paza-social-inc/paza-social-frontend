@@ -1324,65 +1324,143 @@ export function HowItWorksStepPanel({
 //   );
 // }
 
-/** Figma 1419:925 — form + contact grid in one #050505 plate */
 function FigmaContactSection() {
   const docIsDark = useDocumentThemeIsDark();
 
   return (
-    <section id="contact" className={cn("py-12 sm:py-16 md:py-24 lg:py-28", LANDING_PLATE)}>
-      <div className={PAGE}>
-        <div className="grid gap-10 sm:gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start lg:gap-16 xl:gap-20">
-          <div>
+    <section id="contact" className={cn("relative overflow-hidden py-16 sm:py-20 md:py-28 lg:py-36", LANDING_PLATE)}>
+      {/* Ghost "CONTACT" watermark — full section width, clipped by overflow-hidden */}
+      <span
+        className="pointer-events-none absolute -top-2 left-0 select-none font-black uppercase leading-[0.85] text-neutral-900/[0.04] dark:text-white/[0.03]"
+        style={{ fontSize: "clamp(4.5rem, 22vw, 18rem)", letterSpacing: "-0.05em" }}
+        aria-hidden
+      >
+        CONTACT
+      </span>
+
+      <div className={cn(PAGE, "relative z-10")}>
+        {/* Top grid: left intro column + right form column */}
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start lg:gap-20 xl:gap-24">
+
+          {/* ── Left column ─────────────────────────────── */}
+          <div className="flex flex-col">
             <MaskedReveal delay={0}>
               <p className="m-0">
                 <EditorialLabel>Get in touch</EditorialLabel>
               </p>
             </MaskedReveal>
-            <MaskedReveal delay={0.05}>
-              <h2 className="mt-8 text-[clamp(2rem,5vw,4rem)] font-normal uppercase leading-[1.48] tracking-tight text-neutral-900 dark:text-white">
-                let&apos;s talk about YOUR project!
+
+            <MaskedReveal delay={0.06}>
+              <h2
+                className="mt-6 text-neutral-900 sm:mt-8 dark:text-white"
+                style={{
+                  fontFamily: CONNECTING_HEADLINE_FONT,
+                  fontSize: "clamp(2.4rem, 8vw, 7rem)",
+                  fontWeight: 700,
+                  lineHeight: 0.95,
+                  letterSpacing: "-0.03em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Let&apos;s Talk<br />
+                <span style={{ color: "#FF6B00" }}>About</span><br />
+                Your Project.
               </h2>
             </MaskedReveal>
-            <MaskedReveal delay={0.1}>
-              <p className="mt-6 max-w-[26rem] text-lg leading-[1.35] text-[#8d8d8d]">
-                Have questions, feedback, or partnership ideas? We&apos;d love to hear from you.
-                Reach out and let&apos;s make great things happen!
+
+            <MaskedReveal delay={0.12}>
+              <p className="mt-6 max-w-[22rem] text-sm leading-relaxed text-neutral-500 sm:mt-8 sm:text-base dark:text-neutral-400">
+                Have questions, a collaboration need, or partnership ideas?
+                Reach out and let&apos;s build something great together.
               </p>
             </MaskedReveal>
-            <MaskedReveal delay={0.14}>
-              <p className="mt-8 max-w-[26rem] text-lg leading-[1.35] text-[#8d8d8d]">
-                Have a collaboration need? Contact us to design a solution that scales with your
-                vision
-              </p>
+
+            {/* Social links with "Follow" label */}
+            <MaskedReveal delay={0.16}>
+              <nav
+                className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 sm:mt-10"
+                aria-label="Social links"
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                  Follow
+                </span>
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-neutral-900 underline underline-offset-4 decoration-neutral-300 transition-colors hover:text-[#FF6B00] hover:decoration-[#FF6B00] dark:text-white dark:decoration-white/30"
+                >
+                  Twitter
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-neutral-900 underline underline-offset-4 decoration-neutral-300 transition-colors hover:text-[#FF6B00] hover:decoration-[#FF6B00] dark:text-white dark:decoration-white/30"
+                >
+                  <Instagram className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  Instagram
+                </a>
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-neutral-900 underline underline-offset-4 decoration-neutral-300 transition-colors hover:text-[#FF6B00] hover:decoration-[#FF6B00] dark:text-white dark:decoration-white/30"
+                >
+                  <Youtube className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  Youtube
+                </a>
+              </nav>
             </MaskedReveal>
           </div>
+
+          {/* ── Right column: form in a bordered card ───── */}
           <div className="min-w-0">
-            <LandingContactForm />
+            <div className="border border-border bg-card p-6 sm:p-8 lg:p-10 dark:border-white/[0.08] dark:bg-[#0a0a0a]">
+              <LandingContactForm />
+            </div>
           </div>
         </div>
 
-        {/*
-          Figma contact footer: black plate, CONTACT US + subtext | Start your journey (rule),
-          social row right, divider, Nairobi | phone/email/location grid.
-        */}
-        <div className="mt-12 w-full border-t border-border bg-zinc-100 py-12 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:mt-16 sm:py-16 md:mt-20 md:py-20 lg:py-24">
-          <div className={PAGE}>
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
-              <div className="min-w-0 max-w-[min(100%,36rem)]">
-                <h2
-                  id="contact-us-heading"
-                  className="m-0 uppercase leading-[1.72] tracking-tight text-neutral-900 dark:text-white"
-                  style={servicesQuoteTypography}
-                >
-                  Contact us
-                </h2>
-                <p className="mt-4 max-w-[26rem] text-base leading-relaxed text-neutral-600 dark:text-[#9e9e9e] sm:text-lg">
-                  Have a collaboration need? Contact us to design a solution that scales with your
-                  vision
-                </p>
-              </div>
-              <div className="shrink-0 self-end lg:self-auto lg:pt-1">
-                <EditorialRuleCta align="end" href={SIGNUP_HREF} invert={docIsDark}>
+        {/* ── Bottom contact bar ───────────────────────── */}
+        <div className="mt-16 border-t border-border pt-8 sm:mt-20 sm:pt-10 dark:border-white/10">
+          <div className="flex flex-col gap-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap lg:gap-12">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Location
+              </p>
+              <p className="mt-2 text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
+                00100, Ronald Ngala St<br />Nairobi, Kenya
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Phone
+              </p>
+              <a
+                href="tel:+254422189529"
+                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+              >
+                +254 422 189 529
+              </a>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Email
+              </p>
+              <a
+                href="mailto:info@pazasocial.com"
+                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+              >
+                info@pazasocial.com
+              </a>
+            </div>
+            <div className="sm:ml-auto">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Next step
+              </p>
+              <div className="mt-3">
+                <EditorialRuleCta align="start" href={SIGNUP_HREF} invert={docIsDark}>
                   <>
                     Start your journey
                     <ArrowRight
@@ -1394,73 +1472,6 @@ function FigmaContactSection() {
                     />
                   </>
                 </EditorialRuleCta>
-              </div>
-            </div>
-
-            <nav
-              className="mt-10 flex flex-wrap justify-end gap-x-10 gap-y-3 text-lg underline decoration-neutral-400/70 underline-offset-4 dark:decoration-white/40 sm:mt-12"
-              aria-label="Social links"
-            >
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-              >
-                Twitter
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-              >
-                <Instagram className="h-5 w-5 shrink-0" aria-hidden />
-                Instagram
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-              >
-                <Youtube className="h-5 w-5 shrink-0" aria-hidden />
-                Youtube
-              </a>
-            </nav>
-
-            <div className="mt-8 h-px w-full bg-border dark:bg-white/15 sm:mt-10" aria-hidden />
-
-            <div className="mt-10 flex flex-col gap-10 sm:mt-12 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
-              <p
-                className="m-0 uppercase leading-[1.72] tracking-tight text-neutral-900 dark:text-white"
-                style={servicesQuoteTypography}
-              >
-                Nairobi, Kenya
-              </p>
-              <div className="grid w-full max-w-2xl gap-10 sm:grid-cols-3 sm:gap-8 lg:max-w-none">
-                <div className="text-left">
-                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Phone no.</p>
-                  <a
-                    href="tel:+254422189529"
-                    className="mt-2 block text-lg text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-                  >
-                    +254 422 189 529
-                  </a>
-                </div>
-                <div className="text-left">
-                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Email</p>
-                  <a
-                    href="mailto:info@pazasocial.com"
-                    className="mt-2 block text-lg text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-                  >
-                    info@pazasocial.com
-                  </a>
-                </div>
-                <div className="text-left">
-                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Location</p>
-                  <p className="mt-2 text-lg text-neutral-900 dark:text-white">00100, Ronald Ngala St, Nairobi, Kenya</p>
-                </div>
               </div>
             </div>
           </div>
