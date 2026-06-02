@@ -296,61 +296,86 @@ To better understand audience identity, interests, intent, and behavior in order
           </div>
         </div>
 
-        <div className={`${CONTAINER} py-12 sm:py-16`}>
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1fr] gap-10 md:gap-8 items-start">
-            <div className="order-1 md:order-0">
-              <div className="text-[14px]">
-                <p>Home</p>
-              </div>
-              <div className="mt-8 sm:mt-16 flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => scrollPageToTop()}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-card text-foreground transition-colors hover:border-zinc-600 hover:bg-zinc-900"
-                  aria-label="Back to top"
+        <div className={`${CONTAINER} border-t border-zinc-800 pt-10 sm:pt-14 pb-10 sm:pb-14`}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-10 gap-x-6 lg:gap-x-12">
+
+            {/* Brand + back to top */}
+            <div className="col-span-2 sm:col-span-1 flex items-center justify-between sm:flex-col sm:items-start sm:justify-start sm:gap-10">
+              <div>
+                <Link
+                  href="/"
+                  className="text-[13px] font-medium uppercase tracking-[0.18em] text-foreground dark:text-white hover:text-orange-500 transition-colors"
                 >
-                  <ArrowUp className="h-5 w-5" strokeWidth={1.5} />
-                </button>
+                  Paza Social
+                </Link>
+                <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-zinc-600">
+                  © 2024 — All rights reserved
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => scrollPageToTop()}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-foreground transition-colors hover:border-zinc-500 hover:bg-zinc-900"
+                aria-label="Back to top"
+              >
+                <ArrowUp className="h-4 w-4" strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Navigation */}
+            <div>
+              <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Navigation</p>
+              <div className="space-y-2.5 text-[15px]">
+                <div>
+                  <Link href="/services" className="text-orange-500 hover:opacity-75 transition-opacity">
+                    Services
+                  </Link>
+                </div>
+                <div>
+                  <Link href="/#contact" className="text-foreground dark:text-zinc-300 hover:text-white transition-colors">
+                    Partnership
+                  </Link>
+                </div>
+                <div>
+                  <Link href="/about" className="text-foreground dark:text-zinc-300 hover:text-white transition-colors">
+                    About us
+                  </Link>
+                </div>
               </div>
             </div>
 
-            <div className="text-[14px] order-3 md:order-0">
-              <div className="space-y-1">
-                <p className="text-orange-500">Services</p>
-                <p>Partnership</p>
-                <p>About us</p>
-              </div>
-              <div className="mt-10 sm:mt-16 space-y-1 text-foreground dark:text-zinc-300">
+            {/* Contact */}
+            <div>
+              <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Contact</p>
+              <div className="space-y-2 text-[15px] text-foreground dark:text-zinc-300">
                 <p>+1 891 989-11-91</p>
                 <p>hello@logoipsum.com</p>
-                <p className="text-orange-500">Call me back</p>
               </div>
-              <div className="mt-6 text-[10px] uppercase text-zinc-500">
-                <p>Contact us</p>
-              </div>
-              <div className="mt-7 text-[10px] uppercase text-zinc-500">
-                <p>Follow us</p>
-              </div>
-              <div className="mt-3 flex items-center gap-4 text-[14px]">
-                <span>Telegram</span>
-                <span>/</span>
-                <span>Whatsapp</span>
-                <span>/</span>
-                <span>Instagram</span>
-              </div>
-              <div className="mt-10 sm:mt-16 text-[10px] uppercase text-zinc-500">
-                <p>© 2023 — copyright</p>
-                <p>Privacy</p>
-              </div>
+              <button
+                type="button"
+                className="mt-3 text-[14px] text-orange-500 hover:opacity-75 transition-opacity"
+              >
+                Call me back →
+              </button>
             </div>
 
-            <div className="text-[14px] order-2 md:order-0">
-              <p>Contacts</p>
-              <p className="mt-8 sm:mt-20 text-foreground dark:text-zinc-300">
+            {/* Location + Social */}
+            <div className="col-span-2 sm:col-span-1">
+              <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Location</p>
+              <p className="text-[15px] text-foreground dark:text-zinc-300 leading-relaxed">
                 2972 Westheimer Rd. Santa Ana,<br />
                 Illinois 85486
               </p>
+              <p className="mb-3 mt-6 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Follow us</p>
+              <div className="flex flex-wrap items-center gap-3 text-[14px] text-foreground dark:text-zinc-400">
+                <span>Telegram</span>
+                <span className="text-zinc-700">/</span>
+                <span>Whatsapp</span>
+                <span className="text-zinc-700">/</span>
+                <span>Instagram</span>
+              </div>
             </div>
+
           </div>
         </div>
       </section>
