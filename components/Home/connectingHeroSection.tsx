@@ -24,7 +24,7 @@ const DISPLAY: React.CSSProperties = {
 
 const headlineMobile: React.CSSProperties = {
   ...DISPLAY,
-  fontSize: "clamp(50px, 13vw, 68px)",
+  fontSize: "clamp(36px, 10vw, 68px)",
   lineHeight: 0.91,
 };
 
@@ -220,8 +220,8 @@ function Headline({ style }: { style: React.CSSProperties }) {
 
 function BottomBar({ maxW }: { maxW: string }) {
   return (
-    <div className="flex items-end justify-between gap-6 pt-5 border-t border-neutral-200/10 dark:border-white/[0.06]">
-      <p className={cn("text-base",bodyMicro, MUTED_CLS)} style={{ maxWidth: maxW }}>
+    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 pt-5 border-t border-neutral-200/10 dark:border-white/[0.06]">
+      <p className={cn("text-base", bodyMicro, MUTED_CLS)} style={{ maxWidth: maxW }}>
         Reach is no longer enough. Messages are far more effective when
         delivered through trusted voices operating within the right cultural,
         social, and emotional contexts.
@@ -259,20 +259,22 @@ export function ConnectingHeroSection() {
             <MetaBar />
           </MaskedReveal>
 
-          {/* headline + collage side by side */}
-          <div className="flex items-center justify-between gap-4">
-            <MaskedReveal delay={0.1}>
+          {/* headline + collage: stacked on xs, side-by-side on sm+ */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 sm:gap-4">
+            <MaskedReveal delay={0.1} className="min-w-0">
               <Headline style={headlineMobile} />
             </MaskedReveal>
 
             {/* collage — no MaskedReveal so per-photo animations play freely */}
-            <PhotoCollage
-              containerW={175}
-              containerH={230}
-              p1W={92}
-              p2W={82}
-              p3W={86}
-            />
+            <div className="flex justify-center sm:justify-end shrink-0">
+              <PhotoCollage
+                containerW={175}
+                containerH={230}
+                p1W={92}
+                p2W={82}
+                p3W={86}
+              />
+            </div>
           </div>
 
           <div className="mt-8">

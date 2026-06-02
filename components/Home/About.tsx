@@ -66,7 +66,7 @@ export default function About() {
       <p>
         Most digital advertising and creator platforms prioritize reach,
         impressions, and transactions over trust, contextual relevance, and
-        authentic alignment — reducing creators to surface-level metrics like
+        authentic alignment  reducing creators to surface-level metrics like
         follower counts and engagement rates.
       </p>
 
@@ -79,12 +79,12 @@ export default function About() {
 
       <p>
         We envisioned a space where collaborations are shaped by deep alignment
-        — of identity, tone, values, audience, and purpose.
+         of identity, tone, values, audience, and purpose.
       </p>
 
       <p>
         Hence{" "}
-        <span className="text-orange-500">Paza Social</span> — a creative
+        <span className="text-orange-500">Paza Social</span>  a creative
         ecosystem designed to help brands and creators build more authentic,
         effective, and lasting collaborations.
       </p>
@@ -185,7 +185,7 @@ To better understand audience identity, interests, intent, and behavior in order
       <p>
         Whether testing new market segments or scaling proven partnerships,
         Paza enables teams to build with precision, consistency, and long-term
-        synergy — turning every collaboration into a measurable and improving
+        synergy  turning every collaboration into a measurable and improving
         system rooted in real audience compatibility and intent.
       </p>
     </div>

@@ -474,7 +474,7 @@ export default function Services() {
             </div>
 
             {/* Footer */}
-            <div className={`${CONTAINER} py-12 sm:py-16`}>
+            <div className="py-12 sm:py-16">
               <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1fr] gap-10 md:gap-8 items-start">
                 <div className="order-1 md:order-0">
                   <div className="text-[14px]">
