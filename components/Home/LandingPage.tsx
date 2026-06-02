@@ -167,14 +167,6 @@ const servicesQuoteOrange: CSSProperties = {
   color: "#FF6B00",
 };
 
-const servicesRowTitle: CSSProperties = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
-  fontWeight: 400,
-  fontStyle: "normal",
-  lineHeight: 1.72,
-  fontSize: "clamp(0.9rem, 2.5vw + 0.2rem, 2.125rem)",
-};
-
 // function ConnectingHeroSection() {
 //   return (
 //     <section
@@ -643,8 +635,8 @@ function StudioSecondarySection() {
     <div className="mt-6 space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
       <p>
         While these metrics help optimize for short-term conversions, they fail
-        to capture the causal drivers of behaviour—the underlying reasons behind
-        audience responses—and often lose relevance outside the platforms where
+        to capture the causal drivers of behaviour the underlying reasons behind
+        audience responses and often lose relevance outside the platforms where
         they originate.
       </p>
 
@@ -666,8 +658,8 @@ function StudioSecondarySection() {
         <span className="text-neutral-900 dark:text-white">Paza</span> replaces
         platform proxies with deterministic environmental anchors. By anchoring
         audience identity to specific products, creators, and communities, Paza
-        maps how these structural relationships evolve and convert—delivering
-        portable, platform-independent audience intelligence.
+        maps how these structural relationships evolve and convert delivering
+        portable, platform independent audience intelligence.
       </p>
     </div>
   </div>
@@ -846,9 +838,6 @@ function OurServicesSection() {
   </div>
 </div>
 
-      {/*   </div> */}
-      {/* </div> */}
-
       <div className="w-full border-y border-border bg-zinc-100 dark:border-white/10 dark:bg-black">
         <ul className="m-0 list-none divide-y divide-border dark:divide-white/10 p-0">
           {SERVICE_ROWS.map((row) => (
@@ -856,35 +845,50 @@ function OurServicesSection() {
               <Link
                 href="/services#our-services"
                 className={cn(
-                  "group mx-auto grid w-full max-w-[1320px] touch-manipulation items-center",
+                  "group relative mx-auto flex w-full max-w-[1320px] touch-manipulation items-center",
                   PAGE_PAD,
-                  "grid-cols-[minmax(2rem,2.75rem)_minmax(0,5.25rem)_minmax(0,1fr)_auto]",
-                  "gap-x-2 gap-y-2 py-6 sm:gap-x-5 sm:py-8 md:gap-x-8 md:py-10",
-                  "transition-colors hover:bg-black/5 dark:hover:bg-white/3",
+                  "gap-4 py-7 sm:gap-6 sm:py-9 md:gap-8 md:py-11",
+                  "transition-colors duration-300 hover:bg-black/[0.03] dark:hover:bg-white/[0.025]",
                 )}
               >
-                <span className="services-index tabular-nums text-[clamp(1.1rem,2.2vw,1.75rem)] font-medium leading-none text-neutral-900 dark:text-white">
+                {/* Orange left-border that slides down from the top on hover */}
+                <span
+                  className="absolute left-0 top-0 bottom-0 w-[3px] origin-top scale-y-0 bg-[#FF6B00] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-y-100"
+                  aria-hidden
+                />
+
+                {/* Ghost number — large, low-opacity, highlights on hover */}
+                <span
+                  className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-neutral-200 transition-colors duration-300 group-hover:text-[#FF6B00]/20 dark:text-white/[0.05] dark:group-hover:text-[#FF6B00]/15"
+                  style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
+                  aria-hidden
+                >
                   {row.index}
                 </span>
-                <span className="services-click hidden min-w-0 whitespace-nowrap text-[10px] font-medium leading-snug tracking-[0.04em] text-neutral-500 dark:text-zinc-500 sm:block sm:text-[11px] md:text-[12px]">
-                  {/* Click to open */}
-                </span>
 
-<div className="min-w-0">
-  <h3
-    className="services-title text-left text-neutral-900 dark:text-white"
-    style={servicesRowTitle}
-  >
-    {row.title}
-  </h3>
+                {/* Title + description */}
+                <div className="min-w-0 flex-1">
+                  <h3
+                    className="text-left font-medium uppercase tracking-[-0.01em] text-neutral-900 transition-colors duration-300 group-hover:text-[#FF6B00] dark:text-white dark:group-hover:text-[#FF6B00]"
+                    style={{
+                      fontFamily: CONNECTING_HEADLINE_FONT,
+                      fontSize: "clamp(1.05rem, 2.5vw + 0.3rem, 2.25rem)",
+                      lineHeight: 1.12,
+                    }}
+                  >
+                    {row.title}
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-neutral-400 sm:text-[12px] md:text-[13px] dark:text-zinc-500">
+                    {row.description}
+                  </p>
+                </div>
 
-  <p className="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-zinc-500 max-w-3xl">
-    {row.description}
-  </p>
-</div>
-
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center text-neutral-900 transition group-hover:text-[#FF6B00] dark:text-white sm:h-10 sm:w-10">
-                  <ArrowUpRight className="h-5 w-5 stroke-[1.25] sm:h-[22px] sm:w-[22px]" aria-hidden />
+                {/* Circle arrow button */}
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-neutral-900 transition-all duration-300 group-hover:border-[#FF6B00] group-hover:bg-[#FF6B00]/5 group-hover:text-[#FF6B00] dark:border-white/15 dark:text-white sm:h-10 sm:w-10 md:h-11 md:w-11">
+                  <ArrowUpRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:h-[18px] sm:w-[18px]"
+                    aria-hidden
+                  />
                 </span>
               </Link>
             </li>
