@@ -16,6 +16,9 @@ import {
   ArrowUp,
   ArrowUpRight,
   Instagram,
+  Mail,
+  MapPin,
+  Phone,
   Youtube,
 } from "lucide-react";
 
@@ -1424,55 +1427,65 @@ function FigmaContactSection() {
 
         {/* ── Bottom contact bar ───────────────────────── */}
         <div className="mt-16 border-t border-border pt-8 sm:mt-20 sm:pt-10 dark:border-white/10">
-          <div className="flex flex-col gap-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap lg:gap-12">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
-                Location
-              </p>
-              <p className="mt-2 text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4 dark:border-white/10 dark:bg-white/10">
+            <div className="group flex flex-col gap-3 bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6 dark:bg-[#0a0a0a] dark:hover:bg-white/[0.03]">
+              <div className="flex items-center gap-2 text-neutral-400 dark:text-neutral-600">
+                <MapPin className="h-4 w-4 shrink-0 transition-colors group-hover:text-[#FF6B00]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
+                  Location
+                </span>
+              </div>
+              <p className="text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
                 00100, Ronald Ngala St<br />Nairobi, Kenya
               </p>
             </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
-                Phone
-              </p>
+
+            <div className="group flex flex-col gap-3 bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6 dark:bg-[#0a0a0a] dark:hover:bg-white/[0.03]">
+              <div className="flex items-center gap-2 text-neutral-400 dark:text-neutral-600">
+                <Phone className="h-4 w-4 shrink-0 transition-colors group-hover:text-[#FF6B00]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
+                  Phone
+                </span>
+              </div>
               <a
                 href="tel:+254422189529"
-                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+                className="text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
               >
                 +254 422 189 529
               </a>
             </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
-                Email
-              </p>
+
+            <div className="group flex flex-col gap-3 bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6 dark:bg-[#0a0a0a] dark:hover:bg-white/[0.03]">
+              <div className="flex items-center gap-2 text-neutral-400 dark:text-neutral-600">
+                <Mail className="h-4 w-4 shrink-0 transition-colors group-hover:text-[#FF6B00]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
+                  Email
+                </span>
+              </div>
               <a
                 href="mailto:info@pazasocial.com"
-                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+                className="break-all text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
               >
                 info@pazasocial.com
               </a>
             </div>
-            <div className="sm:ml-auto">
+
+            <div className="flex flex-col justify-between gap-4 bg-muted/40 p-5 sm:p-6 dark:bg-white/[0.03]">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
                 Next step
               </p>
-              <div className="mt-3">
-                <EditorialRuleCta align="start" href={SIGNUP_HREF} invert={docIsDark}>
-                  <>
-                    Start your journey
-                    <ArrowRight
-                      className={cn(
-                        "h-3.5 w-3.5 shrink-0 stroke-[1.75] group-hover:text-[#FF6B00]",
-                        docIsDark ? "text-white" : "text-neutral-900",
-                      )}
-                      aria-hidden
-                    />
-                  </>
-                </EditorialRuleCta>
-              </div>
+              <EditorialRuleCta align="start" href={SIGNUP_HREF} invert={docIsDark}>
+                <>
+                  Start your journey
+                  <ArrowRight
+                    className={cn(
+                      "h-3.5 w-3.5 shrink-0 stroke-[1.75] group-hover:text-[#FF6B00]",
+                      docIsDark ? "text-white" : "text-neutral-900",
+                    )}
+                    aria-hidden
+                  />
+                </>
+              </EditorialRuleCta>
             </div>
           </div>
         </div>
