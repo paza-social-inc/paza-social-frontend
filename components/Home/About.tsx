@@ -117,8 +117,15 @@ export default function About() {
   </div>
 </div>
 
-        <div className={`${CONTAINER} mt-14 sm:mt-20`}>
-          <h2 className="text-[clamp(2rem,10vw,5.2rem)] leading-[1.04] sm:leading-[1.06] tracking-[-0.02em] uppercase max-w-[980px]">
+        <div className={`${CONTAINER} relative overflow-hidden mt-14 sm:mt-20`}>
+          <span
+            className="pointer-events-none absolute right-0 top-0 select-none font-black uppercase leading-[0.85] text-neutral-900/[0.04] dark:text-white/[0.03]"
+            style={{ fontSize: "clamp(3rem, 12vw, 9rem)", letterSpacing: "-0.05em" }}
+            aria-hidden
+          >
+            PAZA
+          </span>
+          <h2 className="relative text-[clamp(2rem,10vw,5.2rem)] leading-[1.04] sm:leading-[1.06] tracking-[-0.02em] uppercase max-w-[980px]">
             Fostering creativity, community building, & meaningful relationships
           </h2>
         </div>
