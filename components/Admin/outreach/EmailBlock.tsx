@@ -23,7 +23,7 @@ export default function EmailBlock({ lead, message, onLeadUpdate, isSent }: Prop
     setSaved(false)
     setSaveError(null)
     try {
-      // update lead with contact email via upsert
+      // will update lead with contact email via upsert
       const updated = await outreachApi.createLead({
         domain: lead.domain,
         companyName: lead.companyName ?? undefined,

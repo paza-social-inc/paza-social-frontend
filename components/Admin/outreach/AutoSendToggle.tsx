@@ -11,7 +11,7 @@ interface Props {
 const AUTO_SEND_THRESHOLD = 15
 
 export default function AutoSendToggle({ lead, onLeadUpdate }: Props) {
-  // auto-send is on if score >= threshold — stored locally until backend supports it
+  // backend later
   const [enabled, setEnabled] = useState(
     lead.opportunityScore >= AUTO_SEND_THRESHOLD
   )
@@ -19,7 +19,7 @@ export default function AutoSendToggle({ lead, onLeadUpdate }: Props) {
   const handleToggle = () => {
     const next = !enabled
     setEnabled(next)
-    // optimistic update — wire to backend when the field is added
+    // backend support for persisting this setting is pending, so just update lead object locally for now
     onLeadUpdate({ ...lead })
   }
 
