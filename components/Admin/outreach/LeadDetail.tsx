@@ -48,11 +48,14 @@ function ScoreBar({
   )
 }
 
-function initials(name: string | null, domain: string): string {
+function initials(name: string | null, domain: string | null): string {
   if (name) {
     return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
   }
-  return domain.slice(0, 2).toUpperCase()
+  if (domain) {
+    return domain.slice(0, 2).toUpperCase()
+  }
+  return '??'
 }
 
 export default function LeadDetail({
@@ -67,8 +70,8 @@ export default function LeadDetail({
   const [rescanning, setRescanning] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  const message: OutreachMessage | null = lead.messages[0] ?? null
-  const insight = lead.insights[0] ?? null
+  const message: OutreachMessage | null = (lead.messages ?? [])[0] ?? null
+  const insight = (lead.insights ?? [])[0] ?? null
   const isDraft = message?.status === 'draft'
   const isApproved = message?.status === 'approved'
   const isSent = message?.status === 'sent'
@@ -165,7 +168,7 @@ export default function LeadDetail({
             <ScoreBar
               label="Creator maturity"
               value={lead.creatorMaturityScore}
-              max={30}
+              max={100}
               color="bg-blue-400"
             />
             <ScoreBar
@@ -177,20 +180,20 @@ export default function LeadDetail({
             <ScoreBar
               label="Opportunity"
               value={lead.opportunityScore}
-              max={37}
+              max={120}
               color="bg-green-400"
             />
           </div>
         </section>
 
         {/* signals */}
-        {lead.signals.length > 0 && (
+        {(lead.signals ?? []).length > 0 && (
           <section>
             <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400 mb-3">
               Detected signals ({lead.signals.length})
             </h3>
             <div className="flex flex-wrap gap-1.5">
-              {lead.signals.map(signal => (
+              {(lead.signals ?? []).map(signal => (
                 <span
                   key={signal.id}
                   title={`${signal.evidence} (confidence: ${Math.round(signal.confidence * 100)}%)`}

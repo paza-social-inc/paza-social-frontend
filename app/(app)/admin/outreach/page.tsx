@@ -37,12 +37,12 @@ export default function OutreachPage() {
   }, [filter])
 
   const handleSelectLead = async (lead: OutreachLead) => {
+    console.log('lead keys:', Object.keys(lead), 'id value:', lead.id)
     try {
-      // fetch full lead with all relations
-      const full = await outreachApi.getLead(lead.id)
-      setSelectedLead(full)
+        const full = await outreachApi.getLead(lead.id)
+        setSelectedLead(full)
     } catch {
-      setSelectedLead(lead)
+        setSelectedLead(lead)
     }
   }
 
