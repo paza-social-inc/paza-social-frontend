@@ -823,14 +823,12 @@ function OurServicesSection() {
         }}
       >
         <span>
-          {'\u201c'}Infrastructure for mapping audience alignment,{" "}
-          <span style={servicesQuoteOrange}>creator–brand</span>{" "}
-          and
+          {'\u201c'}Infrastructure for audience alignment,{" "}
+          <span style={servicesQuoteOrange}>creator brand matching,collaboration
+          </span>{" "}
         </span>
-        
-        <span className="block">
-          <span style={servicesQuoteOrange}>connecting collaborations</span>{" "}
-          measuring campaign outcomes.{'\u201d'}
+        <span className="">
+          <span style={servicesQuoteOrange}>and campaign outcome measurement </span>{" "}
         </span>
       </p>
     </MaskedReveal>
