@@ -1,254 +1,105 @@
 "use client";
-import { useRef, useState } from "react";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  useMotionValueEvent,
-  useReducedMotion,
-  useInView,
-  type MotionValue,
-} from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { EditorialLabel, EditorialRuleCta, LANDING_PLATE, PAGE, PAGE_PAD, servicesQuoteTypography, SIGNUP_HREF } from "./LandingPage";
-import { AccountTypeMockupCard } from "./LandingPage";
-import { HOW_PLATFORM_WORKS_STEPS } from "./LandingPage";
+import {
+  AccountTypeMockupCard,
+  EditorialLabel,
+  EditorialRuleCta,
+  HOW_PLATFORM_WORKS_STEPS,
+  LANDING_PLATE,
+  PAGE,
+  PAGE_PAD,
+  servicesQuoteTypography,
+  SIGNUP_HREF,
+} from "./LandingPage";
 import { MaskedReveal } from "./MaskedReveal";
 import { ArrowRight } from "lucide-react";
-// import { EditorialLabel, EditorialRuleCta, ArrowRight } from "@/components/ui"; // adjust imports as needed
 
 // ─── types ────────────────────────────────────────────────────────────────────
 type Step = (typeof HOW_PLATFORM_WORKS_STEPS)[number];
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const ORANGE = "#FF6B00";
-const OVERLAP = 0.07;
 
-// ─── Progress Bar ─────────────────────────────────────────────────────────────
-function ProgressBar({ progress }: { progress: MotionValue<number> }) {
-  const width = useTransform(progress, [0, 1], ["0%", "100%"]);
-  return (
-    <div className="absolute inset-x-0 top-0 z-50 h-[3px] bg-neutral-200 dark:bg-white/10">
-      <motion.div
-        className="h-full"
-        style={{ width, backgroundColor: ORANGE }}
-      />
-    </div>
-  );
-}
+// ─── Step Row (vertical, reveals on scroll) ─────────────────────────────────────
+function StepRow({ step, index, total }: { step: Step; index: number; total: number }) {
+  const reduceMotion = useReducedMotion();
+  const mockOnLeft = index % 2 === 1;
 
-// ─── Scroll Prompt ───────────────────────────────────────────────────────────
-function ScrollPrompt({ direction = "down", className }: { direction?: "down" | "up"; className?: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: [0.4, 1, 0.4] }}
-      transition={{ duration: 2, repeat: Infinity }}
-      className={cn(
-        "absolute bottom-10 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center text-xs uppercase tracking-widest text-neutral-400 dark:text-neutral-500",
-        className
-      )}
-    >
-      <span>{direction === "down" ? "Scroll to continue" : "Scroll up"}</span>
-      
-      <motion.div
-        animate={{ 
-          y: direction === "down" ? [0, 8, 0] : [-8, 0, -8] 
-        }}
-        transition={{ duration: 1.8, repeat: Infinity }}
-        className="text-lg"
+  const content = (
+    <div className={cn("relative z-10", mockOnLeft && "lg:order-2")}>
+      <div
+        className="mb-4 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]"
+        style={{ color: ORANGE }}
       >
-        {direction === "down" ? "↓" : "↑"}
-      </motion.div>
-    </motion.div>
-  );
-}
-// ─── Step Dots ────────────────────────────────────────────────────────────────
-function StepDots({ count, active }: { count: number; active: number }) {
-  return (
-    <div className="absolute bottom-8 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <motion.div
-          key={i}
-          animate={{
-            width: i === active ? 16 : 5,
-            backgroundColor: i === active ? ORANGE : "rgba(120,116,108,0.4)",
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 28 }}
-          className="h-[5px] rounded-full"
-        />
-      ))}
+        <span className="block h-px w-5" style={{ background: ORANGE }} />
+        Step {step.id} of {String(total).padStart(2, "0")}
+      </div>
+
+      <h3
+        className="mb-5 text-neutral-900 dark:text-[#EDE8DF]"
+        style={{
+          fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
+          fontSize: "clamp(34px, 7vw, 60px)",
+          lineHeight: 0.93,
+          letterSpacing: "0.01em",
+          textTransform: "uppercase",
+        }}
+      >
+        {step.title}
+      </h3>
+
+      <div className="max-w-[340px] text-[13px] font-light leading-[1.8] text-neutral-500 dark:text-neutral-400">
+        {step.body}
+      </div>
     </div>
   );
-}
 
-// ─── Desktop Step Slide ───────────────────────────────────────────────────────
-function DesktopStepSlide({
-  step,
-  index,
-  total,
-  progress,
-}: {
-  step: Step;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-}) {
-  const start = index / total;
-  const end = (index + 1) / total;
-
-  // First slide is already settled and visible at progress 0 (no blank intro),
-  // it only fades out near the end. Later slides fade + slide in as usual.
-  const isFirst = index === 0;
-
-  const opacity = useTransform(
-    progress,
-    isFirst ? [end - OVERLAP, end] : [start, start + OVERLAP, end - OVERLAP, end],
-    isFirst ? [1, 0] : [0, 1, 1, 0]
+  const mock = (
+    <div className={cn("flex justify-center", mockOnLeft ? "lg:order-1 lg:justify-start" : "lg:justify-end")}>
+      <AccountTypeMockupCard />
+    </div>
   );
-
-  const ghostX = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0%" : "-6%", "0%"]);
-  const contentY = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0px" : "22px", "0px"]);
-  const mockScale = useTransform(progress, [start, start + OVERLAP], [isFirst ? 1 : 0.92, 1]);
-  const mockX = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0px" : "18px", "0px"]);
 
   return (
     <motion.div
-      style={{ opacity }}
-      className="absolute inset-0 flex items-center"
-      aria-hidden={index !== 0}
+      initial={reduceMotion ? false : { opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -18% 0px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative border-t border-neutral-200 dark:border-white/[0.06]"
     >
-      <motion.span
-        className="pointer-events-none absolute -left-1 top-[6%] select-none font-semibold leading-[0.82] text-[clamp(88px,26vw,200px)] text-neutral-200 dark:text-white/[0.04] sm:-left-2 sm:top-[10%]"
-        style={{
-          x: ghostX,
-          fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
-          letterSpacing: "-0.02em",
-        }}
+      <span
+        className="pointer-events-none absolute -left-1 top-1 select-none font-semibold leading-[0.82] text-[clamp(80px,24vw,190px)] text-neutral-200 dark:text-white/[0.04] sm:-left-2"
+        style={{ fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif", letterSpacing: "-0.02em" }}
         aria-hidden
       >
         {step.id}
-      </motion.span>
+      </span>
 
-      <div className={cn(PAGE_PAD, "relative z-10 grid w-full grid-cols-1 items-center gap-10 pt-28 sm:pt-24 lg:grid-cols-2 lg:gap-16 lg:pt-16")}>
-        <motion.div style={{ y: contentY }}>
-          <div className="mb-4 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]" style={{ color: ORANGE }}>
-            <span className="block h-px w-5" style={{ background: ORANGE }} />
-            Step {step.id} of {String(total).padStart(2, "0")}
-          </div>
-
-          <h3
-            className="mb-5 text-neutral-900 dark:text-[#EDE8DF]"
-            style={{
-              fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
-              fontSize: "clamp(34px, 8vw, 60px)",
-              lineHeight: 0.93,
-              letterSpacing: "0.01em",
-              textTransform: "uppercase",
-            }}
-          >
-            {step.title}
-          </h3>
-
-          <div className="text-[13px] leading-[1.8] text-neutral-500 dark:text-neutral-400 font-light max-w-[340px]">
-            {step.body}
-          </div>
-        </motion.div>
-
-        <motion.div style={{ scale: mockScale, x: mockX }} className="flex justify-center lg:justify-end">
-          <AccountTypeMockupCard />
-        </motion.div>
+      <div
+        className={cn(
+          PAGE_PAD,
+          "relative z-10 grid grid-cols-1 items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24"
+        )}
+      >
+        {content}
+        {mock}
       </div>
     </motion.div>
   );
 }
 
-// ─── HowItWorksSections (Desktop Scroll Version) ─────────────────────────────
-function HowItWorksSections() {
+// ─── Steps (vertical flow) ──────────────────────────────────────────────────────
+function HowItWorksSteps() {
   const steps = [...HOW_PLATFORM_WORKS_STEPS].sort((a, b) => a.id.localeCompare(b.id));
   const total = steps.length;
-  const reduceMotion = useReducedMotion();
-  const driverRef = useRef<HTMLDivElement>(null);
-  const [activeStep, setActiveStep] = useState(0);
-
-  const { scrollYProgress } = useScroll({
-    target: driverRef,
-    offset: ["start start", "end end"],
-  });
-
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 140,
-    damping: 30,
-    mass: 0.35,
-  });
-
-  useMotionValueEvent(scrollYProgress, "change", (p) => {
-    setActiveStep(Math.min(total - 1, Math.floor(p * total)));
-  });
-
-  // ~70dvh of scroll per step — short, snappy advance between numbers.
-  const driverH = `${total * 70}dvh`;
-
-  if (reduceMotion) {
-    return (
-      <div className="bg-zinc-100 dark:bg-[#050505]">
-        {steps.map((step) => (
-          <div
-            key={step.id}
-            className={cn(PAGE_PAD, "grid grid-cols-1 items-center gap-10 py-14 border-t border-neutral-200 dark:border-white/[0.06] lg:grid-cols-2 lg:gap-16 lg:py-20")}
-          >
-            {/* Reduced motion content */}
-            <div>
-              <div className="mb-4 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]" style={{ color: ORANGE }}>
-                <span className="block h-px w-5" style={{ background: ORANGE }} />
-                Step {step.id} of {String(total).padStart(2, "0")}
-              </div>
-              <h3 className="mb-5 text-neutral-900 dark:text-[#EDE8DF]" style={{ fontFamily: "'Bebas Neue','Impact',sans-serif", fontSize: "clamp(34px,8vw,60px)", lineHeight: 0.93, textTransform: "uppercase" }}>
-                {step.title}
-              </h3>
-              <div className="text-[13px] leading-[1.8] text-neutral-500 dark:text-neutral-400 font-light max-w-[340px]">
-                {step.body}
-              </div>
-            </div>
-            <div className="flex justify-center lg:justify-end">
-              <AccountTypeMockupCard />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   return (
-    <div ref={driverRef} style={{ height: driverH }} className="relative block">
-      <div className="sticky top-0 h-[100dvh] w-full overflow-hidden bg-zinc-100 dark:bg-[#050505]">
-        <ProgressBar progress={smoothProgress} />
-
-        <div className={cn(PAGE_PAD, "absolute inset-x-0 top-0 z-50 flex items-center justify-between pt-7")}>
-          <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-600">
-            How it works
-          </span>
-          <span className="text-[10px] uppercase tracking-[0.16em]" style={{ color: ORANGE }}>
-            {String(activeStep + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-          </span>
-        </div>
-
-        {steps.map((step, i) => (
-          <DesktopStepSlide
-            key={step.id}
-            step={step}
-            index={i}
-            total={total}
-            progress={smoothProgress}
-          />
-        ))}
-
-        {activeStep === 0 && <ScrollPrompt direction="down" />}
-        {activeStep === total - 1 && <ScrollPrompt direction="up" className="hidden lg:flex" />}
-
-        <StepDots count={total} active={activeStep} />
-      </div>
+    <div className="bg-zinc-100 dark:bg-[#050505]">
+      {steps.map((step, i) => (
+        <StepRow key={step.id} step={step} index={i} total={total} />
+      ))}
     </div>
   );
 }
@@ -283,8 +134,8 @@ export function HowItWorksSection() {
 
       {/* Content Area */}
       <div className={cn("py-6 sm:py-8 md:py-10 lg:py-12", LANDING_PLATE)}>
-        {/* Scroll-driven step experience — runs on all viewports */}
-        <HowItWorksSections />
+        {/* Vertical step flow — each step reveals on scroll */}
+        <HowItWorksSteps />
 
         {/* CTA */}
         <div className={PAGE}>
