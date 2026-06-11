@@ -178,16 +178,17 @@ function HowItWorksSections() {
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 90,
-    damping: 24,
-    mass: 0.5,
+    stiffness: 140,
+    damping: 30,
+    mass: 0.35,
   });
 
   useMotionValueEvent(scrollYProgress, "change", (p) => {
     setActiveStep(Math.min(total - 1, Math.floor(p * total)));
   });
 
-  const driverH = `${total * 150}dvh`;
+  // ~70dvh of scroll per step — short, snappy advance between numbers.
+  const driverH = `${total * 70}dvh`;
 
   if (reduceMotion) {
     return (
