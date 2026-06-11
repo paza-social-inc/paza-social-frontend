@@ -286,6 +286,9 @@ To better understand audience identity, interests, intent, and behavior in order
             Our community
           </h3>
           <div className="mt-8 sm:mt-12 flex justify-center">
+          <Link
+          href="/waitlist"
+          >
             <button
               type="button"
               className="h-12 sm:h-14 w-full sm:w-[340px] border border-zinc-600 text-[20px] sm:text-[34px] inline-flex items-center justify-between px-4 hover:border-zinc-400"
@@ -293,6 +296,7 @@ To better understand audience identity, interests, intent, and behavior in order
               <span>Join Us Today</span>
               <ArrowUpRight className="h-5 w-5 sm:h-7 sm:w-7" />
             </button>
+            </Link>
           </div>
         </div>
 

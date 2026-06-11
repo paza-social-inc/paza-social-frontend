@@ -624,13 +624,17 @@ function StudioSecondarySection() {
 
         <MaskedReveal delay={0.08}>
   <div className="mx-auto mt-10 max-w-[1080px] px-4 text-base text-left sm:mt-14 sm:px-6 lg:px-8 md:mt-20">
-    <h3 className="text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-      Digital advertising relies on fragmented, top-of-funnel proxies such as{" "}
-      <span className="text-neutral-500 dark:text-zinc-500">
-        demographics, clicks, and superficial engagement
-      </span>{" "}
-      to infer audience intent.
-    </h3>
+
+
+
+<h3 className="text-[clamp(1rem,3vw,2rem)] leading-[1.2] tracking-[-0.02em] text-neutral-900 dark:text-white">
+  Digital advertising relies on fragmented, top-of-funnel proxies.
+  <br />
+  <span className="text-neutral-500 dark:text-zinc-500">
+    Such as demographics, clicks, and superficial engagement to infer audience intent.
+  </span>
+</h3>
+
 
     <div className="mt-6 space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
       <p>
@@ -858,7 +862,9 @@ function OurServicesSection() {
                 {/* Ghost number — large, low-opacity, highlights on hover */}
                 <span
                   className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-neutral-200 transition-colors duration-300 group-hover:text-[#FF6B00]/20 dark:text-white/[0.05] dark:group-hover:text-[#FF6B00]/15"
-                  style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
+                  // style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
+style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
+
                   aria-hidden
                 >
                   {row.index}
