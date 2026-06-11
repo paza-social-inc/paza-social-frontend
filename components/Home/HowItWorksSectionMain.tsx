@@ -11,7 +11,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { EditorialLabel, EditorialRuleCta, HowItWorksStepPanel, LANDING_PLATE, PAGE, PAGE_PAD, servicesQuoteTypography, SIGNUP_HREF, WheelSteeredHorizontalScroll } from "./LandingPage";
+import { EditorialLabel, EditorialRuleCta, howStepTitle, LANDING_PLATE, PAGE, PAGE_PAD, servicesQuoteTypography, SIGNUP_HREF } from "./LandingPage";
 import { AccountTypeMockupCard } from "./LandingPage";
 import { HOW_PLATFORM_WORKS_STEPS } from "./LandingPage";
 import { MaskedReveal } from "./MaskedReveal";
@@ -275,29 +275,39 @@ export function HowItWorksSection() {
 
       {/* Content Area */}
       <div className={cn("py-6 sm:py-8 md:py-10 lg:py-12", LANDING_PLATE)}>
-        {/* Mobile Horizontal Scroll */}
-        <div className="touch-pan-x lg:hidden" role="region" aria-label="Platform workflow steps">
-          <WheelSteeredHorizontalScroll
-            className={cn(
-              PAGE_PAD,
-              "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
-              "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
-              "snap-x snap-mandatory scroll-smooth"
-            )}
-          >
-            {HOW_PLATFORM_WORKS_STEPS.map((step) => (
-              <HowItWorksStepPanel
-                key={step.id}
-                stepNumber={step.id}
-                title={step.title}
-                layout={step.layout}
+        {/* Mobile / tablet: vertical stack — every step is visible by scrolling down */}
+        <ol
+          className={cn(PAGE_PAD, "lg:hidden")}
+          aria-label="Platform workflow steps"
+        >
+          {HOW_PLATFORM_WORKS_STEPS.map((step, i) => (
+            <li
+              key={step.id}
+              className={cn(
+                "flex gap-4 py-8 sm:gap-6 sm:py-10",
+                i > 0 && "border-t border-neutral-200 dark:border-white/[0.08]"
+              )}
+            >
+              <span
+                className="shrink-0 select-none font-semibold leading-none text-neutral-200 text-[clamp(2.5rem,12vw,4rem)] dark:text-white/[0.12]"
+                aria-hidden
               >
-                {step.body}
-              </HowItWorksStepPanel>
-            ))}
-            <div className="w-4 shrink-0 snap-end sm:w-8" aria-hidden />
-          </WheelSteeredHorizontalScroll>
-        </div>
+                {step.id}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div
+                  className="mb-3 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]"
+                  style={{ color: ORANGE }}
+                >
+                  <span className="block h-px w-5" style={{ background: ORANGE }} />
+                  Step {step.id} of {String(HOW_PLATFORM_WORKS_STEPS.length).padStart(2, "0")}
+                </div>
+                <h3 className={cn(howStepTitle, "mb-3")}>{step.title}</h3>
+                <div>{step.body}</div>
+              </div>
+            </li>
+          ))}
+        </ol>
 
         {/* Desktop Scroll-Driven Version */}
         <HowItWorksSections />
