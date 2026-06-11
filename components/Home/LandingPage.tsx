@@ -502,21 +502,21 @@ function MissionIntroSection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.06}>
-<div className="mx-auto mt-2 max-w-[1400px] px-2 text-left sm:mt-10 sm:px-8 lg:px-12">
+<div className="mx-auto mt-2 max-w-[1400px] px-2 text-left sm:mt-10  sm:px-8 lg:px-12">
   {/* The Ultra-Clean, Explicit Two-Line Cinematic Headline */}
-  <h2 className="text-[clamp(1.2rem,3.8vw+0.5rem,2.2rem)] leading-[1.05] tracking-[-0.05em] text-neutral-900 dark:text-neutral-50">
+  <h2 className="text-[clamp(1.2rem,3.8vw+0.5rem,2.2rem)] leading-[1.54] tracking-[-0.05em] pl-9 text-neutral-900 dark:text-neutral-50">
     Paza is an{" "}
     <span className="text-neutral-400 dark:text-neutral-600">
-      audience intelligence and collaboration infrastructure
+      audience intelligence and collaboration infrastructure for
     </span>
     <br className="hidden xl:inline" />{" "}
     {/* Clean break to line two at desktop */}
-    for brands, creators, and{" "}
+    brands, creators, and{" "}
     <span className="whitespace-nowrap">community networks.</span>
   </h2>
 
   {/* Perfectly Proportioned Editorial Body Copy */}
-  <div className="mt-5 max-w-4xl space-y-2 text-[16px] leading-[1.8] tracking-[-0.01em] text-neutral-600 dark:text-neutral-400 sm:text-[18px] md:text-[19px]">
+  <div className="mt-5  space-y-2 pl-9  text-[16px] leading-[1.8] tracking-[-0.01em] text-neutral-600 dark:text-neutral-400 sm:text-[18px] md:text-[19px]">
     <p>
       It maps audience identity, interests, intent, and behavior alongside
       brand and creator identities, values, and positioning.
@@ -583,6 +583,7 @@ function StudioSecondarySection() {
         <MaskedReveal delay={0.08}>
   <div className="mx-auto mt-10 max-w-[1080px] px-4 text-base text-left sm:mt-14 sm:px-6 lg:px-8 md:mt-20">
 
+  {/* <div className=""> */}
 <h3 className="text-[clamp(1rem,3vw,2rem)] leading-[1.2] tracking-[-0.02em] text-neutral-900 dark:text-white">
   Digital advertising relies on fragmented, top-of-funnel proxies.
   <br />

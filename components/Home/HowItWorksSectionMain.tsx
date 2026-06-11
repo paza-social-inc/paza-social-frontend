@@ -290,10 +290,6 @@ function MobileStepRow({ step, total }: { step: Step; total: number }) {
             {step.body}
           </div>
         </div>
-
-        <div className="flex justify-center">
-          <AccountTypeMockupCard />
-        </div>
       </div>
     </motion.div>
   );
