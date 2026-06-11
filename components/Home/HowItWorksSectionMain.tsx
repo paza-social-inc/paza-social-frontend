@@ -11,7 +11,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { EditorialLabel, EditorialRuleCta, howStepTitle, LANDING_PLATE, PAGE, PAGE_PAD, servicesQuoteTypography, SIGNUP_HREF } from "./LandingPage";
+import { EditorialLabel, EditorialRuleCta, LANDING_PLATE, PAGE, PAGE_PAD, servicesQuoteTypography, SIGNUP_HREF } from "./LandingPage";
 import { AccountTypeMockupCard } from "./LandingPage";
 import { HOW_PLATFORM_WORKS_STEPS } from "./LandingPage";
 import { MaskedReveal } from "./MaskedReveal";
@@ -113,7 +113,7 @@ function DesktopStepSlide({
       aria-hidden={index !== 0}
     >
       <motion.span
-        className="pointer-events-none absolute -left-2 top-[10%] select-none font-semibold leading-[0.82] text-[clamp(140px,22vw,200px)] text-neutral-200 dark:text-white/[0.04]"
+        className="pointer-events-none absolute -left-1 top-[6%] select-none font-semibold leading-[0.82] text-[clamp(88px,26vw,200px)] text-neutral-200 dark:text-white/[0.04] sm:-left-2 sm:top-[10%]"
         style={{
           x: ghostX,
           fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
@@ -124,7 +124,7 @@ function DesktopStepSlide({
         {step.id}
       </motion.span>
 
-      <div className={cn(PAGE_PAD, "relative z-10 grid w-full grid-cols-2 items-center gap-16 pt-16")}>
+      <div className={cn(PAGE_PAD, "relative z-10 grid w-full grid-cols-1 items-center gap-10 pt-28 sm:pt-24 lg:grid-cols-2 lg:gap-16 lg:pt-16")}>
         <motion.div style={{ y: contentY }}>
           <div className="mb-4 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]" style={{ color: ORANGE }}>
             <span className="block h-px w-5" style={{ background: ORANGE }} />
@@ -135,7 +135,7 @@ function DesktopStepSlide({
             className="mb-5 text-neutral-900 dark:text-[#EDE8DF]"
             style={{
               fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
-              fontSize: "clamp(42px, 5.5vw, 60px)",
+              fontSize: "clamp(34px, 8vw, 60px)",
               lineHeight: 0.93,
               letterSpacing: "0.01em",
               textTransform: "uppercase",
@@ -149,7 +149,7 @@ function DesktopStepSlide({
           </div>
         </motion.div>
 
-        <motion.div style={{ scale: mockScale, x: mockX }} className="flex justify-end">
+        <motion.div style={{ scale: mockScale, x: mockX }} className="flex justify-center lg:justify-end">
           <AccountTypeMockupCard />
         </motion.div>
       </div>
@@ -184,11 +184,11 @@ function HowItWorksSections() {
 
   if (reduceMotion) {
     return (
-      <div className="hidden lg:block bg-zinc-100 dark:bg-[#050505]">
+      <div className="bg-zinc-100 dark:bg-[#050505]">
         {steps.map((step) => (
           <div
             key={step.id}
-            className={cn(PAGE_PAD, "grid grid-cols-2 items-center gap-16 py-20 border-t border-neutral-200 dark:border-white/[0.06]")}
+            className={cn(PAGE_PAD, "grid grid-cols-1 items-center gap-10 py-14 border-t border-neutral-200 dark:border-white/[0.06] lg:grid-cols-2 lg:gap-16 lg:py-20")}
           >
             {/* Reduced motion content */}
             <div>
@@ -196,14 +196,14 @@ function HowItWorksSections() {
                 <span className="block h-px w-5" style={{ background: ORANGE }} />
                 Step {step.id} of {String(total).padStart(2, "0")}
               </div>
-              <h3 className="mb-5 text-neutral-900 dark:text-[#EDE8DF]" style={{ fontFamily: "'Bebas Neue','Impact',sans-serif", fontSize: "clamp(42px,5.5vw,60px)", lineHeight: 0.93, textTransform: "uppercase" }}>
+              <h3 className="mb-5 text-neutral-900 dark:text-[#EDE8DF]" style={{ fontFamily: "'Bebas Neue','Impact',sans-serif", fontSize: "clamp(34px,8vw,60px)", lineHeight: 0.93, textTransform: "uppercase" }}>
                 {step.title}
               </h3>
               <div className="text-[13px] leading-[1.8] text-neutral-500 dark:text-neutral-400 font-light max-w-[340px]">
                 {step.body}
               </div>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-center lg:justify-end">
               <AccountTypeMockupCard />
             </div>
           </div>
@@ -213,7 +213,7 @@ function HowItWorksSections() {
   }
 
   return (
-    <div ref={driverRef} style={{ height: driverH }} className="relative hidden lg:block">
+    <div ref={driverRef} style={{ height: driverH }} className="relative block">
       <div className="sticky top-0 h-[100dvh] w-full overflow-hidden bg-zinc-100 dark:bg-[#050505]">
         <ProgressBar progress={smoothProgress} />
 
@@ -275,41 +275,7 @@ export function HowItWorksSection() {
 
       {/* Content Area */}
       <div className={cn("py-6 sm:py-8 md:py-10 lg:py-12", LANDING_PLATE)}>
-        {/* Mobile / tablet: vertical stack — every step is visible by scrolling down */}
-        <ol
-          className={cn(PAGE_PAD, "lg:hidden")}
-          aria-label="Platform workflow steps"
-        >
-          {HOW_PLATFORM_WORKS_STEPS.map((step, i) => (
-            <li
-              key={step.id}
-              className={cn(
-                "flex gap-4 py-8 sm:gap-6 sm:py-10",
-                i > 0 && "border-t border-neutral-200 dark:border-white/[0.08]"
-              )}
-            >
-              <span
-                className="shrink-0 select-none font-semibold leading-none text-neutral-200 text-[clamp(2.5rem,12vw,4rem)] dark:text-white/[0.12]"
-                aria-hidden
-              >
-                {step.id}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div
-                  className="mb-3 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]"
-                  style={{ color: ORANGE }}
-                >
-                  <span className="block h-px w-5" style={{ background: ORANGE }} />
-                  Step {step.id} of {String(HOW_PLATFORM_WORKS_STEPS.length).padStart(2, "0")}
-                </div>
-                <h3 className={cn(howStepTitle, "mb-3")}>{step.title}</h3>
-                <div>{step.body}</div>
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        {/* Desktop Scroll-Driven Version */}
+        {/* Scroll-driven step experience — runs on all viewports */}
         <HowItWorksSections />
 
         {/* CTA */}
