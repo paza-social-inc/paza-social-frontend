@@ -132,10 +132,10 @@ const PORTRAIT_H_DESKTOP = "clamp(200px, 23.33vw, 307px)";
 const PORTRAIT_H_MOBILE = "calc(min(30vw, 116px) * 4 / 3)";
 
 /** Connecting headlines — Figma: #F9F9F9, PP Neue Montreal, 128px / 400 / 172% (capped, responsive) */
-const CONNECTING_HEADLINE_FONT =
-  '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
+// const CONNECTING_HEADLINE_FONT =
+//   '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
 const connectingHeadlineBase = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
+  // fontFamily: CONNECTING_HEADLINE_FONT,
   fontWeight: 400,
   fontStyle: "normal" as const,
   lineHeight: 1.72,
@@ -154,7 +154,7 @@ const connectingHeadlineDesktop: CSSProperties = {
  * orange keywords use #FF6B00 (same stack on white lines).
  */
 export const servicesQuoteTypography: CSSProperties = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
+  // fontFamily: CONNECTING_HEADLINE_FONT,
   // fontSize: "clamp(0.850rem, 2.2vw + 0.5rem, 40px)",
   fontSize: "clamp(0.8125rem, 1.8vw + 0.45rem, 2rem)",
   fontStyle: "normal",
@@ -746,7 +746,7 @@ style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
                   <h3
                     className="text-left font-medium uppercase tracking-[-0.01em] text-neutral-900 transition-colors duration-300 group-hover:text-[#FF6B00] dark:text-white dark:group-hover:text-[#FF6B00]"
                     style={{
-                      fontFamily: CONNECTING_HEADLINE_FONT,
+                      // fontFamily: CONNECTING_HEADLINE_FONT,
                       fontSize: "clamp(1.05rem, 2.5vw + 0.3rem, 2.25rem)",
                       lineHeight: 1.12,
                     }}
@@ -1229,7 +1229,7 @@ function FigmaContactSection() {
               <h2
                 className="mt-6 text-neutral-900 sm:mt-8 dark:text-white"
                 style={{
-                  fontFamily: CONNECTING_HEADLINE_FONT,
+                  // fontFamily: CONNECTING_HEADLINE_FONT,
                   fontSize: "clamp(2.4rem, 8vw, 7rem)",
                   fontWeight: 700,
                   lineHeight: 0.95,
