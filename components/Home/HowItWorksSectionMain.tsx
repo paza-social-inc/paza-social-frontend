@@ -39,13 +39,16 @@ function ProgressBar({ progress }: { progress: MotionValue<number> }) {
 }
 
 // ─── Scroll Prompt ───────────────────────────────────────────────────────────
-function ScrollPrompt({ direction = "down" }: { direction?: "down" | "up" }) {
+function ScrollPrompt({ direction = "down", className }: { direction?: "down" | "up"; className?: string }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: [0.4, 1, 0.4] }}
       transition={{ duration: 2, repeat: Infinity }}
-      className="absolute bottom-10 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center text-xs uppercase tracking-widest text-neutral-400 dark:text-neutral-500"
+      className={cn(
+        "absolute bottom-10 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center text-xs uppercase tracking-widest text-neutral-400 dark:text-neutral-500",
+        className
+      )}
     >
       <span>{direction === "down" ? "Scroll to continue" : "Scroll up"}</span>
       
@@ -95,16 +98,20 @@ function DesktopStepSlide({
   const start = index / total;
   const end = (index + 1) / total;
 
+  // First slide is already settled and visible at progress 0 (no blank intro),
+  // it only fades out near the end. Later slides fade + slide in as usual.
+  const isFirst = index === 0;
+
   const opacity = useTransform(
     progress,
-    [start, start + OVERLAP, end - OVERLAP, end],
-    [0, 1, 1, 0]
+    isFirst ? [end - OVERLAP, end] : [start, start + OVERLAP, end - OVERLAP, end],
+    isFirst ? [1, 0] : [0, 1, 1, 0]
   );
 
-  const ghostX = useTransform(progress, [start, start + OVERLAP], ["-6%", "0%"]);
-  const contentY = useTransform(progress, [start, start + OVERLAP], ["22px", "0px"]);
-  const mockScale = useTransform(progress, [start, start + OVERLAP], [0.92, 1]);
-  const mockX = useTransform(progress, [start, start + OVERLAP], ["18px", "0px"]);
+  const ghostX = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0%" : "-6%", "0%"]);
+  const contentY = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0px" : "22px", "0px"]);
+  const mockScale = useTransform(progress, [start, start + OVERLAP], [isFirst ? 1 : 0.92, 1]);
+  const mockX = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0px" : "18px", "0px"]);
 
   return (
     <motion.div
@@ -237,7 +244,7 @@ function HowItWorksSections() {
         ))}
 
         {activeStep === 0 && <ScrollPrompt direction="down" />}
-        {activeStep === total - 1 && <ScrollPrompt direction="up" />}
+        {activeStep === total - 1 && <ScrollPrompt direction="up" className="hidden lg:flex" />}
 
         <StepDots count={total} active={activeStep} />
       </div>
