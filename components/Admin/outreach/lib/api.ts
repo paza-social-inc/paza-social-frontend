@@ -1,6 +1,8 @@
 import { LeadsResponse, OutreachLead, ApproveResponse, SendResponse } from "@/types/outreach"
 
-const BASE_URL = process.env.NEXT_PUBLIC_AGENT_API_URL ?? 'http://localhost:4000'
+const BASE_URL = process.env.NEXT_PUBLIC_AGENT_API_URL ?? (() => {
+  throw new Error('NEXT_PUBLIC_AGENT_API_URL is not set')
+})()
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -22,9 +24,11 @@ export const outreachApi = {
     return request<LeadsResponse>(`/api/leads${query}`)
   },
 
-  getLead(id: string): Promise<OutreachLead> {
-    return request<OutreachLead>(`/api/leads/${id}`)
+  async getLead(id: string): Promise<OutreachLead> {
+    const res = await request<{ lead: OutreachLead }>(`/api/leads/${id}`)
+    return res.lead
   },
+
 
   createLead(data: {
     domain: string
