@@ -579,53 +579,9 @@ function StudioSecondarySection() {
           </div>
         </MaskedReveal>
 
-        {/* Text Content - Improved centering */}
-        {/* <MaskedReveal delay={0.08}> */}
-        {/*   <div className="mx-auto mt-10 text-base max-w-[1080px] px-4 sm:px-6 lg:px-8 sm:mt-14 md:mt-20 text-justify" > */}
-        {/*     <h3 className=" text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]"> */}
-        {/*       Digital advertising systems rely on fragmented proxy signals such as{" "} */}
-        {/*       <span className="text-neutral-500 dark:text-zinc-500"> */}
-        {/*         demographics, clicks, views, likes, and engagement */}
-        {/*       </span>{" "} */}
-        {/*       to understand audiences and optimize campaigns. */}
-        {/*     </h3> */}
-        {/**/}
-        {/*     <div className="mt-6 text-justify space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]"> */}
-        {/*       <p> */}
-        {/*         While these signals help predict short-term conversion, they provide */}
-        {/*         limited understanding of why audiences respond to specific products, */}
-        {/*         messages, or creators, and often lose meaning outside the context in */}
-        {/*         which they are generated. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         Privacy restrictions and fragmented platforms further reduce audience */}
-        {/*         visibility, making it difficult for brands to distinguish between */}
-        {/*         existing audiences, newly emerging audiences, and temporary engagement. */}
-        {/*         As a result, brands struggle to build stable models of audience behavior */}
-        {/*         and intent. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         This limits their ability to understand who their audience is, track */}
-        {/*         audiences over time, understand what drives repeat interaction, adapt */}
-        {/*         messaging as familiarity increases, engage existing audiences more */}
-        {/*         effectively, and activate high-value audience segments across contexts. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         <span className="text-neutral-900 dark:text-white">Paza</span> improves */}
-        {/*         audience understanding by linking audience signals to products, creators, */}
-        {/*         and community environments, then observing how those relationships */}
-        {/*         perform and evolve over time. */}
-        {/*       </p> */}
-        {/*     </div> */}
-        {/*   </div> */}
-        {/* </MaskedReveal> */}
-
-
 
         <MaskedReveal delay={0.08}>
   <div className="mx-auto mt-10 max-w-[1080px] px-4 text-base text-left sm:mt-14 sm:px-6 lg:px-8 md:mt-20">
-
-
 
 <h3 className="text-[clamp(1rem,3vw,2rem)] leading-[1.2] tracking-[-0.02em] text-neutral-900 dark:text-white">
   Digital advertising relies on fragmented, top-of-funnel proxies.
@@ -668,9 +624,6 @@ function StudioSecondarySection() {
     </div>
   </div>
 </MaskedReveal>
-
-
-
         {/* CTA */}
         <MaskedReveal delay={0.14}>
           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
@@ -687,88 +640,6 @@ function StudioSecondarySection() {
     </section>
   );
 }
-
-
-// function StudioSecondarySection() {
-//   return (
-//     <section className={cn("py-12 sm:py-16 md:py-20 lg:py-24", LANDING_PLATE)}>
-//       <div className={PAGE}>
-//         <MaskedReveal delay={0}>
-//           <div className="relative mx-auto w-full max-w-[min(92%,720px)] overflow-hidden border border-zinc-800/90">
-//             <div className="relative aspect-[16/10] w-full sm:aspect-[5/3]">
-//               <Image
-//                 src={campaignPressStudio}
-//                 alt="Collaborators reviewing work at a desk in a studio"
-//                 fill
-//                 className="object-cover object-center grayscale"
-//                 sizes="(max-width: 768px) 92vw, 720px"
-//                 loading="lazy"
-//               />
-//             </div>
-//           </div>
-//         </MaskedReveal>
-//
-//         <MaskedReveal delay={0.08}>
-//
-// {/* <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20"> */}
-// <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20 mx-auto px-4 sm:px-6 lg:px-8">
-//   <h3 className="max-w-[980px] text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-//     Digital advertising systems rely on fragmented proxy signals such as{" "}
-//     <span className="text-neutral-500 dark:text-zinc-500">
-//       demographics, clicks, views, likes, and engagement
-//     </span>{" "}
-//     to understand audiences and optimize campaigns.
-//   </h3>
-//
-//   <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
-//     <p>
-//       While these signals help predict short-term conversion, they provide
-//       limited understanding of why audiences respond to specific products,
-//       messages, or creators, and often lose meaning outside the context in
-//       which they are generated.
-//     </p>
-//
-//     <p>
-//       Privacy restrictions and fragmented platforms further reduce audience
-//       visibility, making it difficult for brands to distinguish between
-//       existing audiences, newly emerging audiences, and temporary engagement.
-//       As a result, brands struggle to build stable models of audience behavior
-//       and intent.
-//     </p>
-//
-//     <p>
-//       This limits their ability to understand who their audience is, track
-//       audiences over time, understand what drives repeat interaction, adapt
-//       messaging as familiarity increases, engage existing audiences more
-//       effectively, and activate high-value audience segments across contexts.
-//     </p>
-//
-//     <p>
-//       <span className="text-neutral-900 dark:text-white">Paza</span> improves
-//       audience understanding by linking audience signals to products, creators,
-//       and community environments, then observing how those relationships
-//       perform and evolve over time.
-//     </p>
-//   </div>
-// </div>
-//
-//         </MaskedReveal>
-//
-//         <MaskedReveal delay={0.14}>
-//           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
-//             <EditorialRuleCta align="end" href={SIGNUP_HREF}>
-//               <>
-//                 Start your journey
-//                 <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
-//               </>
-//             </EditorialRuleCta>
-//           </div>
-//         </MaskedReveal>
-//       </div>
-//     </section>
-//   );
-// }
-
 /** Figma / reference — four rows, black plate (always), white type, orange keywords. */
 const SERVICE_ROWS = [
   {
