@@ -83,8 +83,8 @@ export default function OutreachPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* left panel */}
-      <div className="w-80 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col">
+      {/* left panel - hidden on mobile when detail is shown */}
+      <div className={`${selectedLead ? 'hidden' : 'flex'} md:flex w-full md:w-80 flex-shrink-0 border-r border-gray-200 bg-white flex-col`}>
         <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
           <h1 className="text-sm font-medium text-gray-900">Outreach leads</h1>
           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
@@ -139,16 +139,32 @@ export default function OutreachPage() {
         </div>
       </div>
 
-      {/* right panel */}
-      <div className="flex-1 overflow-hidden">
+      {/* right panel - hidden on mobile when no lead is selected */}
+      <div className={`${selectedLead ? 'flex' : 'hidden'} md:flex flex-1 overflow-hidden`}>
         {selectedLead ? (
-          <LeadDetail
-            lead={selectedLead}
-            onApprove={handleApprove}
-            onSend={handleSend}
-            onRescan={handleRescan}
-            onLeadUpdate={setSelectedLead}
-          />
+          <div className="flex flex-col w-full h-full">
+            {/* mobile back button */}
+            <div className="md:hidden flex items-center px-4 py-3 border-b border-gray-200 bg-white">
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <LeadDetail
+                lead={selectedLead}
+                onApprove={handleApprove}
+                onSend={handleSend}
+                onRescan={handleRescan}
+                onLeadUpdate={setSelectedLead}
+              />
+            </div>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-full text-sm text-gray-400 flex-col gap-2">
             <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

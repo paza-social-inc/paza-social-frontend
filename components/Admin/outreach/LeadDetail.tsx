@@ -36,14 +36,14 @@ function ScoreBar({
   const pct = Math.round(Math.min((value / max) * 100, 100))
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-400 w-36 flex-shrink-0">{label}</span>
+      <span className="text-xs text-gray-400 w-32 md:w-36 flex-shrink-0">{label}</span>
       <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-xs text-gray-400 w-6 text-right">{value}</span>
+      <span className="text-xs text-gray-400 w-6 text-right flex-shrink-0">{value}</span>
     </div>
   )
 }
@@ -118,23 +118,23 @@ export default function LeadDetail({
     <div className="flex flex-col h-full overflow-hidden">
 
       {/* header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white flex-shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-gray-200 bg-white flex-shrink-0 flex-wrap gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-sm font-medium text-blue-700 flex-shrink-0">
             {initials(lead.companyName, lead.domain)}
           </div>
-          <div>
-            <h2 className="text-sm font-medium text-gray-900">
+          <div className="min-w-0">
+            <h2 className="text-sm font-medium text-gray-900 truncate">
               {lead.companyName ?? lead.domain}
             </h2>
-            <p className="text-xs text-gray-400">{lead.domain}</p>
+            <p className="text-xs text-gray-400 truncate">{lead.domain}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* opportunity score */}
           <span
-            className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+            className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
               lead.opportunityScore >= 18
                 ? 'bg-green-50 text-green-700'
                 : lead.opportunityScore >= 12
@@ -149,7 +149,7 @@ export default function LeadDetail({
           <button
             onClick={handleRescan}
             disabled={rescanning}
-            className="text-xs px-3 py-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 transition-colors flex-shrink-0"
           >
             {rescanning ? 'Rescanning...' : 'Rescan'}
           </button>
@@ -157,7 +157,7 @@ export default function LeadDetail({
       </div>
 
       {/* scrollable body */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5 space-y-6">
 
         {/* scores */}
         <section>
@@ -212,7 +212,7 @@ export default function LeadDetail({
             <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400 mb-3">
               Insight breakdown
             </h3>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-xs text-gray-400 mb-1">Observed strategy</p>
                 <p className="text-xs text-gray-700 leading-relaxed">
@@ -275,12 +275,12 @@ export default function LeadDetail({
 
       {/* action bar — pinned to bottom */}
       {message && !isSent && (
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-6 py-3 flex items-center gap-3">
+        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 md:px-6 py-3 flex items-center gap-3 flex-wrap">
           {isDraft && (
             <button
               onClick={handleApprove}
               disabled={approving}
-              className="text-sm px-4 py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 font-medium hover:bg-green-100 disabled:opacity-40 transition-colors"
+              className="text-sm px-4 py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 font-medium hover:bg-green-100 disabled:opacity-40 transition-colors flex-shrink-0"
             >
               {approving ? 'Approving...' : 'Approve'}
             </button>
@@ -289,12 +289,12 @@ export default function LeadDetail({
           <button
             onClick={handleSend}
             disabled={sending || isDraft}
-            className="text-sm px-4 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-medium hover:bg-blue-100 disabled:opacity-40 transition-colors"
+            className="text-sm px-4 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-medium hover:bg-blue-100 disabled:opacity-40 transition-colors flex-shrink-0"
           >
             {sending ? 'Sending...' : 'Send now'}
           </button>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex-shrink-0">
             <AutoSendToggle
               lead={lead}
               onLeadUpdate={onLeadUpdate}
@@ -305,8 +305,8 @@ export default function LeadDetail({
 
       {/* sent state */}
       {isSent && (
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-6 py-3 flex items-center gap-2">
-          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 md:px-6 py-3 flex items-center gap-2 flex-wrap">
+          <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <span className="text-sm text-gray-500">Email sent successfully</span>
