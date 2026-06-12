@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react';
-import { OutreachLead, LeadStatus } from '@/types/outreach' 
-import { outreachApi } from '@/components/Admin/outreach/lib/api'; 
+import { OutreachLead, LeadStatus } from '@/types/outreach'
+import { outreachApi } from '@/components/Admin/outreach/lib/api';
 import LeadsList from '@/components/Admin/outreach/LeadsList';
 import LeadDetail from '@/components/Admin/outreach/LeadDetail';
 
@@ -49,11 +49,31 @@ export default function OutreachPage() {
   const handleApprove = async (messageId: string) => {
     await outreachApi.approveMessage(messageId)
     await fetchLeads()
+
+    // refresh selected lead so UI reflects approved status immediately
+    if (selectedLead) {
+      try {
+        const full = await outreachApi.getLead(selectedLead.id)
+        setSelectedLead(full)
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   const handleSend = async (messageId: string) => {
     await outreachApi.sendMessage(messageId)
     await fetchLeads()
+
+    // refresh selected lead so UI reflects sent status immediately
+    if (selectedLead) {
+      try {
+        const full = await outreachApi.getLead(selectedLead.id)
+        setSelectedLead(full)
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   const handleRescan = async (leadId: string) => {

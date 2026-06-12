@@ -132,10 +132,10 @@ const PORTRAIT_H_DESKTOP = "clamp(200px, 23.33vw, 307px)";
 const PORTRAIT_H_MOBILE = "calc(min(30vw, 116px) * 4 / 3)";
 
 /** Connecting headlines — Figma: #F9F9F9, PP Neue Montreal, 128px / 400 / 172% (capped, responsive) */
-const CONNECTING_HEADLINE_FONT =
-  '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
+// const CONNECTING_HEADLINE_FONT =
+//   '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
 const connectingHeadlineBase = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
+  // fontFamily: CONNECTING_HEADLINE_FONT,
   fontWeight: 400,
   fontStyle: "normal" as const,
   lineHeight: 1.72,
@@ -154,7 +154,7 @@ const connectingHeadlineDesktop: CSSProperties = {
  * orange keywords use #FF6B00 (same stack on white lines).
  */
 export const servicesQuoteTypography: CSSProperties = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
+  // fontFamily: CONNECTING_HEADLINE_FONT,
   // fontSize: "clamp(0.850rem, 2.2vw + 0.5rem, 40px)",
   fontSize: "clamp(0.8125rem, 1.8vw + 0.45rem, 2rem)",
   fontStyle: "normal",
@@ -502,21 +502,21 @@ function MissionIntroSection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.06}>
-<div className="mx-auto mt-2 max-w-[1400px] px-2 text-left sm:mt-10 sm:px-8 lg:px-12">
+<div className="mx-auto mt-2 max-w-[1400px] px-2 text-left sm:mt-10  sm:px-8 lg:px-12">
   {/* The Ultra-Clean, Explicit Two-Line Cinematic Headline */}
-  <h2 className="text-[clamp(1.2rem,3.8vw+0.5rem,2.2rem)] leading-[1.05] tracking-[-0.05em] text-neutral-900 dark:text-neutral-50">
+  <h2 className="text-[clamp(1.2rem,3.8vw+0.5rem,2.2rem)] leading-[1.54] tracking-[-0.05em] pl-9 text-neutral-900 dark:text-neutral-50">
     Paza is an{" "}
     <span className="text-neutral-400 dark:text-neutral-600">
-      audience intelligence and collaboration infrastructure
+      audience intelligence and collaboration infrastructure for
     </span>
     <br className="hidden xl:inline" />{" "}
     {/* Clean break to line two at desktop */}
-    for brands, creators, and{" "}
+    brands, creators, and{" "}
     <span className="whitespace-nowrap">community networks.</span>
   </h2>
 
   {/* Perfectly Proportioned Editorial Body Copy */}
-  <div className="mt-5 max-w-4xl space-y-2 text-[16px] leading-[1.8] tracking-[-0.01em] text-neutral-600 dark:text-neutral-400 sm:text-[18px] md:text-[19px]">
+  <div className="mt-5  space-y-2 pl-9  text-[16px] leading-[1.8] tracking-[-0.01em] text-neutral-600 dark:text-neutral-400 sm:text-[18px] md:text-[19px]">
     <p>
       It maps audience identity, interests, intent, and behavior alongside
       brand and creator identities, values, and positioning.
@@ -579,58 +579,19 @@ function StudioSecondarySection() {
           </div>
         </MaskedReveal>
 
-        {/* Text Content - Improved centering */}
-        {/* <MaskedReveal delay={0.08}> */}
-        {/*   <div className="mx-auto mt-10 text-base max-w-[1080px] px-4 sm:px-6 lg:px-8 sm:mt-14 md:mt-20 text-justify" > */}
-        {/*     <h3 className=" text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]"> */}
-        {/*       Digital advertising systems rely on fragmented proxy signals such as{" "} */}
-        {/*       <span className="text-neutral-500 dark:text-zinc-500"> */}
-        {/*         demographics, clicks, views, likes, and engagement */}
-        {/*       </span>{" "} */}
-        {/*       to understand audiences and optimize campaigns. */}
-        {/*     </h3> */}
-        {/**/}
-        {/*     <div className="mt-6 text-justify space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]"> */}
-        {/*       <p> */}
-        {/*         While these signals help predict short-term conversion, they provide */}
-        {/*         limited understanding of why audiences respond to specific products, */}
-        {/*         messages, or creators, and often lose meaning outside the context in */}
-        {/*         which they are generated. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         Privacy restrictions and fragmented platforms further reduce audience */}
-        {/*         visibility, making it difficult for brands to distinguish between */}
-        {/*         existing audiences, newly emerging audiences, and temporary engagement. */}
-        {/*         As a result, brands struggle to build stable models of audience behavior */}
-        {/*         and intent. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         This limits their ability to understand who their audience is, track */}
-        {/*         audiences over time, understand what drives repeat interaction, adapt */}
-        {/*         messaging as familiarity increases, engage existing audiences more */}
-        {/*         effectively, and activate high-value audience segments across contexts. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         <span className="text-neutral-900 dark:text-white">Paza</span> improves */}
-        {/*         audience understanding by linking audience signals to products, creators, */}
-        {/*         and community environments, then observing how those relationships */}
-        {/*         perform and evolve over time. */}
-        {/*       </p> */}
-        {/*     </div> */}
-        {/*   </div> */}
-        {/* </MaskedReveal> */}
-
-
 
         <MaskedReveal delay={0.08}>
   <div className="mx-auto mt-10 max-w-[1080px] px-4 text-base text-left sm:mt-14 sm:px-6 lg:px-8 md:mt-20">
-    <h3 className="text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-      Digital advertising relies on fragmented, top-of-funnel proxies such as{" "}
-      <span className="text-neutral-500 dark:text-zinc-500">
-        demographics, clicks, and superficial engagement
-      </span>{" "}
-      to infer audience intent.
-    </h3>
+
+  {/* <div className=""> */}
+<h3 className="text-[clamp(1rem,3vw,2rem)] leading-[1.2] tracking-[-0.02em] text-neutral-900 dark:text-white">
+  Digital advertising relies on fragmented, top-of-funnel proxies.
+  <br />
+  <span className="text-neutral-500 dark:text-zinc-500">
+    Such as demographics, clicks, and superficial engagement to infer audience intent.
+  </span>
+</h3>
+
 
     <div className="mt-6 space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
       <p>
@@ -664,9 +625,6 @@ function StudioSecondarySection() {
     </div>
   </div>
 </MaskedReveal>
-
-
-
         {/* CTA */}
         <MaskedReveal delay={0.14}>
           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
@@ -683,88 +641,6 @@ function StudioSecondarySection() {
     </section>
   );
 }
-
-
-// function StudioSecondarySection() {
-//   return (
-//     <section className={cn("py-12 sm:py-16 md:py-20 lg:py-24", LANDING_PLATE)}>
-//       <div className={PAGE}>
-//         <MaskedReveal delay={0}>
-//           <div className="relative mx-auto w-full max-w-[min(92%,720px)] overflow-hidden border border-zinc-800/90">
-//             <div className="relative aspect-[16/10] w-full sm:aspect-[5/3]">
-//               <Image
-//                 src={campaignPressStudio}
-//                 alt="Collaborators reviewing work at a desk in a studio"
-//                 fill
-//                 className="object-cover object-center grayscale"
-//                 sizes="(max-width: 768px) 92vw, 720px"
-//                 loading="lazy"
-//               />
-//             </div>
-//           </div>
-//         </MaskedReveal>
-//
-//         <MaskedReveal delay={0.08}>
-//
-// {/* <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20"> */}
-// <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20 mx-auto px-4 sm:px-6 lg:px-8">
-//   <h3 className="max-w-[980px] text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-//     Digital advertising systems rely on fragmented proxy signals such as{" "}
-//     <span className="text-neutral-500 dark:text-zinc-500">
-//       demographics, clicks, views, likes, and engagement
-//     </span>{" "}
-//     to understand audiences and optimize campaigns.
-//   </h3>
-//
-//   <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
-//     <p>
-//       While these signals help predict short-term conversion, they provide
-//       limited understanding of why audiences respond to specific products,
-//       messages, or creators, and often lose meaning outside the context in
-//       which they are generated.
-//     </p>
-//
-//     <p>
-//       Privacy restrictions and fragmented platforms further reduce audience
-//       visibility, making it difficult for brands to distinguish between
-//       existing audiences, newly emerging audiences, and temporary engagement.
-//       As a result, brands struggle to build stable models of audience behavior
-//       and intent.
-//     </p>
-//
-//     <p>
-//       This limits their ability to understand who their audience is, track
-//       audiences over time, understand what drives repeat interaction, adapt
-//       messaging as familiarity increases, engage existing audiences more
-//       effectively, and activate high-value audience segments across contexts.
-//     </p>
-//
-//     <p>
-//       <span className="text-neutral-900 dark:text-white">Paza</span> improves
-//       audience understanding by linking audience signals to products, creators,
-//       and community environments, then observing how those relationships
-//       perform and evolve over time.
-//     </p>
-//   </div>
-// </div>
-//
-//         </MaskedReveal>
-//
-//         <MaskedReveal delay={0.14}>
-//           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
-//             <EditorialRuleCta align="end" href={SIGNUP_HREF}>
-//               <>
-//                 Start your journey
-//                 <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
-//               </>
-//             </EditorialRuleCta>
-//           </div>
-//         </MaskedReveal>
-//       </div>
-//     </section>
-//   );
-// }
-
 /** Figma / reference — four rows, black plate (always), white type, orange keywords. */
 const SERVICE_ROWS = [
   {
@@ -823,14 +699,12 @@ function OurServicesSection() {
         }}
       >
         <span>
-          {'\u201c'}Infrastructure for mapping audience alignment,{" "}
-          <span style={servicesQuoteOrange}>creator–brand</span>{" "}
-          and
+          {'\u201c'}Infrastructure for audience alignment,{" "}
+          <span style={servicesQuoteOrange}>creator brand matching,collaboration
+          </span>{" "}
         </span>
-        
-        <span className="block">
-          <span style={servicesQuoteOrange}>connecting collaborations</span>{" "}
-          measuring campaign outcomes.{'\u201d'}
+        <span className="">
+          <span style={servicesQuoteOrange}>and campaign outcome measurement </span>{" "}
         </span>
       </p>
     </MaskedReveal>
@@ -860,7 +734,9 @@ function OurServicesSection() {
                 {/* Ghost number — large, low-opacity, highlights on hover */}
                 <span
                   className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-neutral-200 transition-colors duration-300 group-hover:text-[#FF6B00]/20 dark:text-white/[0.05] dark:group-hover:text-[#FF6B00]/15"
-                  style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
+                  // style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
+style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
+
                   aria-hidden
                 >
                   {row.index}
@@ -871,7 +747,7 @@ function OurServicesSection() {
                   <h3
                     className="text-left font-medium uppercase tracking-[-0.01em] text-neutral-900 transition-colors duration-300 group-hover:text-[#FF6B00] dark:text-white dark:group-hover:text-[#FF6B00]"
                     style={{
-                      fontFamily: CONNECTING_HEADLINE_FONT,
+                      // fontFamily: CONNECTING_HEADLINE_FONT,
                       fontSize: "clamp(1.05rem, 2.5vw + 0.3rem, 2.25rem)",
                       lineHeight: 1.12,
                     }}
@@ -1354,7 +1230,7 @@ function FigmaContactSection() {
               <h2
                 className="mt-6 text-neutral-900 sm:mt-8 dark:text-white"
                 style={{
-                  fontFamily: CONNECTING_HEADLINE_FONT,
+                  // fontFamily: CONNECTING_HEADLINE_FONT,
                   fontSize: "clamp(2.4rem, 8vw, 7rem)",
                   fontWeight: 700,
                   lineHeight: 0.95,

@@ -234,7 +234,8 @@ export default function NavBar() {
                 : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >
-            <Link href="/#contact" className="whitespace-nowrap">
+            <Link  href="/waitlist"
+            className="whitespace-nowrap">
               Request a demo
             </Link>
           </Button>

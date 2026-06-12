@@ -231,34 +231,39 @@ To better understand audience identity, interests, intent, and behavior in order
   </h3>
   <div className="max-w-[900px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-zinc-300 sm:text-[15px] md:text-[16px]">
     <p>
-      Current growth systems are constrained by high customer acquisition costs,
-      inefficient ad spend, and overdependence on short form metrics like views,
-      clicks, and engagement rates. These signals fail to represent actual
-      audience intent, likelihood to convert or cultural alignment.
+      An ad can reach the right demographic and still reach the wrong buyer.
+      Most growth systems optimize for audience similarity rather than audience
+      relevance, relying on demographic targeting, engagement metrics, and
+      probabilistic signals that indicate who people are or what they interact
+      with, rather than why they buy, who they trust, or what drives action. Two
+      people can display identical online behaviors and have completely different
+      intentions.
     </p>
     <p>
-      At the same time, audiences have fragmented across creators, niche
-      communities, and multi-platform content ecosystems. Brands are still forced
-      to buy attention through centralized ad networks, even though real influence
-      and decision-making now happens in distributed spaces.
+      The challenge is no longer finding people; it is identifying the people
+      most likely to care, trust, and act. Communities, relationships, and
+      trusted voices often influence purchasing decisions more than demographic
+      attributes alone.
     </p>
     <p>
-      Paza replaces this model by shifting from targeting to locating. It
-      analyzes behavioral signals across creators and communities to identify
-      where relevant audiences already exist, what they care about, and how they
-      engage with products and culture.
+      <span className="text-white">Paza</span> shifts the focus from targeting
+      audiences to locating them. By mapping behavioral, contextual, and
+      community signals, it identifies where relevant audiences already exist
+      across creators, communities, and digital environments, what they care
+      about, and how they engage with products, culture, and influence networks.
     </p>
     <p>
-      It replaces surface-level targeting with behavioral signal analysis, mapping
-      real audience intent, values, and consumption patterns across creators and
-      communities. Brands can discover creators whose audiences already match
-      their ideal customers, reducing wasted spend and improving conversion
-      efficiency.
+      Instead of asking who looks like a customer, Paza helps brands identify who
+      is most likely to care about a product and why. It replaces probabilistic
+      assumptions with evidence-based audience relevance, enabling brands to
+      discover creators and communities whose audiences already align with their
+      ideal customers.
     </p>
     <p>
-      It also enables continuous collaboration between brands and creator
-      networks, allowing campaigns to be shaped by real audience behavior rather
-      than static demographic assumptions.
+      The result is stronger audience-product alignment, more efficient customer
+      acquisition, and growth strategies built around genuine audience relevance
+      rather than purchased attention. The goal is not more impressions. The goal
+      is finding the audiences most likely to care, trust, and convert.
     </p>
   </div>
 </div>              
@@ -286,6 +291,9 @@ To better understand audience identity, interests, intent, and behavior in order
             Our community
           </h3>
           <div className="mt-8 sm:mt-12 flex justify-center">
+          <Link
+          href="/waitlist"
+          >
             <button
               type="button"
               className="h-12 sm:h-14 w-full sm:w-[340px] border border-zinc-600 text-[20px] sm:text-[34px] inline-flex items-center justify-between px-4 hover:border-zinc-400"
@@ -293,6 +301,7 @@ To better understand audience identity, interests, intent, and behavior in order
               <span>Join Us Today</span>
               <ArrowUpRight className="h-5 w-5 sm:h-7 sm:w-7" />
             </button>
+            </Link>
           </div>
         </div>
 
