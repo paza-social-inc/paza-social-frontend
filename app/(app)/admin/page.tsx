@@ -549,8 +549,21 @@ export default function AdminDashboard() {
             value={`${stats.platformGrowth > 0 ? "+" : ""}${stats.platformGrowth}%`}
             subtext="vs last month (users + campaigns + revenue)"
             color="orange"
-            trend={stats.platformGrowth > 0 ? "up" : stats.platformGrowth < 0 ? "down" : "neutral"}
+            trend={stats.platformGrowth > 0 ? "up" : stats.platformGrowth === 0 ? "neutral" : "down"}
           />
+
+          {/* <StatCard
+            icon={TrendingUp}
+            label="Platform Growth"
+            value={
+              stats.platformGrowth === 0
+                ? "Just getting started"
+                : `${stats.platformGrowth > 0 ? "+" : ""}${stats.platformGrowth}%`
+            }
+            subtext={stats.platformGrowth === 0 ? "Not enough data yet" : stats.platformGrowth < 0 ? "Below last month, keep pushing" : "vs last month (users + campaigns + revenue)"}
+            color="orange"
+            trend={stats.platformGrowth > 0 ? "up" : stats.platformGrowth === 0 ? "neutral" : "neutral"}
+          /> */}
         </div>
 
         {/* CHARTS */}
