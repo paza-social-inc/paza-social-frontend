@@ -1,83 +1,115 @@
+'use client'
+
+import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
+import { messagesApi } from "@/lib/data/messages";
+
+interface UserProfile {
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+}
 
 interface UserInfoSheetProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    username: string;
-    avatar: string;
-    email?: string;
-    phone?: string;
-    location?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  username: string;
+  avatar: string;
+  userId?: string;
 }
 
 export function UserInfoSheet({
-    open,
-    onOpenChange,
-    username,
-    avatar,
-    email = `${username?.toLowerCase().replace(" ", ".")}@example.com`,
-    phone = "+1 (555) 123-4567",
-    location = "San Francisco, CA",
+  open,
+  onOpenChange,
+  username,
+  avatar,
+  userId,
 }: UserInfoSheetProps) {
-    return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-                <SheetHeader>
-                    <SheetTitle>User Information</SheetTitle>
-                </SheetHeader>
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(false);
 
-                <div className="mt-6 space-y-6">
-                    {/* Avatar and Name */}
-                    <div className="flex flex-col items-center gap-4">
-                        <Avatar className="w-24 h-24 ring-4 ring-primary/20">
-                            <AvatarImage src={avatar} alt={username} />
-                            <AvatarFallback className="bg-gradient-primary text-primary-foreground text-2xl">
-                                {username?.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="text-center">
-                            <h3 className="text-2xl font-semibold">{username}</h3>
-                            <Badge variant="secondary" className="mt-2">Active</Badge>
-                        </div>
+  useEffect(() => {
+    if (!open || !userId) return;
+    setLoading(true);
+    setProfile(null);
+    messagesApi.getUserById(userId)
+      .then((data) => setProfile(data))
+      .catch(() => setProfile(null))
+      .finally(() => setLoading(false));
+  }, [open, userId]);
+
+  const displayName = profile
+    ? `${profile.firstname ?? ''} ${profile.lastname ?? ''}`.trim() || username
+    : username;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+        <SheetHeader>
+          <SheetTitle>User Information</SheetTitle>
+        </SheetHeader>
+
+        <div className="mt-6 space-y-6">
+          {/* Avatar and Name */}
+          <div className="flex flex-col items-center gap-4">
+            <Avatar className="w-24 h-24 ring-4 ring-primary/20">
+              <AvatarImage src={avatar} alt={displayName} />
+              <AvatarFallback className="bg-gradient-primary text-primary-foreground text-2xl">
+                {displayName?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="text-center">
+              <h3 className="text-2xl font-semibold">{displayName}</h3>
+              <Badge variant="secondary" className="mt-2">Active</Badge>
+            </div>
+          </div>
+
+
+          {/* Contact Information */}
+          <div className="space-y-4 pt-4 border-t">
+            <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+              Contact Information
+            </h4>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : profile ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <MapPin className="w-5 h-5 text-primary shrink-0" />
+                    <div>
+                        <p className="text-xs text-muted-foreground">Member since</p>
+                        <p className="text-sm font-medium">
+                        {profile ? "PAZA Member" : "User"}
+                        </p>
+                    </div>
                     </div>
 
-                    {/* Contact Information */}
-                    <div className="space-y-4 pt-4 border-t">
-                        <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                            Contact Information
-                        </h4>
-
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                                <Mail className="w-5 h-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Email</p>
-                                    <p className="text-sm font-medium">{email}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                                <Phone className="w-5 h-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Phone</p>
-                                    <p className="text-sm font-medium">{phone}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                                <MapPin className="w-5 h-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Location</p>
-                                    <p className="text-sm font-medium">{location}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <MapPin className="w-5 h-5 text-primary shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Account type</p>
+                    <p className="text-sm font-medium capitalize">
+                      {/* accountType not returned by getById: add later */}
+                      User
+                    </p>
+                  </div>
                 </div>
-            </SheetContent>
-        </Sheet>
-    );
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Could not load profile information.
+              </p>
+            )}
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
 }

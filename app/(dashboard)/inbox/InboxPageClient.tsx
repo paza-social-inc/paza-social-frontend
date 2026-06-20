@@ -47,6 +47,7 @@ function mapApiConversationToUI(api: ApiConversation, currentUserId: string): Co
     })();
     return {
         id: api._id,
+        userId: other.id,
         username: other.name ?? "User",
         avatar: other.avatar ?? AVATAR_FALLBACK(other.id),
         lastMessage: sanitizeConversationPreview(api.lastMessage),
@@ -76,7 +77,7 @@ export default function InboxPageClient() {
 
     const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
     const [userSheetOpen, setUserSheetOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<{ username: string; avatar: string } | null>(null);
+    const [selectedUser, setSelectedUser] = useState<{ userId: string; username: string; avatar: string } | null>(null);
     const lastHandledUserParam = useRef<string | null>(null);
 
     useInboxWebSocket(!!currentUserId);
@@ -159,8 +160,8 @@ export default function InboxPageClient() {
         }
     };
 
-    const handleUserClick = async (username: string, avatar: string) => {
-        setSelectedUser({ username, avatar });
+    const handleUserClick = async (username: string, avatar: string, userId?: string) => {
+        setSelectedUser({ userId: userId ?? '', username, avatar });
         setUserSheetOpen(true);
     };
 
@@ -218,6 +219,7 @@ export default function InboxPageClient() {
                     onBack={() => setActiveConversationId(null)}
                     username={activeConversation?.username}
                     avatar={activeConversation?.avatar}
+                    userId={activeConversation?.userId}
                 />
             </div>
 
@@ -227,8 +229,9 @@ export default function InboxPageClient() {
                     onOpenChange={setUserSheetOpen}
                     username={selectedUser.username}
                     avatar={selectedUser.avatar}
+                    userId={selectedUser.userId}
                 />
-            )}
+                )}
         </div>
     );
 }

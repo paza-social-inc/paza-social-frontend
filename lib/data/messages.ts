@@ -65,4 +65,18 @@ export const messagesApi = {
       return 0;
     }
   },
+
+  getUserById: async (userId: string): Promise<{
+    id: string;
+    email: string;
+    firstname: string;
+    lastname: string;
+  } | null> => {
+    try {
+      const res = await pazaApi.get(`/api/users/${userId}`);
+      return res.data.data ?? null;
+    } catch {
+      return null;
+    }
+  },
 };

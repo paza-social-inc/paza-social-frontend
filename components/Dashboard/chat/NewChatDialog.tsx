@@ -72,7 +72,7 @@ export function NewChatDialog({
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search by name or email..."
+                                    placeholder="Search by name..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="pl-9 bg-secondary border-border"
@@ -122,9 +122,9 @@ export function NewChatDialog({
                                                             ? [user.firstname, user.lastname].filter(Boolean).join(" ")
                                                             : "User"}
                                                     </p>
-                                                    <p className="text-xs text-muted-foreground truncate">
+                                                    {/* <p className="text-xs text-muted-foreground truncate">
                                                         {user.email}
-                                                    </p>
+                                                    </p> */}
                                                 </div>
                                             </button>
                                         ))

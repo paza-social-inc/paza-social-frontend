@@ -15,6 +15,7 @@ export interface Conversation {
     lastMessage: string;
     timestamp: Date;
     unreadCount?: number;
+    userId?: string;
 }
 
 interface ChatSidebarProps {
