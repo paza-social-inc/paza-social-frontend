@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, CreditCard, Settings, Shield, User, Users } from "lucide-react";
+import { Bell, CreditCard, Settings, Shield, User, Users, Eye } from "lucide-react";
 import { RiStore2Line } from "@remixicon/react";
 import { useState } from "react";
 import { DASHBOARD_TABS_LIST_CLASS } from "@/components/layout/DashboardPageShell";
@@ -12,12 +12,14 @@ import { ProfileSection } from "./sections/ProfileSection";
 import { SecuritySection } from "./sections/SecuritySection";
 import { TeamSection } from "./sections/TeamSection";
 import BrandProfileView from "../brand/BrandProfileView";
+import { PrivacySection } from "./sections/PrivacySection";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 
 const sidebarItems: { id: string; label: string; icon: React.ElementType }[] = [
     { id: "profile", label: "Profile", icon: User },
     { id: "team", label: "Team", icon: Users },
     { id: "security", label: "Security", icon: Shield },
+    { id: "privacy", label: "Privacy", icon: Eye }, 
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "billing", label: "Billing", icon: CreditCard },
     { id: "integrations", label: "Integrations", icon: Settings }
@@ -37,7 +39,8 @@ export function SettingsPage() {
 
     return (
         <div className="flex min-h-[60vh] flex-col bg-background">
-            <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full min-w-0">
+            {/* <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full min-w-0"> */}
+            <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full min-w-0" suppressHydrationWarning>
                 <TabsList className={DASHBOARD_TABS_LIST_CLASS}>
                     {items.map((item) => {
                         const Icon = item.icon;
@@ -63,6 +66,9 @@ export function SettingsPage() {
                 </TabsContent>
                 <TabsContent value="notifications" className="mt-6 border-0">
                     <NotificationsSection />
+                </TabsContent>
+                <TabsContent value="privacy" className="mt-6 border-0">
+                     <PrivacySection />
                 </TabsContent>
                 <TabsContent value="billing" className="mt-6 border-0">
                     <BillingSection />

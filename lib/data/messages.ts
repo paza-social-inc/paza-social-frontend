@@ -71,6 +71,23 @@ export const messagesApi = {
     email: string;
     firstname: string;
     lastname: string;
+    accountType?: string;
+    phone: string | null;
+    location: string | null;
+    socials: {
+      instagram: string | null;
+      tiktok: string | null;
+      twitter: string | null;
+      youtube: string | null;
+      linkedin: string | null;
+      facebook: string | null;
+    } | null;
+    profileVisibility: {
+      email: boolean;
+      phone: boolean;
+      location: boolean;
+      socials: boolean;
+    };
   } | null> => {
     try {
       const res = await pazaApi.get(`/api/users/${userId}`);
