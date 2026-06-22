@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,10 +18,11 @@ interface ChatAreaProps {
     conversationId: string | null;
     messages: Message[];
     onSendMessage: (content: string) => void;
-    onUserClick?: (username: string, avatar: string) => void;
+    onUserClick?: (username: string, avatar: string, userId?: string) => void;
     onBack?: () => void;
     username?: string;
     avatar?: string;
+    userId?: string;
 }
 
 export function ChatArea({
@@ -33,11 +33,11 @@ export function ChatArea({
     onBack,
     username,
     avatar,
+    userId,
 }: ChatAreaProps) {
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to latest message
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
@@ -67,6 +67,7 @@ export function ChatArea({
             <ChatHeader
                 username={username!}
                 avatar={avatar!}
+                userId={userId}
                 onUserClick={onUserClick}
                 onBack={onBack}
             />
@@ -89,6 +90,7 @@ export function ChatArea({
                 <div className="max-w-4xl mx-auto">
                     <MessageInput onSendMessage={onSendMessage} />
                 </div>
+                
             </div>
         </div>
     );
