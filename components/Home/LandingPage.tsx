@@ -135,8 +135,8 @@ function PazaSplashHero() {
 // const PORTRAIT_H_MOBILE = "calc(min(30vw, 116px) * 4 / 3)";
 
 /** Connecting headlines — Figma: #F9F9F9, PP Neue Montreal, 128px / 400 / 172% (capped, responsive) */
-// const CONNECTING_HEADLINE_FONT =
-//   '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
+const CONNECTING_HEADLINE_FONT =
+  '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
 const connectingHeadlineBase = {
   // fontFamily: CONNECTING_HEADLINE_FONT,
   fontWeight: 400,
@@ -737,7 +737,7 @@ function OurServicesSection() {
                 {/* Ghost number — large, low-opacity, highlights on hover */}
                 <span
                   className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-neutral-200 transition-colors duration-300 group-hover:text-[#FF6B00]/20 dark:text-white/[0.05] dark:group-hover:text-[#FF6B00]/15"
-                  style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
+                  // style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
                   // style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
                   style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
 
@@ -1236,7 +1236,6 @@ function FigmaContactSection() {
                 className="mt-6 text-neutral-900 sm:mt-8 dark:text-white"
                 style={{
                   fontFamily: CONNECTING_HEADLINE_FONT,
-                  // fontFamily: CONNECTING_HEADLINE_FONT,
                   fontSize: "clamp(2.4rem, 8vw, 7rem)",
                   fontWeight: 700,
                   lineHeight: 0.95,
@@ -1313,56 +1312,8 @@ function FigmaContactSection() {
                 <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
                   Location
                 </span>
-          <div className="flex flex-col gap-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap lg:gap-12">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
-                Location
-              </p>
-              <p className="mt-2 text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
-                00100, Ronald Ngala St<br />Nairobi, Kenya
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
-                Phone
-              </p>
-              <a
-                href="tel:+254422189529"
-                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
-              >
-                +254 422 189 529
-              </a>
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
-                Email
-              </p>
-              <a
-                href="mailto:info@pazasocial.com"
-                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
-              >
-                info@pazasocial.com
-              </a>
-            </div>
-            <div className="sm:ml-auto">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
-                Next step
-              </p>
-              <div className="mt-3">
-                <EditorialRuleCta align="start" href={SIGNUP_HREF} invert={docIsDark}>
-                  <>
-                    Start your journey
-                    <ArrowRight
-                      className={cn(
-                        "h-3.5 w-3.5 shrink-0 stroke-[1.75] group-hover:text-[#FF6B00]",
-                        docIsDark ? "text-white" : "text-neutral-900",
-                      )}
-                      aria-hidden
-                    />
-                  </>
-                </EditorialRuleCta>
               </div>
-              <p className="text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
+              <p className="mt-2 text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
                 00100, Ronald Ngala St<br />Nairobi, Kenya
               </p>
             </div>
