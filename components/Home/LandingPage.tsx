@@ -137,12 +137,12 @@ function PazaSplashHero() {
 /** Connecting headlines — Figma: #F9F9F9, PP Neue Montreal, 128px / 400 / 172% (capped, responsive) */
 const CONNECTING_HEADLINE_FONT =
   '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
-const connectingHeadlineBase = {
-  // fontFamily: CONNECTING_HEADLINE_FONT,
-  fontWeight: 400,
-  fontStyle: "normal" as const,
-  lineHeight: 1.72,
-};
+// const connectingHeadlineBase = {
+//   // fontFamily: CONNECTING_HEADLINE_FONT,
+//   fontWeight: 400,
+//   fontStyle: "normal" as const,
+//   lineHeight: 1.72,
+// };
 // const connectingHeadlineMobile: CSSProperties = {
 //   ...connectingHeadlineBase,
 //   fontSize: "clamp(1.625rem, 4vw + 0.85rem, 3.5rem)",
