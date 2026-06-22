@@ -16,6 +16,9 @@ import {
   ArrowUp,
   ArrowUpRight,
   Instagram,
+  Mail,
+  MapPin,
+  Phone,
   Youtube,
 } from "lucide-react";
 
@@ -734,6 +737,7 @@ function OurServicesSection() {
                 {/* Ghost number — large, low-opacity, highlights on hover */}
                 <span
                   className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-neutral-200 transition-colors duration-300 group-hover:text-[#FF6B00]/20 dark:text-white/[0.05] dark:group-hover:text-[#FF6B00]/15"
+                  style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
                   // style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
 style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
 
@@ -747,6 +751,7 @@ style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
                   <h3
                     className="text-left font-medium uppercase tracking-[-0.01em] text-neutral-900 transition-colors duration-300 group-hover:text-[#FF6B00] dark:text-white dark:group-hover:text-[#FF6B00]"
                     style={{
+                      fontFamily: CONNECTING_HEADLINE_FONT,
                       // fontFamily: CONNECTING_HEADLINE_FONT,
                       fontSize: "clamp(1.05rem, 2.5vw + 0.3rem, 2.25rem)",
                       lineHeight: 1.12,
@@ -1230,6 +1235,7 @@ function FigmaContactSection() {
               <h2
                 className="mt-6 text-neutral-900 sm:mt-8 dark:text-white"
                 style={{
+                  fontFamily: CONNECTING_HEADLINE_FONT,
                   // fontFamily: CONNECTING_HEADLINE_FONT,
                   fontSize: "clamp(2.4rem, 8vw, 7rem)",
                   fontWeight: 700,
@@ -1300,6 +1306,13 @@ function FigmaContactSection() {
 
         {/* ── Bottom contact bar ───────────────────────── */}
         <div className="mt-16 border-t border-border pt-8 sm:mt-20 sm:pt-10 dark:border-white/10">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4 dark:border-white/10 dark:bg-white/10">
+            <div className="group flex flex-col gap-3 bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6 dark:bg-[#0a0a0a] dark:hover:bg-white/[0.03]">
+              <div className="flex items-center gap-2 text-neutral-400 dark:text-neutral-600">
+                <MapPin className="h-4 w-4 shrink-0 transition-colors group-hover:text-[#FF6B00]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
+                  Location
+                </span>
           <div className="flex flex-col gap-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap lg:gap-12">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
@@ -1349,6 +1362,57 @@ function FigmaContactSection() {
                   </>
                 </EditorialRuleCta>
               </div>
+              <p className="text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
+                00100, Ronald Ngala St<br />Nairobi, Kenya
+              </p>
+            </div>
+
+            <div className="group flex flex-col gap-3 bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6 dark:bg-[#0a0a0a] dark:hover:bg-white/[0.03]">
+              <div className="flex items-center gap-2 text-neutral-400 dark:text-neutral-600">
+                <Phone className="h-4 w-4 shrink-0 transition-colors group-hover:text-[#FF6B00]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
+                  Phone
+                </span>
+              </div>
+              <a
+                href="tel:+254422189529"
+                className="text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+              >
+                +254 422 189 529
+              </a>
+            </div>
+
+            <div className="group flex flex-col gap-3 bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6 dark:bg-[#0a0a0a] dark:hover:bg-white/[0.03]">
+              <div className="flex items-center gap-2 text-neutral-400 dark:text-neutral-600">
+                <Mail className="h-4 w-4 shrink-0 transition-colors group-hover:text-[#FF6B00]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
+                  Email
+                </span>
+              </div>
+              <a
+                href="mailto:info@pazasocial.com"
+                className="break-all text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+              >
+                info@pazasocial.com
+              </a>
+            </div>
+
+            <div className="flex flex-col justify-between gap-4 bg-muted/40 p-5 sm:p-6 dark:bg-white/[0.03]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Next step
+              </p>
+              <EditorialRuleCta align="start" href={SIGNUP_HREF} invert={docIsDark}>
+                <>
+                  Start your journey
+                  <ArrowRight
+                    className={cn(
+                      "h-3.5 w-3.5 shrink-0 stroke-[1.75] group-hover:text-[#FF6B00]",
+                      docIsDark ? "text-white" : "text-neutral-900",
+                    )}
+                    aria-hidden
+                  />
+                </>
+              </EditorialRuleCta>
             </div>
           </div>
         </div>
