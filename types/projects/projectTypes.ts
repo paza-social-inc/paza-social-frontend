@@ -255,6 +255,6 @@ export interface ProjectCreateResponse {
   project?: Project;
 }
 
-export interface ProjectGetResponse extends Project {}
+export type ProjectGetResponse = Project;
 
 

@@ -5,12 +5,21 @@ import { FlatCompat } from "@eslint/eslintrc";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// eslint-config-next (15.x) is still published in the legacy eslintrc format,
+// so it must be bridged into flat config via FlatCompat. Spreading the bare
+// module export under ESLint 9 fails with "nextVitals is not iterable".
 const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      "react/no-unescaped-entities": "off",
+      "@next/next/no-page-custom-font": "off",
+    },
+  },
   {
     ignores: [
       "node_modules/**",

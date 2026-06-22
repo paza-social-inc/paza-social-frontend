@@ -1,5 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { toast } from "react-hot-toast";
+
+
 export const DEFAULT_API_URL = "https://api.paza.social";
 export const pazaApi = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL,

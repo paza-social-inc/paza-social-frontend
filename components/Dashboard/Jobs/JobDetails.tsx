@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import {
     RiArrowLeftLine,
     RiSendPlaneLine,
-    RiMapPinLine, 
-    RiMoneyDollarCircleLine, 
-    RiTimeLine, 
-    RiMedalLine, 
+    RiMapPinLine,
+    RiMoneyDollarCircleLine,
+    RiTimeLine,
+    RiMedalLine,
     RiCheckboxCircleLine,
 } from "@remixicon/react";
 import Image from "next/image";
@@ -101,25 +101,6 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
             </div>
         );
     }
-    //
-    // const {
-    //     title,
-    //     description,
-    //     payment,
-    //     location,
-    //     experience,
-    //     years,
-    //     age,
-    //     category,
-    //     priority,
-    //     skills = [],
-    //     contents = [],
-    //     platforms = [],
-    //     goals = [],
-    //     owner,
-    //     business,
-    //     createdAt,
-    // } = job;
 
   // Extract data — API may mirror fields on the job or under `values`
   const jb = job as JobDetailRecord;
@@ -174,11 +155,11 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
             <div className="relative h-64 w-full overflow-hidden border">
 
                 {business?.logoUrl ? (
-                    <Image 
-                        src={business.logoUrl} 
-                        alt={title} 
+                    <Image
+                        src={business.logoUrl}
+                        alt={title}
                         fill
-                        className="object-cover" 
+                        className="object-cover"
                         unoptimized
                     />
                 ) : (
@@ -201,7 +182,13 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                     </Badge>
                                 )}
                                 <span className="inline-flex items-center gap-1 text-sm">
-                                    <RiMapPinLine className="h-4 w-4" /> {location || 'Remote'}
+                                    <RiMapPinLine className="h-4 w-4" />
+                                    {business?.name
+                                        ?? (owner?.firstname || owner?.lastname
+                                            ? `${owner?.firstname ?? ''} ${owner?.lastname ?? ''}`.trim()
+                                            : null)
+                                        ?? location
+                                        ?? 'Remote'}
                                 </span>
                             </div>
                         </div>
@@ -280,13 +267,13 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                     {/* Owner/Business Info */}
                     <Card>
                         <CardContent className="p-6">
-                            <h3 className="text-lg font-semibold mb-3">Posted by</h3>
+                            <h3 className="text-lg font-semibold mb-3">Posted By</h3>
                             <div className="flex items-center gap-3">
                                 {business ? (
                                     <>
                                         {business.logoUrl && (
-                                            <Image 
-                                                src={business.logoUrl} 
+                                            <Image
+                                                src={business.logoUrl}
                                                 alt={business.name || ""}
                                                 width={48}
                                                 height={48}
@@ -304,9 +291,12 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                 ) : (
                                     <div>
                                         <p className="font-semibold">
-                                            {owner?.firstname} {owner?.lastname}
+                                            {owner?.firstname || owner?.lastname
+                                                ? `${owner?.firstname ?? ''} ${owner?.lastname ?? ''}`.trim()
+                                                : 'Individual'}
                                         </p>
                                         <p className="text-sm text-muted-foreground">Individual</p>
+                                        {/* <p className="text-sm text-muted-foreground">Individual</p> */}
                                     </div>
                                 )}
                             </div>
@@ -462,7 +452,7 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                     You posted this job. Creators can send proposals here; you can review them from your job dashboard.
                                 </p>
                             )}
-                            <Button 
+                            <Button
                                 className="w-full"
                                 variant="outline"
                                 onClick={() => router.push(`/inbox?user=${owner?.id}`)}
@@ -470,7 +460,7 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                 <RiSendPlaneLine className="mr-2 h-4 w-4" />
                                 Message Creator
                             </Button>
-                            
+
                             {/* Proposal Stats */}
                             {stats && (
                                 <div className="pt-4 border-t space-y-2">
@@ -525,9 +515,9 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                 {link && (
                                     <div>
                                         <p className="text-muted-foreground">External Link</p>
-                                        <a 
-                                            href={link} 
-                                            target="_blank" 
+                                        <a
+                                            href={link}
+                                            target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline text-sm break-all"
                                         >

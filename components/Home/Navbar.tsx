@@ -101,7 +101,7 @@ export default function NavBar() {
     /* Full-width fixed wrapper — lets page content scroll behind the nav so backdrop-blur works */
     <div
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 pt-[env(safe-area-inset-top,0px)]",
+        "fixed top-0 left-0 right-0 z-50 backdrop-filter transition-all duration-500 pt-[env(safe-area-inset-top,0px)]",
         darkMarketingChrome
           ? scrolled
             ? "bg-black/60 backdrop-blur-xl border-b border-white/8 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]"
@@ -136,8 +136,8 @@ export default function NavBar() {
         <Link
           href="/"
           className={cn(
-            "font-extrabold tracking-tight leading-none transition-colors",
-            "text-xl max-[380px]:text-lg sm:text-[26px] lg:text-[28px]",
+            "font-extrabold text-base tracking-tight leading-none transition-colors",
+            "text-xl max-[380px]:text-lg sm:text-[30px] lg:text-[28px]",
             darkMarketingChrome ? "text-white hover:text-[#FF6B00]" : "text-foreground hover:text-primary"
           )}
         >
@@ -234,7 +234,8 @@ export default function NavBar() {
                 : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >
-            <Link href="/#contact" className="whitespace-nowrap">
+            <Link  href="/waitlist"
+            className="whitespace-nowrap">
               Request a demo
             </Link>
           </Button>

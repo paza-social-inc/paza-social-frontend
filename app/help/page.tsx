@@ -107,7 +107,7 @@ export default function HelpPage() {
             <p className="text-muted-foreground text-sm leading-relaxed">
               <strong>Support contact:</strong><br />
               Email: <a href="mailto:support@paza.ai" className="text-primary hover:underline">support@paza.ai</a><br />
-              [Company Address]
+              Nairobi, Kenya
             </p>
           </section>
 

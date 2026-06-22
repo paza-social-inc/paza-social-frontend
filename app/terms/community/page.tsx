@@ -23,7 +23,7 @@ export default function CommunityStandardsPage() {
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <p className="text-sm text-muted-foreground mb-8">
-          Paza Technologies Ltd. · Last updated: [Insert Date] · Jurisdiction: Republic of Kenya
+          Paza Technologies Ltd. · Last updated: June 21, 2026 · Jurisdiction: Republic of Kenya
         </p>
         <p className="text-muted-foreground text-sm leading-relaxed mb-4">
           These Community Standards (&quot;Standards&quot;) outline the behavioural expectations for users of the Paza platform (&quot;Platform&quot;) operated by Paza Technologies Ltd. The Platform connects creators and brands to collaborate on marketing campaigns. These Standards are intended to maintain a respectful, safe, and trustworthy marketplace.
@@ -49,7 +49,7 @@ export default function CommunityStandardsPage() {
             { title: "13. Reporting Violations", body: "Users who encounter behaviour that violates these Standards may report it to Paza. Reports may include: abusive conduct, fraudulent campaigns, intellectual property violations, and harassment or discrimination. Paza may review reported behaviour and take appropriate action." },
             { title: "14. Enforcement Actions", body: "If a user violates these Standards, Paza may take actions including: removing content, issuing warnings, suspending accounts, terminating platform access, and restricting participation in campaigns. Enforcement decisions may be based on the severity and frequency of violations." },
             { title: "15. Changes to Community Standards", body: "Paza may update these Community Standards to reflect changes in platform policies or legal requirements. Updated Standards will be posted on the Platform with a revised effective date. Continued use of the Platform constitutes acceptance of the updated Standards." },
-            { title: "16. Contact", body: "If you have questions about these Community Standards or wish to report violations, contact: Paza Technologies Ltd. Email: support@paza.ai [Company Address]" },
+            { title: "16. Contact", body: "If you have questions about these Community Standards or wish to report violations, contact: Paza Technologies Ltd. Email: support@paza.ai Nairobi, Kenya" },
           ].map((s) => (
             <section key={s.title}>
               <h2 className="text-xl font-semibold text-foreground mb-3">{s.title}</h2>

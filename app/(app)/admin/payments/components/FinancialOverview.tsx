@@ -2,20 +2,35 @@
 
 import { DollarSign, TrendingUp, Lock, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { LucideIcon } from "lucide-react";
-
-// dummy data
-const OVERVIEW_DATA = {
-  totalRevenue: 2478900,
-  escrowHeld: 2500000,
-  pendingPayouts: 1200000,
-  completedTransactions: 245,
-  platformCommission: 247890,
-  creatorPayouts: 1845000,
-  brandPayments: 2500000,
-  suspiciousTransactions: 3,
-};
+import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 
 export default function FinancialOverview() {
+
+  const [stats, setStats] = useState<{
+    escrowHeld: number;
+    escrowCountHeld: number;
+    escrowPending: number;
+    totalRevenue: number;
+    completedTransactions : number;
+    activeCampaigns: number;
+    totalFundsReleased: number;
+    totalFundsPending: number;
+    suspiciousTransactions: number;
+  }| null>(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const data = await apiFetch("/api/admin/payments/");
+        setStats(data.stats);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchStats();
+  }, []);
+
   return (
     <div className="space-y-6">
 
@@ -23,7 +38,7 @@ export default function FinancialOverview() {
         <OverviewCard
           icon={DollarSign}
           label="Total Revenue"
-          value={`KES ${(OVERVIEW_DATA.totalRevenue / 1000000).toFixed(1)}M`}
+          value={`KES ${(stats?.totalRevenue ?? 0).toLocaleString()}`}
           subtext="Platform commission (10%)"
           color="orange"
           trend="+15% from last month"
@@ -31,23 +46,23 @@ export default function FinancialOverview() {
         <OverviewCard
           icon={Lock}
           label="Escrow Held"
-          value={`KES ${(OVERVIEW_DATA.escrowHeld / 1000000).toFixed(1)}M`}
-          subtext="In secure hold"
+          value={`KES ${((stats?.escrowHeld ?? 0) / 1000000).toFixed(2)}M`}
+          subtext={`${stats?.escrowCountHeld ?? 0} In secure hold`}
           color="blue"
-          trend="31 pending releases"
+          trend={`${stats?.escrowCountHeld ?? 0} pending`}
         />
         <OverviewCard
           icon={Clock}
           label="Pending Payouts"
-          value={`KES ${(OVERVIEW_DATA.pendingPayouts / 1000000).toFixed(1)}M`}
-          subtext="Awaiting release"
+          value={`KES ${((stats?.escrowHeld ?? 0)).toLocaleString()}`}
+          subtext={`Ksh ${((stats?.totalFundsPending ?? 0)).toLocaleString()} to be released`}
           color="yellow"
-          trend="42 transactions"
+          trend={`${stats?.escrowCountHeld ?? 0} pending transactions`}
         />
         <OverviewCard
           icon={CheckCircle2}
           label="Completed Transactions"
-          value={OVERVIEW_DATA.completedTransactions.toLocaleString()}
+          value={(stats?.completedTransactions ?? 0).toLocaleString()}
           subtext="Total processed"
           color="green"
           trend="100% success rate"
@@ -63,7 +78,7 @@ export default function FinancialOverview() {
             </h3>
           </div>
           <p className="text-3xl font-bold text-white mb-2">
-            KES {(OVERVIEW_DATA.platformCommission / 1000000).toFixed(2)}M
+            {`KES ${((stats?.escrowHeld ?? 0) * .1).toLocaleString()}`}
           </p>
           <p className="text-sm text-zinc-400">10% of all transactions</p>
           <div className="mt-4 pt-4 border-t border-[#2A3140]">
@@ -81,7 +96,7 @@ export default function FinancialOverview() {
             Creator Payouts
           </h3>
           <p className="text-3xl font-bold text-white mb-2">
-            KES {(OVERVIEW_DATA.creatorPayouts / 1000000).toFixed(2)}M
+            {`KES ${((stats?.escrowHeld ?? 0) * .9).toLocaleString()}`}
           </p>
           <p className="text-sm text-zinc-400">90% of transaction value</p>
           <div className="mt-4 pt-4 border-t border-[#2A3140]">
@@ -89,13 +104,13 @@ export default function FinancialOverview() {
               <div className="flex justify-between">
                 <span className="text-xs text-zinc-500">Released</span>
                 <span className="text-xs text-green-400 font-semibold">
-                  KES {(OVERVIEW_DATA.creatorPayouts * 0.85 / 1000000).toFixed(2)}M
+                  KES {((stats?.totalFundsReleased ?? 0)).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-xs text-zinc-500">Pending</span>
                 <span className="text-xs text-yellow-400 font-semibold">
-                  KES {(OVERVIEW_DATA.creatorPayouts * 0.15 / 1000000).toFixed(2)}M
+                  KES {((stats?.totalFundsPending ?? 0)).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -108,19 +123,19 @@ export default function FinancialOverview() {
             Brand Payments
           </h3>
           <p className="text-3xl font-bold text-white mb-2">
-            KES {(OVERVIEW_DATA.brandPayments / 1000000).toFixed(2)}M
+            {`KES ${((stats?.escrowHeld ?? 0)).toLocaleString()}`}
           </p>
           <p className="text-sm text-zinc-400">Total paid by brands</p>
           <div className="mt-4 pt-4 border-t border-[#2A3140]">
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-xs text-zinc-500">Active Campaigns</span>
-                <span className="text-xs text-white font-semibold">32</span>
+                <span className="text-xs text-white font-semibold">{(stats?.activeCampaigns?? 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-xs text-zinc-500">Avg. Payment</span>
                 <span className="text-xs text-blue-400 font-semibold">
-                  KES {(OVERVIEW_DATA.brandPayments / OVERVIEW_DATA.completedTransactions).toFixed(0)}K
+                  {`KES ${((stats?.escrowHeld ?? 0) / (stats?.activeCampaigns?? 0) ).toLocaleString()}`}
                 </span>
               </div>
             </div>
@@ -136,7 +151,7 @@ export default function FinancialOverview() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <HealthItem
             label="Suspicious Transactions"
-            value={String(OVERVIEW_DATA.suspiciousTransactions)}
+            value={String(stats?.suspiciousTransactions ?? 0)}
             status="warning"
             action="Review"
           />

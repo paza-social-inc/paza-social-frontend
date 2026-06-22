@@ -7,7 +7,7 @@ import {
   Clock,
   Edit,
   Flag,
-  Lock,
+  // Lock,
   CheckCircle2,
   DollarSign,
   User,
