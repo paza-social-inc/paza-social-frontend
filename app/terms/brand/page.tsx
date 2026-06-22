@@ -23,7 +23,7 @@ export default function BrandAgreementPage() {
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <p className="text-sm text-muted-foreground mb-8">
-          Paza Technologies Ltd. · Last updated: [Insert Date] · Governing Law: Republic of Kenya
+          Paza Technologies Ltd. · Last updated: June 21, 2026 · Governing Law: Republic of Kenya
         </p>
         <p className="text-muted-foreground text-sm leading-relaxed mb-8">
           This Brand Agreement (&quot;Agreement&quot;) governs participation by businesses, organizations, or individuals (&quot;Brand,&quot; &quot;you,&quot; or &quot;your&quot;) who use the Paza platform (&quot;Platform&quot;) operated by Paza Technologies Ltd. By creating a brand account, submitting a campaign, or engaging creators through the Platform, you agree to this Agreement and the Paza Terms of Service.
@@ -52,7 +52,7 @@ export default function BrandAgreementPage() {
             { title: "19. Dispute Resolution", body: "If disputes arise between Brands and Creators, Paza may attempt to facilitate resolution using platform records and submitted verification evidence. If disputes cannot be resolved informally, they shall be referred to arbitration under the Arbitration Act, 1995 of Kenya. Arbitration shall take place in Nairobi and proceedings shall be conducted in English." },
             { title: "20. Governing Law", body: "This Agreement shall be governed by the laws of the Republic of Kenya." },
             { title: "21. Changes to the Agreement", body: "Paza may update this Agreement periodically. Continued use of the Platform after updates constitutes acceptance of the revised Agreement." },
-            { title: "22. Contact Information", body: "Paza Technologies Ltd. Email: legal@paza.ai [Business Address]" },
+            { title: "22. Contact Information", body: "Paza Technologies Ltd. Email: legal@paza.ai Nairobi, Kenya" },
           ].map((s) => (
             <section key={s.title}>
               <h2 className="text-xl font-semibold text-foreground mb-3">{s.title}</h2>

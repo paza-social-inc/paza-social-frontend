@@ -7,7 +7,7 @@ export const metadata = {
   description: "Privacy Policy for the Paza platform.",
 };
 
-export default function PrivacyPage() {
+export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
@@ -134,7 +134,7 @@ export default function PrivacyPage() {
         </article>
 
         <nav className="mt-12 pt-8 border-t border-border">
-          <Link href="/terms" className="text-primary hover:underline text-sm">Terms of Service</Link>
+          <Link href="/terms-of-service" className="text-primary hover:underline text-sm">Terms of Service</Link>
         </nav>
         <div className="mt-4">
           <Button variant="outline" asChild className="border-border">

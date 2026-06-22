@@ -182,7 +182,13 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                     </Badge>
                                 )}
                                 <span className="inline-flex items-center gap-1 text-sm">
-                                    <RiMapPinLine className="h-4 w-4" /> {location || 'Remote'}
+                                    <RiMapPinLine className="h-4 w-4" />
+                                    {business?.name
+                                        ?? (owner?.firstname || owner?.lastname
+                                            ? `${owner?.firstname ?? ''} ${owner?.lastname ?? ''}`.trim()
+                                            : null)
+                                        ?? location
+                                        ?? 'Remote'}
                                 </span>
                             </div>
                         </div>
@@ -285,9 +291,11 @@ export default function JobDetails({ jobId }: JobDetailsProps) {
                                 ) : (
                                     <div>
                                         <p className="font-semibold">
-                                             ⚠️ No business data. Received: {JSON.stringify(business)}
-                                            {/* {owner?.firstname} {owner?.lastname} */}
+                                            {owner?.firstname || owner?.lastname
+                                                ? `${owner?.firstname ?? ''} ${owner?.lastname ?? ''}`.trim()
+                                                : 'Individual'}
                                         </p>
+                                        <p className="text-sm text-muted-foreground">Individual</p>
                                         {/* <p className="text-sm text-muted-foreground">Individual</p> */}
                                     </div>
                                 )}

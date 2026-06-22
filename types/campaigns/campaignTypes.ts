@@ -123,4 +123,4 @@ export interface CampaignListResponse {
   data: Campaign[];
 }
 
-export interface CampaignGetResponse extends Campaign {}
+export type CampaignGetResponse = Campaign;
