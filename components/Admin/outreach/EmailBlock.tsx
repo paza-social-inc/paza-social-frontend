@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { OutreachLead, OutreachMessage } from '@/types/outreach' 
-import { outreachApi } from '@/components/Admin/outreach/lib/api'; 
+import { OutreachLead, OutreachMessage } from '@/types/outreach'
+import { outreachApi } from '@/components/Admin/outreach/lib/api';
 
 interface Props {
   lead: OutreachLead
@@ -15,7 +15,7 @@ export default function EmailBlock({ lead, message, onLeadUpdate, isSent }: Prop
   const [email, setEmail] = useState(lead.contactEmail ?? '')
   useEffect(() => {
     setEmail(lead.contactEmail ?? '')
-  }, [lead.id])
+  }, [lead.contactEmail])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)

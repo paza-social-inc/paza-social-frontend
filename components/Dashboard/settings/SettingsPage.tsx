@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, CreditCard, Settings, Shield, User, Users, Eye } from "lucide-react";
+import { Bell, CreditCard, Settings, Shield, User, Users, /* Eye */ } from "lucide-react";
 import { RiStore2Line } from "@remixicon/react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -13,7 +13,7 @@ import { ProfileSection } from "./sections/ProfileSection";
 import { SecuritySection } from "./sections/SecuritySection";
 import { TeamSection } from "./sections/TeamSection";
 import BrandProfileView from "../brand/BrandProfileView";
-import { PrivacySection } from "./sections/PrivacySection";
+// import { PrivacySection } from "./sections/PrivacySection";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 
 const sidebarItems: { id: string; label: string; icon: React.ElementType }[] = [

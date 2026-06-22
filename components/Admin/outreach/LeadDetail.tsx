@@ -73,7 +73,7 @@ export default function LeadDetail({
   const message: OutreachMessage | null = (lead.messages ?? [])[0] ?? null
   const insight = (lead.insights ?? [])[0] ?? null
   const isDraft = message?.status === 'draft'
-  const isApproved = message?.status === 'approved'
+  // const isApproved = message?.status === 'approved'
   const isSent = message?.status === 'sent'
 
   const handleApprove = async () => {

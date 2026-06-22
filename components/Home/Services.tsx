@@ -7,7 +7,7 @@ import HomeLayout from "./Layout";
 import { ArrowRight, ArrowUp, ArrowUpRight } from "lucide-react";
 import { scrollPageToTop } from "@/lib/scrollWithLenis";
 import {
-  campaignAerialSuits,
+  // campaignAerialSuits,
   campaignCrowdRadial,
   campaignDjPerformance,
   campaignFashionEnsemble,
@@ -102,120 +102,119 @@ const CREATOR_SERVICE_DETAILS = [
 
 
 
-const PRICING_PLANS = [
-  {
-    name: "Free plan",
-    price: "0",
-    period: "/MONTH",
-    items: [
-      "Use Paza’s job board to post campaigns (for brands) or apply to opportunities (for creators), connecting with potential partners.",
-      "8% retainer fee (service charge + marketing change)",
-      "20 job swipes a day",
-      "20 showcase swipes a day",
-      "1 campaign",
-      "5 tasks per campaign",
-      "upto 5 members in a campaign",
-      "2 users per account",
-      "email support",
-    ],
-  },
-  {
-    name: "Monthly plan",
-    price: "6,200",
-    period: "/MONTH",
-    items: [
-      "Use Paza’s job board to post campaigns (for brands) or apply to opportunities (for creators), connecting with potential partners.",
-      "6% retainer fee",
-      "50 job swipes a day",
-      "50 showcase swipes a day",
-      "100 campaigns",
-      "50 tasks per campaign",
-      "upto 100 members in a campaign",
-      "2 users per account",
-      "email support",
-    ],
-  },
-  {
-    name: "One time plan",
-    price: "32,000",
-    period: "/MONTH",
-    items: [
-      "Use Paza’s job board to post campaigns (for brands) or apply to opportunities (for creators), connecting with potential partners.",
-      "unlimited job post a month",
-      "unlimited proposal approvals per post",
-      "unlimited showcase swipes a day",
-      "unlimited campaigns",
-      "unlimited tasks per campaign",
-      "unlimited members in a campaign",
-      "unlimited users per account",
-      "email support",
-      "Additional services",
-      "• upto 3 managed campaigns",
-      "• marketing",
-    ],
-  },
-];
+// const PRICING_PLANS = [
+//   {
+//     name: "Free plan",
+//     price: "0",
+//     period: "/MONTH",
+//     items: [
+//       "Use Paza’s job board to post campaigns (for brands) or apply to opportunities (for creators), connecting with potential partners.",
+//       "8% retainer fee (service charge + marketing change)",
+//       "20 job swipes a day",
+//       "20 showcase swipes a day",
+//       "1 campaign",
+//       "5 tasks per campaign",
+//       "upto 5 members in a campaign",
+//       "2 users per account",
+//       "email support",
+//     ],
+//   },
+//   {
+//     name: "Monthly plan",
+//     price: "6,200",
+//     period: "/MONTH",
+//     items: [
+//       "Use Paza’s job board to post campaigns (for brands) or apply to opportunities (for creators), connecting with potential partners.",
+//       "6% retainer fee",
+//       "50 job swipes a day",
+//       "50 showcase swipes a day",
+//       "100 campaigns",
+//       "50 tasks per campaign",
+//       "upto 100 members in a campaign",
+//       "2 users per account",
+//       "email support",
+//     ],
+//   },
+//   {
+//     name: "One time plan",
+//     price: "32,000",
+//     period: "/MONTH",
+//     items: [
+//       "Use Paza’s job board to post campaigns (for brands) or apply to opportunities (for creators), connecting with potential partners.",
+//       "unlimited job post a month",
+//       "unlimited proposal approvals per post",
+//       "unlimited showcase swipes a day",
+//       "unlimited campaigns",
+//       "unlimited tasks per campaign",
+//       "unlimited members in a campaign",
+//       "unlimited users per account",
+//       "email support",
+//       "Additional services",
+//       "• upto 3 managed campaigns",
+//       "• marketing",
+//     ],
+//   },
+// ];
 
-const CREATOR_PRICING_PLANS = [
-  {
-    name: "Free plan",
-    price: "0",
-    period: "/MONTH",
-    items: [
-      "Apply to brand opportunities and manage your creator profile in one place.",
-      "8% platform fee on completed payouts",
-      "20 job swipes a day",
-      "20 showcase swipes a day",
-      "1 active project",
-      "5 tasks per project",
-      "up to 5 collaborators per project",
-      "1 user per account",
-      "email support",
-    ],
-  },
-  {
-    name: "Monthly plan",
-    price: "4,800",
-    period: "/MONTH",
-    items: [
-      "Priority visibility in discovery and faster proposal workflows.",
-      "6% platform fee on completed payouts",
-      "50 job swipes a day",
-      "50 showcase swipes a day",
-      "100 projects",
-      "50 tasks per project",
-      "up to 100 collaborators per project",
-      "2 users per account",
-      "email support",
-    ],
-  },
-  {
-    name: "One time plan",
-    price: "24,000",
-    period: "/MONTH",
-    items: [
-      "Advanced creator growth toolkit with unlimited collaboration capacity.",
-      "unlimited applications a month",
-      "unlimited proposal submissions",
-      "unlimited showcase swipes a day",
-      "unlimited projects",
-      "unlimited tasks per project",
-      "unlimited collaborators per project",
-      "unlimited users per account",
-      "email support",
-      "Additional services",
-      "• creator growth support",
-      "• portfolio optimization",
-    ],
-  },
-];
+// const CREATOR_PRICING_PLANS = [
+//   {
+//     name: "Free plan",
+//     price: "0",
+//     period: "/MONTH",
+//     items: [
+//       "Apply to brand opportunities and manage your creator profile in one place.",
+//       "8% platform fee on completed payouts",
+//       "20 job swipes a day",
+//       "20 showcase swipes a day",
+//       "1 active project",
+//       "5 tasks per project",
+//       "up to 5 collaborators per project",
+//       "1 user per account",
+//       "email support",
+//     ],
+//   },
+//   {
+//     name: "Monthly plan",
+//     price: "4,800",
+//     period: "/MONTH",
+//     items: [
+//       "Priority visibility in discovery and faster proposal workflows.",
+//       "6% platform fee on completed payouts",
+//       "50 job swipes a day",
+//       "50 showcase swipes a day",
+//       "100 projects",
+//       "50 tasks per project",
+//       "up to 100 collaborators per project",
+//       "2 users per account",
+//       "email support",
+//     ],
+//   },
+//   {
+//     name: "One time plan",
+//     price: "24,000",
+//     period: "/MONTH",
+//     items: [
+//       "Advanced creator growth toolkit with unlimited collaboration capacity.",
+//       "unlimited applications a month",
+//       "unlimited proposal submissions",
+//       "unlimited showcase swipes a day",
+//       "unlimited projects",
+//       "unlimited tasks per project",
+//       "unlimited collaborators per project",
+//       "unlimited users per account",
+//       "email support",
+//       "Additional services",
+//       "• creator growth support",
+//       "• portfolio optimization",
+//     ],
+//   },
+// ];
 
 export default function Services() {
   const [audienceTab, setAudienceTab] = useState<"brands" | "creators">("creators");
-  const [pricingTab, setPricingTab] = useState<"brands" | "creators">("brands");
   const serviceDetails =
     audienceTab === "brands" ? BRAND_SERVICE_DETAILS : CREATOR_SERVICE_DETAILS;
-  const pricingPlans = pricingTab === "brands" ? PRICING_PLANS : CREATOR_PRICING_PLANS;
+  // const pricingPlans = pricingTab === "brands" ? PRICING_PLANS : CREATOR_PRICING_PLANS;
 
   return (
     <HomeLayout hideFooter >

@@ -126,10 +126,10 @@ function PazaSplashHero() {
 
 // ─── 2) Connecting — dark editorial (staggered type + 3 photos + copy + CTA) ───
 
-const PHOTO_W_MOBILE = "min(34vw, 130px)";
-const PHOTO_W_DESKTOP = "clamp(150px, 17.5vw, 230px)";
-const PORTRAIT_H_DESKTOP = "clamp(200px, 23.33vw, 307px)";
-const PORTRAIT_H_MOBILE = "calc(min(30vw, 116px) * 4 / 3)";
+// const PHOTO_W_MOBILE = "min(34vw, 130px)";
+// const PHOTO_W_DESKTOP = "clamp(150px, 17.5vw, 230px)";
+// const PORTRAIT_H_DESKTOP = "clamp(200px, 23.33vw, 307px)";
+// const PORTRAIT_H_MOBILE = "calc(min(30vw, 116px) * 4 / 3)";
 
 /** Connecting headlines — Figma: #F9F9F9, PP Neue Montreal, 128px / 400 / 172% (capped, responsive) */
 // const CONNECTING_HEADLINE_FONT =
@@ -140,14 +140,14 @@ const connectingHeadlineBase = {
   fontStyle: "normal" as const,
   lineHeight: 1.72,
 };
-const connectingHeadlineMobile: CSSProperties = {
-  ...connectingHeadlineBase,
-  fontSize: "clamp(1.625rem, 4vw + 0.85rem, 3.5rem)",
-};
-const connectingHeadlineDesktop: CSSProperties = {
-  ...connectingHeadlineBase,
-  fontSize: "clamp(2.5rem, 5.5vw + 0.5rem, 128px)",
-};
+// const connectingHeadlineMobile: CSSProperties = {
+//   ...connectingHeadlineBase,
+//   fontSize: "clamp(1.625rem, 4vw + 0.85rem, 3.5rem)",
+// };
+// const connectingHeadlineDesktop: CSSProperties = {
+//   ...connectingHeadlineBase,
+//   fontSize: "clamp(2.5rem, 5.5vw + 0.5rem, 128px)",
+// };
 
 /**
  * Our Services quote block — Figma: PP Neue Montreal, 400, 172% leading, uppercase, 40px cap;
@@ -494,7 +494,7 @@ function MissionIntroSection() {
       className={cn("py-10 sm:py-16 md:py-24 lg:py-32", LANDING_PLATE)}
     >
       <div className={PAGE}>
-        
+
         <MaskedReveal delay={0}>
           <h2 className="m-0 flex justify-start p-0 font-[inherit] font-normal leading-none">
             <EditorialLabel>Who is Paza</EditorialLabel>
@@ -562,7 +562,7 @@ function StudioSecondarySection() {
   return (
     <section className={cn("py-12 sm:py-16 md:py-20 lg:py-24", LANDING_PLATE)}>
       <div className={PAGE}>
-        
+
         {/* Image - Already well centered */}
         <MaskedReveal delay={0}>
           <div className="relative mx-auto w-full max-w-[min(92%,720px)] overflow-hidden border border-zinc-800/90">
@@ -681,7 +681,7 @@ function OurServicesSection() {
 <div className={PAGE}>
   {/* Figma Header Container */}
   <div className="mb-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-12 md:mb-20 lg:gap-16">
-    
+
     {/* Clean, zero-margin wrapper for Editorial Label */}
     <MaskedReveal delay={0}>
       <div className="shrink-0">
@@ -735,7 +735,7 @@ function OurServicesSection() {
                 <span
                   className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-neutral-200 transition-colors duration-300 group-hover:text-[#FF6B00]/20 dark:text-white/[0.05] dark:group-hover:text-[#FF6B00]/15"
                   // style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
-style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
+                  style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
 
                   aria-hidden
                 >

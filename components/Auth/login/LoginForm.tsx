@@ -66,8 +66,11 @@ export function LoginForm({
             if (typeof window !== "undefined") {
                 localStorage.removeItem("admin_token");
                 localStorage.setItem("token", token);
-                document.cookie =
-                `token=${token}; path=/`;
+                // NOTE: do not write a `token` cookie from JS here. setAuthToken
+                // (server action) already sets the authoritative httpOnly cookie
+                // that middleware.ts reads; a non-httpOnly duplicate of the same
+                // name produces an ambiguous Cookie header and can't override the
+                // httpOnly one. localStorage is kept for the axios Bearer header.
             }
             if (token && user) {
                 setAuth(token, {

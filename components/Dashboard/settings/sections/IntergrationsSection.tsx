@@ -63,6 +63,8 @@ const socialPlatforms: { name: string; id: SocialPlatform; icon: React.ReactNode
     },
 ];
 
+type PlatformData = Record<string, string | number | boolean | undefined | null>;
+
 /**
  * Extract a human-friendly summary (display label + follower metric + profile url)
  * from the saved platformData for a given platform. Each provider stores
@@ -72,7 +74,7 @@ function describeConnected(
     platform: SocialPlatform,
     data: Record<string, unknown> | undefined
 ): { label: string; metric?: string; url?: string } {
-    const d = (data || {}) as Record<string, any>;
+    const d = (data || {}) as PlatformData;
     const formatCount = (n: number | undefined | null): string | undefined => {
         if (n === undefined || n === null || Number.isNaN(Number(n))) return undefined;
         const num = Number(n);
@@ -84,35 +86,35 @@ function describeConnected(
     switch (platform) {
         case "youtube":
             return {
-                label: d.channelTitle || d.title || "YouTube channel",
-                metric: formatCount(d.subscriberCount),
+                label: (d.channelTitle as string) || (d.title as string) || "YouTube channel",
+                metric: formatCount(d.subscriberCount as number | null),
                 url: d.url as string | undefined,
             };
         case "tiktok":
             return {
-                label: d.displayName || d.username || "TikTok account",
+                label: (d.displayName as string) || (d.username as string) || "TikTok account",
                 url: d.url as string | undefined,
             };
         case "instagram":
             return {
                 label: d.username ? `@${d.username}` : "Instagram account",
-                metric: formatCount(d.followerCount),
+                metric: formatCount(d.followerCount as number | null),
                 url: d.url as string | undefined,
             };
         case "facebook":
             return {
-                label: d.name || "Facebook page",
+                label: (d.name as string) || "Facebook page",
                 url: d.url as string | undefined,
             };
         case "linkedin":
             return {
-                label: d.name || "LinkedIn profile",
+                label: (d.name as string) || "LinkedIn profile",
                 url: d.url as string | undefined,
             };
         case "x":
             return {
                 label: d.username ? `@${d.username}` : "X account",
-                metric: formatCount(d.followerCount),
+                metric: formatCount(d.followerCount as number | null),
                 url: d.url as string | undefined,
             };
         default:

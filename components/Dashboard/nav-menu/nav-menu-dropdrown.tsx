@@ -21,16 +21,20 @@ import {
 import { useState } from "react"
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/store/auth/useAuth";
+import { clearAuthToken } from "@/app/actions/auth";
 
 export default function UserDropDown() {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
     const { user, logout } = useAuth();
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (typeof window !== "undefined") {
             window.localStorage.removeItem("token");
         }
+        // Also clear the httpOnly `token` cookie middleware reads — otherwise
+        // the user stays "logged in" server-side until the token expires.
+        await clearAuthToken();
         logout();
         router.push("/login");
     };

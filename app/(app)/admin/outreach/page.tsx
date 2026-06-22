@@ -34,7 +34,7 @@ export default function OutreachPage() {
   useEffect(() => {
     setLoading(true)
     fetchLeads()
-  }, [filter])
+  }, [fetchLeads])
 
   const handleSelectLead = async (lead: OutreachLead) => {
     console.log('lead keys:', Object.keys(lead), 'id value:', lead.id)

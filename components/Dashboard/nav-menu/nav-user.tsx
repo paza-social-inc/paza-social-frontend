@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/store/auth/useAuth";
+import { clearAuthToken } from "@/app/actions/auth";
 
 export function NavUser({
     user,
@@ -45,10 +46,13 @@ export function NavUser({
 
     const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (typeof window !== "undefined") {
             window.localStorage.removeItem("token");
         }
+        // Also clear the httpOnly `token` cookie middleware reads — otherwise
+        // the user stays "logged in" server-side until the token expires.
+        await clearAuthToken();
         logout();
         router.push("/login");
     };
