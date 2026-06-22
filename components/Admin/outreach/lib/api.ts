@@ -1,7 +1,7 @@
 import { LeadsResponse, OutreachLead, ApproveResponse, SendResponse } from "@/types/outreach"
 
-const BASE_URL = process.env.NEXT_PUBLIC_OUTREACH_API_URL ?? (() => {
-  throw new Error('NEXT_PUBLIC_OUTREACH_API_URL is not set')
+const BASE_URL = process.env.NEXT_PUBLIC_AGENT_API_URL ?? (() => {
+  throw new Error('NEXT_PUBLIC_AGENT_API_URL is not set')
 })()
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {

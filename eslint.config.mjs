@@ -1,50 +1,34 @@
-// import { dirname } from "path";
-// import { fileURLToPath } from "url";
-// import { FlatCompat } from "@eslint/eslintrc";
-//
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
-//
-// const compat = new FlatCompat({
-//   baseDirectory: __dirname,
-// });
-//
-// const eslintConfig = [
-//   ...compat.extends("next/core-web-vitals", "next/typescript"),
-//   {
-//     ignores: [
-//       "node_modules/**",
-//       ".next/**",
-//       "out/**",
-//       "build/**",
-//       "next-env.d.ts",
-//     ],
-//   },
-// ];
-//
-// export default eslintConfig;``
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
 
-import { defineConfig, globalIgnores } from 'eslint/config'
-import nextVitals from 'eslint-config-next/core-web-vitals.js'
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-// import nextVitals from 'eslint-config-next/core-web-vitals.js'
- 
-const eslintConfig = defineConfig([
-  ...nextVitals,
+// eslint-config-next (15.x) is still published in the legacy eslintrc format,
+// so it must be bridged into flat config via FlatCompat. Spreading the bare
+// module export under ESLint 9 fails with "nextVitals is not iterable".
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
-      'react/no-unescaped-entities': 'off',
-      '@next/next/no-page-custom-font': 'off',
+      "react/no-unescaped-entities": "off",
+      "@next/next/no-page-custom-font": "off",
     },
   },
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    '.next/**',
-    'out/**',
-    'build/**',
-    'next-env.d.ts',
-  ]),
-])
- 
-export default eslintConfig
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+    ],
+  },
+];
+
+export default eslintConfig;

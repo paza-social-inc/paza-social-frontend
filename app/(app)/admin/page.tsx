@@ -374,6 +374,7 @@ import {
   Settings,
   ShieldAlert,
   CheckCircle2,
+  type LucideIcon,
 } from "lucide-react";
 
 import AdminNav from "@/components/Admin/AdminNav";
@@ -635,7 +636,7 @@ function CampaignStatusItem({ name, count, color }: { name: string; count: numbe
   );
 }
 
-function QuickActionButton({ label, icon: Icon, count, href }: { label: string; icon: any; count: number; href: string }) {
+function QuickActionButton({ label, icon: Icon, count, href }: { label: string; icon: LucideIcon; count: number; href: string }) {
   return (
     <a href={href} className="flex flex-col justify-between p-4 bg-[#0F1115] hover:bg-[#1C2029] transition-colors border border-[#262B36] rounded-xl text-left group">
       <div className="flex justify-between items-start w-full">

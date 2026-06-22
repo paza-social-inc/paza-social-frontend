@@ -7,7 +7,7 @@ export const metadata = {
   description: "Terms of Service for the Paza platform.",
 };
 
-export default function TermsPage() {
+export default function TermsOfServicePage() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
@@ -237,7 +237,7 @@ export default function TermsPage() {
             <li><Link href="/terms/brand" className="text-primary hover:underline">Brand Agreement</Link></li>
             <li><Link href="/terms/payments" className="text-primary hover:underline">Payment Terms</Link></li>
             <li><Link href="/terms/community" className="text-primary hover:underline">Community Standards</Link></li>
-            <li><Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link></li>
+            <li><Link href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</Link></li>
           </ul>
         </nav>
 
