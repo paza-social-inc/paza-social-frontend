@@ -7,16 +7,22 @@ import {
   useSpring,
   useMotionValueEvent,
   useReducedMotion,
-  useInView,
   type MotionValue,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { EditorialLabel, EditorialRuleCta, HowItWorksStepPanel, LANDING_PLATE, PAGE, PAGE_PAD, servicesQuoteTypography, SIGNUP_HREF, WheelSteeredHorizontalScroll } from "./LandingPage";
-import { AccountTypeMockupCard } from "./LandingPage";
-import { HOW_PLATFORM_WORKS_STEPS } from "./LandingPage";
+import {
+  AccountTypeMockupCard,
+  EditorialLabel,
+  EditorialRuleCta,
+  HOW_PLATFORM_WORKS_STEPS,
+  LANDING_PLATE,
+  PAGE,
+  PAGE_PAD,
+  servicesQuoteTypography,
+  SIGNUP_HREF,
+} from "./LandingPage";
 import { MaskedReveal } from "./MaskedReveal";
 import { ArrowRight } from "lucide-react";
-// import { EditorialLabel, EditorialRuleCta, ArrowRight } from "@/components/ui"; // adjust imports as needed
 
 // ─── types ────────────────────────────────────────────────────────────────────
 type Step = (typeof HOW_PLATFORM_WORKS_STEPS)[number];
@@ -25,15 +31,16 @@ type Step = (typeof HOW_PLATFORM_WORKS_STEPS)[number];
 const ORANGE = "#FF6B00";
 const OVERLAP = 0.07;
 
+// ════════════════════════════════════════════════════════════════════════════════
+// DESKTOP (lg+): scroll-driven sticky experience
+// ════════════════════════════════════════════════════════════════════════════════
+
 // ─── Progress Bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ progress }: { progress: MotionValue<number> }) {
   const width = useTransform(progress, [0, 1], ["0%", "100%"]);
   return (
     <div className="absolute inset-x-0 top-0 z-50 h-[3px] bg-neutral-200 dark:bg-white/10">
-      <motion.div
-        className="h-full"
-        style={{ width, backgroundColor: ORANGE }}
-      />
+      <motion.div className="h-full" style={{ width, backgroundColor: ORANGE }} />
     </div>
   );
 }
@@ -48,11 +55,9 @@ function ScrollPrompt({ direction = "down" }: { direction?: "down" | "up" }) {
       className="absolute bottom-10 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center text-xs uppercase tracking-widest text-neutral-400 dark:text-neutral-500"
     >
       <span>{direction === "down" ? "Scroll to continue" : "Scroll up"}</span>
-      
+
       <motion.div
-        animate={{ 
-          y: direction === "down" ? [0, 8, 0] : [-8, 0, -8] 
-        }}
+        animate={{ y: direction === "down" ? [0, 8, 0] : [-8, 0, -8] }}
         transition={{ duration: 1.8, repeat: Infinity }}
         className="text-lg"
       >
@@ -61,6 +66,7 @@ function ScrollPrompt({ direction = "down" }: { direction?: "down" | "up" }) {
     </motion.div>
   );
 }
+
 // ─── Step Dots ────────────────────────────────────────────────────────────────
 function StepDots({ count, active }: { count: number; active: number }) {
   return (
@@ -95,23 +101,22 @@ function DesktopStepSlide({
   const start = index / total;
   const end = (index + 1) / total;
 
+  // First slide is already visible at progress 0 (no blank intro), only fades out.
+  const isFirst = index === 0;
+
   const opacity = useTransform(
     progress,
-    [start, start + OVERLAP, end - OVERLAP, end],
-    [0, 1, 1, 0]
+    isFirst ? [end - OVERLAP, end] : [start, start + OVERLAP, end - OVERLAP, end],
+    isFirst ? [1, 0] : [0, 1, 1, 0]
   );
 
-  const ghostX = useTransform(progress, [start, start + OVERLAP], ["-6%", "0%"]);
-  const contentY = useTransform(progress, [start, start + OVERLAP], ["22px", "0px"]);
-  const mockScale = useTransform(progress, [start, start + OVERLAP], [0.92, 1]);
-  const mockX = useTransform(progress, [start, start + OVERLAP], ["18px", "0px"]);
+  const ghostX = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0%" : "-6%", "0%"]);
+  const contentY = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0px" : "22px", "0px"]);
+  const mockScale = useTransform(progress, [start, start + OVERLAP], [isFirst ? 1 : 0.92, 1]);
+  const mockX = useTransform(progress, [start, start + OVERLAP], [isFirst ? "0px" : "18px", "0px"]);
 
   return (
-    <motion.div
-      style={{ opacity }}
-      className="absolute inset-0 flex items-center"
-      aria-hidden={index !== 0}
-    >
+    <motion.div style={{ opacity }} className="absolute inset-0 flex items-center" aria-hidden={index !== 0}>
       <motion.span
         className="pointer-events-none absolute -left-2 top-[10%] select-none font-semibold leading-[0.82] text-[clamp(140px,22vw,200px)] text-neutral-200 dark:text-white/[0.04]"
         style={{
@@ -144,7 +149,7 @@ function DesktopStepSlide({
             {step.title}
           </h3>
 
-          <div className="text-[13px] leading-[1.8] text-neutral-500 dark:text-neutral-400 font-light max-w-[340px]">
+          <div className="max-w-[340px] text-[13px] font-light leading-[1.8] text-neutral-500 dark:text-neutral-400">
             {step.body}
           </div>
         </motion.div>
@@ -157,7 +162,7 @@ function DesktopStepSlide({
   );
 }
 
-// ─── HowItWorksSections (Desktop Scroll Version) ─────────────────────────────
+// ─── HowItWorksSections (Desktop scroll-driven) ──────────────────────────────────
 function HowItWorksSections() {
   const steps = [...HOW_PLATFORM_WORKS_STEPS].sort((a, b) => a.id.localeCompare(b.id));
   const total = steps.length;
@@ -184,13 +189,12 @@ function HowItWorksSections() {
 
   if (reduceMotion) {
     return (
-      <div className="hidden lg:block bg-zinc-100 dark:bg-[#050505]">
+      <div className="hidden bg-zinc-100 lg:block dark:bg-[#050505]">
         {steps.map((step) => (
           <div
             key={step.id}
-            className={cn(PAGE_PAD, "grid grid-cols-2 items-center gap-16 py-20 border-t border-neutral-200 dark:border-white/[0.06]")}
+            className={cn(PAGE_PAD, "grid grid-cols-2 items-center gap-16 border-t border-neutral-200 py-20 dark:border-white/[0.06]")}
           >
-            {/* Reduced motion content */}
             <div>
               <div className="mb-4 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]" style={{ color: ORANGE }}>
                 <span className="block h-px w-5" style={{ background: ORANGE }} />
@@ -199,7 +203,7 @@ function HowItWorksSections() {
               <h3 className="mb-5 text-neutral-900 dark:text-[#EDE8DF]" style={{ fontFamily: "'Bebas Neue','Impact',sans-serif", fontSize: "clamp(42px,5.5vw,60px)", lineHeight: 0.93, textTransform: "uppercase" }}>
                 {step.title}
               </h3>
-              <div className="text-[13px] leading-[1.8] text-neutral-500 dark:text-neutral-400 font-light max-w-[340px]">
+              <div className="max-w-[340px] text-[13px] font-light leading-[1.8] text-neutral-500 dark:text-neutral-400">
                 {step.body}
               </div>
             </div>
@@ -227,13 +231,7 @@ function HowItWorksSections() {
         </div>
 
         {steps.map((step, i) => (
-          <DesktopStepSlide
-            key={step.id}
-            step={step}
-            index={i}
-            total={total}
-            progress={smoothProgress}
-          />
+          <DesktopStepSlide key={step.id} step={step} index={i} total={total} progress={smoothProgress} />
         ))}
 
         {activeStep === 0 && <ScrollPrompt direction="down" />}
@@ -241,6 +239,71 @@ function HowItWorksSections() {
 
         <StepDots count={total} active={activeStep} />
       </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// MOBILE (<lg): vertical flow, each step reveals on scroll
+// ════════════════════════════════════════════════════════════════════════════════
+
+function MobileStepRow({ step, total }: { step: Step; total: number }) {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -18% 0px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative border-t border-neutral-200 dark:border-white/[0.06]"
+    >
+      <span
+        className="pointer-events-none absolute -left-1 top-1 select-none font-semibold leading-[0.82] text-[clamp(80px,24vw,190px)] text-neutral-200 dark:text-white/[0.04]"
+        style={{ fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif", letterSpacing: "-0.02em" }}
+        aria-hidden
+      >
+        {step.id}
+      </span>
+
+      <div className={cn(PAGE_PAD, "relative z-10 flex flex-col gap-10 py-16 sm:py-20")}>
+        <div>
+          <div className="mb-4 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em]" style={{ color: ORANGE }}>
+            <span className="block h-px w-5" style={{ background: ORANGE }} />
+            Step {step.id} of {String(total).padStart(2, "0")}
+          </div>
+
+          <h3
+            className="mb-5 text-neutral-900 dark:text-[#EDE8DF]"
+            style={{
+              fontFamily: "'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif",
+              fontSize: "clamp(34px, 7vw, 60px)",
+              lineHeight: 0.93,
+              letterSpacing: "0.01em",
+              textTransform: "uppercase",
+            }}
+          >
+            {step.title}
+          </h3>
+
+          <div className="max-w-[340px] text-[13px] font-light leading-[1.8] text-neutral-500 dark:text-neutral-400">
+            {step.body}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function HowItWorksMobile() {
+  const steps = [...HOW_PLATFORM_WORKS_STEPS].sort((a, b) => a.id.localeCompare(b.id));
+  const total = steps.length;
+
+  return (
+    <div className="bg-zinc-100 lg:hidden dark:bg-[#050505]">
+      {steps.map((step) => (
+        <MobileStepRow key={step.id} step={step} total={total} />
+      ))}
     </div>
   );
 }
@@ -275,31 +338,10 @@ export function HowItWorksSection() {
 
       {/* Content Area */}
       <div className={cn("py-6 sm:py-8 md:py-10 lg:py-12", LANDING_PLATE)}>
-        {/* Mobile Horizontal Scroll */}
-        <div className="touch-pan-x lg:hidden" role="region" aria-label="Platform workflow steps">
-          <WheelSteeredHorizontalScroll
-            className={cn(
-              PAGE_PAD,
-              "flex gap-12 overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-2 [scrollbar-width:thin] sm:gap-14 lg:gap-16",
-              "[scrollbar-color:rgba(0,0,0,0.22)_transparent] dark:[scrollbar-color:rgba(255,255,255,0.2)_transparent]",
-              "snap-x snap-mandatory scroll-smooth"
-            )}
-          >
-            {HOW_PLATFORM_WORKS_STEPS.map((step) => (
-              <HowItWorksStepPanel
-                key={step.id}
-                stepNumber={step.id}
-                title={step.title}
-                layout={step.layout}
-              >
-                {step.body}
-              </HowItWorksStepPanel>
-            ))}
-            <div className="w-4 shrink-0 snap-end sm:w-8" aria-hidden />
-          </WheelSteeredHorizontalScroll>
-        </div>
+        {/* Mobile: vertical reveal flow */}
+        <HowItWorksMobile />
 
-        {/* Desktop Scroll-Driven Version */}
+        {/* Desktop: scroll-driven experience */}
         <HowItWorksSections />
 
         {/* CTA */}

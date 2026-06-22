@@ -8,7 +8,7 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse extends AuthResponse {}
+export type LoginResponse = AuthResponse;
 
 // Signup types
 export interface SignupRequest {
@@ -55,7 +55,7 @@ export interface OAuthInitiateRequest {
   provider: "google" | "linkedin" | "youtube";
 }
 
-export interface OAuthCallbackResponse extends AuthResponse {}
+export type OAuthCallbackResponse = AuthResponse;
 
 // Email verification
 export interface EmailVerificationRequest {

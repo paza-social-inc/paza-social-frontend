@@ -23,7 +23,7 @@ export default function PaymentTermsPage() {
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <p className="text-sm text-muted-foreground mb-8">
-          Paza Technologies Ltd. · Last updated: [Insert Date] · Governing Law: Republic of Kenya
+          Paza Technologies Ltd. · Last updated: June 21, 2026 · Governing Law: Republic of Kenya
         </p>
         <p className="text-muted-foreground text-sm leading-relaxed mb-8">
           These Payment Terms (&quot;Payment Terms&quot;) govern financial transactions conducted through the Paza platform (&quot;Platform&quot;) operated by Paza Technologies Ltd. These Payment Terms form part of the Paza Terms of Service and apply to all users including creators and brands. By using the Platform to send or receive payments, you agree to these Payment Terms.
@@ -50,7 +50,7 @@ export default function PaymentTermsPage() {
             { title: "17. Dispute Resolution", body: "Payment disputes between users may first be reviewed through Paza's internal dispute resolution processes. If disputes cannot be resolved informally, they shall be referred to arbitration under the Arbitration Act, 1995 of Kenya. Arbitration shall take place in Nairobi and proceedings shall be conducted in English." },
             { title: "18. Governing Law", body: "These Payment Terms are governed by the laws of the Republic of Kenya." },
             { title: "19. Changes to Payment Terms", body: "Paza may update these Payment Terms periodically. Updated terms will be published on the Platform with a revised effective date. Continued use of the Platform after updates constitutes acceptance of the revised Payment Terms." },
-            { title: "20. Contact Information", body: "Paza Technologies Ltd. Email: legal@paza.ai [Business Address]" },
+            { title: "20. Contact Information", body: "Paza Technologies Ltd. Email: legal@paza.ai Nairobi, Kenya" },
           ].map((s) => (
             <section key={s.title}>
               <h2 className="text-xl font-semibold text-foreground mb-3">{s.title}</h2>

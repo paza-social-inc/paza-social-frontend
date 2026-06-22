@@ -276,8 +276,15 @@ export default function Services() {
             </div>
           </div>
 
-          <div className={`${CONTAINER} pb-10`}>
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-8">
+          <div className={`${CONTAINER} relative overflow-hidden pb-10`}>
+            <span
+              className="pointer-events-none absolute -top-3 right-0 select-none font-black uppercase leading-[0.85] text-neutral-900/[0.04] dark:text-white/[0.03]"
+              style={{ fontSize: "clamp(3rem, 13vw, 10rem)", letterSpacing: "-0.05em" }}
+              aria-hidden
+            >
+              SERVICES
+            </span>
+            <div className="relative flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-8">
               <div className="flex items-center gap-3">
                 <span className="block h-2 w-2 shrink-0 bg-orange-500" aria-hidden />
                 <span className="text-[12px] uppercase tracking-[0.18em] text-orange-500">
@@ -319,45 +326,40 @@ export default function Services() {
               </button>
             </div>
 
-            <div className="mt-8 sm:mt-10">
+            <div className="mt-8 sm:mt-10 border-t border-zinc-800">
               {serviceDetails.map((s, i) => (
-                <div key={s.idx} className="border-t border-zinc-800 pt-7 sm:pt-10">
-                  <div className="grid grid-cols-1 sm:grid-cols-[90px_1fr] lg:grid-cols-[120px_1fr] gap-3 sm:gap-8 lg:gap-10 items-start">
-                    <div className="text-[15px] sm:text-[18px] text-foreground dark:text-zinc-400">{s.idx}</div>
-
-                    <div>
-                      <h3 className="text-[18px] sm:text-[22px] font-medium tracking-tight">
-                        {s.title}
-                      </h3>
-                      <div className="mt-3 space-y-3 text-[12px] sm:text-[13px] text-foreground dark:text-zinc-400 leading-relaxed max-w-[620px]">
-                        {s.description.map((line) => (
-                          <p key={line}>{line}</p>
-                        ))}
-                      </div>
-
-                      <div className="mt-6">
-                        <Link
-                          href="/#contact"
-                          className="inline-flex items-center gap-2 text-[12px] sm:text-[13px] text-foreground dark:text-zinc-300 underline underline-offset-4 hover:text-foreground dark:hover:text-white"
-                        >
-                          Get in touch
-                          <ArrowUpRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    </div>
+                <div
+                  key={s.idx}
+                  className="group relative flex items-center gap-3 sm:gap-5 border-b border-zinc-800 py-5 sm:py-7 transition-colors duration-300 hover:bg-white/[0.02]"
+                >
+                  <span
+                    className="absolute left-0 top-0 bottom-0 w-[3px] origin-top scale-y-0 bg-orange-500 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-y-100"
+                    aria-hidden
+                  />
+                  <span
+                    className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-zinc-800 transition-colors duration-300 group-hover:text-orange-500/20 dark:text-white/[0.05] dark:group-hover:text-orange-500/15"
+                    style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}
+                    aria-hidden
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[15px] sm:text-[19px] lg:text-[22px] font-medium tracking-tight text-foreground transition-colors duration-300 group-hover:text-orange-500">
+                      {s.title}
+                    </h3>
+                    <p className="mt-1 text-[11px] sm:text-[12px] md:text-[13px] text-zinc-500 leading-relaxed">
+                      {s.description[0]}
+                    </p>
                   </div>
-
-                  {i < serviceDetails.length - 1 && <div className="h-5 sm:h-6" />}
+                  <Link
+                    href="/#contact"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-zinc-500 transition-all duration-300 group-hover:border-orange-500 group-hover:bg-orange-500/5 group-hover:text-orange-500 sm:h-9 sm:w-9 md:h-10 md:w-10"
+                    aria-label={`Contact us about ${s.title}`}
+                  >
+                    <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:h-4 sm:w-4" />
+                  </Link>
                 </div>
               ))}
-              {/* <div className="flex justify-center mt-10 sm:mt-14"> */}
-              {/*   <Link */}
-              {/*     href="/#contact" */}
-              {/*     className="text-[14px] text-foreground dark:text-zinc-200 underline underline-offset-4 decoration-zinc-500" */}
-              {/*   > */}
-              {/*     More */}
-              {/*   </Link> */}
-              {/* </div> */}
             </div>
 
             {/* Pricing */}
@@ -474,67 +476,87 @@ export default function Services() {
             </div>
 
             {/* Footer */}
-            <div className={`${CONTAINER} py-12 sm:py-16`}>
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1fr] gap-10 md:gap-8 items-start">
-                <div className="order-1 md:order-0">
-                  <div className="text-[14px]">
-                    <Link href="/">Home</Link>
-                  </div>
-                  <div className="mt-8 sm:mt-16 flex items-center gap-4">
-                    <button
-                      type="button"
-                      onClick={() => scrollPageToTop()}
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-card text-foreground transition-colors hover:border-zinc-600 hover:bg-zinc-900"
-                      aria-label="Back to top"
+            <div className="border-t border-zinc-800 pt-10 sm:pt-14 pb-10 sm:pb-14">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-10 gap-x-6 lg:gap-x-12">
+
+                {/* Brand + back to top */}
+                <div className="col-span-2 sm:col-span-1 flex items-center justify-between sm:flex-col sm:items-start sm:justify-start sm:gap-10">
+                  <div>
+                    <Link
+                      href="/"
+                      className="text-[13px] font-medium uppercase tracking-[0.18em] text-foreground dark:text-white hover:text-orange-500 transition-colors"
                     >
-                      <ArrowUp className="h-5 w-5" strokeWidth={1.5} />
-                    </button>
+                      Paza Social
+                    </Link>
+                    <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-zinc-600">
+                      © 2024 — All rights reserved
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => scrollPageToTop()}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-foreground transition-colors hover:border-zinc-500 hover:bg-zinc-900"
+                    aria-label="Back to top"
+                  >
+                    <ArrowUp className="h-4 w-4" strokeWidth={1.5} />
+                  </button>
+                </div>
+
+                {/* Navigation */}
+                <div>
+                  <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Navigation</p>
+                  <div className="space-y-2.5 text-[15px]">
+                    <div>
+                      <Link href="/services" className="text-orange-500 hover:opacity-75 transition-opacity">
+                        Services
+                      </Link>
+                    </div>
+                    <div>
+                      <Link href="/#contact" className="text-foreground dark:text-zinc-300 hover:text-white transition-colors">
+                        Partnership
+                      </Link>
+                    </div>
+                    <div>
+                      <Link href="/about" className="text-foreground dark:text-zinc-300 hover:text-white transition-colors">
+                        About us
+                      </Link>
+                    </div>
                   </div>
                 </div>
 
-                <div className="text-[14px] order-3 md:order-0">
-                  <div className="space-y-2">
-                    <p className="text-orange-500">Services</p>
-                    <p>Partnership</p>
-                    <p>About us</p>
-                  </div>
-
-                  <div className="mt-10 sm:mt-16 space-y-2 text-foreground dark:text-zinc-300">
+                {/* Contact */}
+                <div>
+                  <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Contact</p>
+                  <div className="space-y-2 text-[15px] text-foreground dark:text-zinc-300">
                     <p>+1 891 989-11-91</p>
                     <p>hello@logoipsum.com</p>
-                    <p className="text-orange-500">Call me back</p>
                   </div>
-
-                  <div className="mt-6 text-[10px] uppercase text-foreground dark:text-zinc-500">
-                    <p>Contact us</p>
-                  </div>
-
-                  <div className="mt-4 text-[10px] uppercase text-foreground dark:text-zinc-500">
-                    <p>Follow us</p>
-                  </div>
-
-                  <div className="mt-3 flex items-center gap-4 text-[14px]">
-                    <span>Telegram</span>
-                    <span>/</span>
-                    <span>Whatsapp</span>
-                    <span>/</span>
-                    <span>Instagram</span>
-                  </div>
-
-                  <div className="mt-10 sm:mt-16 text-[10px] uppercase text-foreground dark:text-zinc-500">
-                    <p>© 2023 — copyright</p>
-                    <p>Privacy</p>
-                  </div>
+                  <button
+                    type="button"
+                    className="mt-3 text-[14px] text-orange-500 hover:opacity-75 transition-opacity"
+                  >
+                    Call me back →
+                  </button>
                 </div>
 
-                <div className="text-[14px] order-2 md:order-0">
-                  <p>Contacts</p>
-                  <p className="mt-8 sm:mt-20 text-foreground dark:text-zinc-300">
+                {/* Location + Social */}
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Location</p>
+                  <p className="text-[15px] text-foreground dark:text-zinc-300 leading-relaxed">
                     2972 Westheimer Rd. Santa Ana,
                     <br />
                     Illinois 85486
                   </p>
+                  <p className="mb-3 mt-6 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Follow us</p>
+                  <div className="flex flex-wrap items-center gap-3 text-[14px] text-foreground dark:text-zinc-400">
+                    <span>Telegram</span>
+                    <span className="text-zinc-700">/</span>
+                    <span>Whatsapp</span>
+                    <span className="text-zinc-700">/</span>
+                    <span>Instagram</span>
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>

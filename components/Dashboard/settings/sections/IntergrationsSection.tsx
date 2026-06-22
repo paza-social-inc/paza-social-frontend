@@ -9,8 +9,18 @@ import {
     RiTwitterXLine,
     RiYoutubeLine,
     RiLoader2Line,
+    RiCheckLine,
+    RiExternalLinkLine,
+    RiLinkUnlinkM,
 } from "@remixicon/react";
-import { getSocialAuthUrl, SocialPlatform } from "@/lib/data/socialVerification";
+import {
+    getSocialAuthUrl,
+    getConnectedSocials,
+    disconnectSocial,
+    SocialPlatform,
+    ConnectedSocial,
+    NotAuthenticatedError,
+} from "@/lib/data/socialVerification";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import toast from "react-hot-toast";
 
@@ -53,19 +63,140 @@ const socialPlatforms: { name: string; id: SocialPlatform; icon: React.ReactNode
     },
 ];
 
+/**
+ * Extract a human-friendly summary (display label + follower metric + profile url)
+ * from the saved platformData for a given platform. Each provider stores
+ * different fields; this normalizes them for display.
+ */
+function describeConnected(
+    platform: SocialPlatform,
+    data: Record<string, unknown> | undefined
+): { label: string; metric?: string; url?: string } {
+    const d = (data || {}) as Record<string, any>;
+    const formatCount = (n: number | undefined | null): string | undefined => {
+        if (n === undefined || n === null || Number.isNaN(Number(n))) return undefined;
+        const num = Number(n);
+        if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M followers`;
+        if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K followers`;
+        return `${num} followers`;
+    };
+
+    switch (platform) {
+        case "youtube":
+            return {
+                label: d.channelTitle || d.title || "YouTube channel",
+                metric: formatCount(d.subscriberCount),
+                url: d.url as string | undefined,
+            };
+        case "tiktok":
+            return {
+                label: d.displayName || d.username || "TikTok account",
+                url: d.url as string | undefined,
+            };
+        case "instagram":
+            return {
+                label: d.username ? `@${d.username}` : "Instagram account",
+                metric: formatCount(d.followerCount),
+                url: d.url as string | undefined,
+            };
+        case "facebook":
+            return {
+                label: d.name || "Facebook page",
+                url: d.url as string | undefined,
+            };
+        case "linkedin":
+            return {
+                label: d.name || "LinkedIn profile",
+                url: d.url as string | undefined,
+            };
+        case "x":
+            return {
+                label: d.username ? `@${d.username}` : "X account",
+                metric: formatCount(d.followerCount),
+                url: d.url as string | undefined,
+            };
+        default:
+            return { label: "Connected account", url: d.url as string | undefined };
+    }
+}
+
 export function IntegrationsSection() {
-    const {} = useAuth();
+    useAuth();
     const [loadingPlatform, setLoadingPlatform] = React.useState<string | null>(null);
+    const [connected, setConnected] = React.useState<Record<string, ConnectedSocial>>({});
+    const [loadingList, setLoadingList] = React.useState(true);
+    const [disconnecting, setDisconnecting] = React.useState<string | null>(null);
+
+    const refreshConnected = React.useCallback(async () => {
+        try {
+            const list = await getConnectedSocials();
+            const map: Record<string, ConnectedSocial> = {};
+            for (const item of list) map[item.platform] = item;
+            setConnected(map);
+        } catch {
+            // Non-fatal: the cards just show as not-connected.
+        } finally {
+            setLoadingList(false);
+        }
+    }, []);
+
+    React.useEffect(() => {
+        refreshConnected();
+    }, [refreshConnected]);
+
+    // When the user returns to this page after the external OAuth redirect
+    // (e.g. via the browser "Back" button, which restores the page from the
+    // bfcache), the spinner state would otherwise stay frozen and keep every
+    // button disabled until a manual refresh. Reset it whenever the page is
+    // shown again or regains visibility.
+    React.useEffect(() => {
+        const reset = () => setLoadingPlatform(null);
+        window.addEventListener("pageshow", reset);
+        const onVisibility = () => {
+            if (document.visibilityState === "visible") {
+                reset();
+                // Re-fetch so a just-completed connect shows up as connected.
+                refreshConnected();
+            }
+        };
+        document.addEventListener("visibilitychange", onVisibility);
+        return () => {
+            window.removeEventListener("pageshow", reset);
+            document.removeEventListener("visibilitychange", onVisibility);
+        };
+    }, [refreshConnected]);
 
     const handleConnect = (platform: SocialPlatform) => {
-        setLoadingPlatform(platform);
         try {
+            // getSocialAuthUrl throws NotAuthenticatedError when there's no token.
             const url = getSocialAuthUrl(platform);
+            setLoadingPlatform(platform);
             // Redirect to backend auth initiator
             window.location.href = url;
-        } catch {
-            toast.error("Could not initiate verification");
+        } catch (err) {
+            if (err instanceof NotAuthenticatedError) {
+                toast.error("Please log in to connect an account.");
+            } else {
+                toast.error("Could not initiate verification");
+            }
             setLoadingPlatform(null);
+        }
+    };
+
+    const handleDisconnect = async (platform: SocialPlatform) => {
+        setDisconnecting(platform);
+        try {
+            await disconnectSocial(platform);
+            setConnected((prev) => {
+                const next = { ...prev };
+                delete next[platform];
+                return next;
+            });
+            toast.success(`${socialPlatforms.find((p) => p.id === platform)?.name ?? "Account"} disconnected.`);
+        } catch {
+            toast.error("Could not disconnect. Please try again.");
+        } finally {
+            setDisconnecting(null);
         }
     };
 
@@ -79,39 +210,105 @@ export function IntegrationsSection() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {socialPlatforms.map((platform) => (
-                    <Card key={platform.id} className="overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="flex items-start justify-between">
-                                <div className="flex gap-4">
-                                    <div className="text-3xl p-3 bg-muted rounded-xl">
-                                        {platform.icon}
+                {socialPlatforms.map((platform) => {
+                    const record = connected[platform.id];
+                    const isConnected = !!record?.isVerified;
+                    const info = isConnected ? describeConnected(platform.id, record.platformData) : null;
+                    const isBusy = loadingPlatform === platform.id || disconnecting === platform.id;
+
+                    return (
+                        <Card key={platform.id} className="overflow-hidden">
+                            <CardContent className="p-6">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex gap-4">
+                                        <div className="text-3xl p-3 bg-muted rounded-xl">
+                                            {platform.icon}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-lg">{platform.name}</h3>
+                                            <p className="text-muted-foreground text-sm leading-relaxed max-w-[200px]">
+                                                {platform.description}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold text-lg">{platform.name}</h3>
-                                        <p className="text-muted-foreground text-sm leading-relaxed max-w-[200px]">
-                                            {platform.description}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="mt-6">
-                                <Button 
-                                    className="w-full h-11 rounded-xl" 
-                                    variant="outline"
-                                    onClick={() => handleConnect(platform.id)}
-                                    disabled={loadingPlatform !== null}
-                                >
-                                    {loadingPlatform === platform.id ? (
-                                        <RiLoader2Line className="animate-spin mr-2 h-4 w-4" />
-                                    ) : (
-                                        "Connect Account"
+                                    {isConnected && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 text-green-600 text-xs font-medium px-2.5 py-1">
+                                            <RiCheckLine className="h-3.5 w-3.5" />
+                                            Connected
+                                        </span>
                                     )}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                                </div>
+
+                                {isConnected && info && (
+                                    <div className="mt-4 rounded-lg bg-muted/60 p-3 text-sm">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="font-medium truncate">{info.label}</span>
+                                            {info.url && (
+                                                <a
+                                                    href={info.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0"
+                                                >
+                                                    View profile
+                                                    <RiExternalLinkLine className="h-3.5 w-3.5" />
+                                                </a>
+                                            )}
+                                        </div>
+                                        {info.metric && (
+                                            <p className="text-muted-foreground mt-1">{info.metric}</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="mt-6 flex gap-2">
+                                    {!isConnected && (
+                                        <Button
+                                            className="w-full h-11 rounded-xl"
+                                            variant="outline"
+                                            onClick={() => handleConnect(platform.id)}
+                                            disabled={isBusy || loadingList}
+                                        >
+                                            {loadingPlatform === platform.id ? (
+                                                <>
+                                                    <RiLoader2Line className="animate-spin mr-2 h-4 w-4" />
+                                                    Connecting…
+                                                </>
+                                            ) : (
+                                                "Connect Account"
+                                            )}
+                                        </Button>
+                                    )}
+                                    {isConnected && (
+                                        <>
+                                            <Button
+                                                className="flex-1 h-11 rounded-xl"
+                                                variant="outline"
+                                                onClick={() => handleConnect(platform.id)}
+                                                disabled={isBusy}
+                                            >
+                                                Reconnect
+                                            </Button>
+                                            <Button
+                                                className="flex-1 h-11 rounded-xl"
+                                                variant="ghost"
+                                                onClick={() => handleDisconnect(platform.id)}
+                                                disabled={isBusy}
+                                            >
+                                                {disconnecting === platform.id ? (
+                                                    <RiLoader2Line className="animate-spin mr-2 h-4 w-4" />
+                                                ) : (
+                                                    <RiLinkUnlinkM className="mr-2 h-4 w-4" />
+                                                )}
+                                                Disconnect
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
     );

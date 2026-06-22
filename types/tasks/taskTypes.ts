@@ -8,7 +8,7 @@ export interface TaskItem {
   description?: string;
   status?: TaskStatus;
   campaignId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 

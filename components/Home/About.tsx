@@ -29,7 +29,7 @@ export default function About() {
   return (
     <HomeLayout hideFooter>
       <section className="bg-background pt-14 text-foreground pb-16 sm:pb-20">
-        <div className={`${CONTAINER} border-x border-zinc-800`}>
+        <div className={`${CONTAINER} sm:border-x sm:border-zinc-800`}>
           <div className="relative h-[250px] sm:h-[420px] md:h-[560px] overflow-hidden">
             <Image src={campaignPortraitElder} alt="About hero" fill className="object-cover" />
             <div className="absolute inset-0 bg-black/40" />
@@ -66,7 +66,7 @@ export default function About() {
       <p>
         Most digital advertising and creator platforms prioritize reach,
         impressions, and transactions over trust, contextual relevance, and
-        authentic alignment — reducing creators to surface-level metrics like
+        authentic alignment  reducing creators to surface-level metrics like
         follower counts and engagement rates.
       </p>
 
@@ -79,12 +79,12 @@ export default function About() {
 
       <p>
         We envisioned a space where collaborations are shaped by deep alignment
-        — of identity, tone, values, audience, and purpose.
+         of identity, tone, values, audience, and purpose.
       </p>
 
       <p>
         Hence{" "}
-        <span className="text-orange-500">Paza Social</span> — a creative
+        <span className="text-orange-500">Paza Social</span>  a creative
         ecosystem designed to help brands and creators build more authentic,
         effective, and lasting collaborations.
       </p>
@@ -94,7 +94,7 @@ export default function About() {
 
 <div className={`${CONTAINER} mt-12 sm:mt-16`}>
   <div className="grid grid-cols-1 md:grid-cols-[120px_160px_1fr] lg:grid-cols-[130px_180px_1fr] gap-4 sm:gap-8 lg:gap-10 items-start">
-    <div />
+    <div className="hidden md:block" />
 
     <p className="text-[28px] sm:text-[36px] tracking-[-0.01em]">
       VISION
@@ -117,8 +117,15 @@ export default function About() {
   </div>
 </div>
 
-        <div className={`${CONTAINER} mt-14 sm:mt-20`}>
-          <h2 className="text-[clamp(2rem,10vw,5.2rem)] leading-[1.04] sm:leading-[1.06] tracking-[-0.02em] uppercase max-w-[980px]">
+        <div className={`${CONTAINER} relative overflow-hidden mt-14 sm:mt-20`}>
+          <span
+            className="pointer-events-none absolute right-0 top-0 select-none font-black uppercase leading-[0.85] text-neutral-900/[0.04] dark:text-white/[0.03]"
+            style={{ fontSize: "clamp(3rem, 12vw, 9rem)", letterSpacing: "-0.05em" }}
+            aria-hidden
+          >
+            PAZA
+          </span>
+          <h2 className="relative text-[clamp(2rem,10vw,5.2rem)] leading-[1.04] sm:leading-[1.06] tracking-[-0.02em] uppercase max-w-[980px]">
             Fostering creativity, community building, & meaningful relationships
           </h2>
         </div>
@@ -185,7 +192,7 @@ To better understand audience identity, interests, intent, and behavior in order
       <p>
         Whether testing new market segments or scaling proven partnerships,
         Paza enables teams to build with precision, consistency, and long-term
-        synergy — turning every collaboration into a measurable and improving
+        synergy  turning every collaboration into a measurable and improving
         system rooted in real audience compatibility and intent.
       </p>
     </div>
@@ -224,34 +231,39 @@ To better understand audience identity, interests, intent, and behavior in order
   </h3>
   <div className="max-w-[900px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-zinc-300 sm:text-[15px] md:text-[16px]">
     <p>
-      Current growth systems are constrained by high customer acquisition costs,
-      inefficient ad spend, and overdependence on short form metrics like views,
-      clicks, and engagement rates. These signals fail to represent actual
-      audience intent, likelihood to convert or cultural alignment.
+      An ad can reach the right demographic and still reach the wrong buyer.
+      Most growth systems optimize for audience similarity rather than audience
+      relevance, relying on demographic targeting, engagement metrics, and
+      probabilistic signals that indicate who people are or what they interact
+      with, rather than why they buy, who they trust, or what drives action. Two
+      people can display identical online behaviors and have completely different
+      intentions.
     </p>
     <p>
-      At the same time, audiences have fragmented across creators, niche
-      communities, and multi-platform content ecosystems. Brands are still forced
-      to buy attention through centralized ad networks, even though real influence
-      and decision-making now happens in distributed spaces.
+      The challenge is no longer finding people; it is identifying the people
+      most likely to care, trust, and act. Communities, relationships, and
+      trusted voices often influence purchasing decisions more than demographic
+      attributes alone.
     </p>
     <p>
-      Paza replaces this model by shifting from targeting to locating. It
-      analyzes behavioral signals across creators and communities to identify
-      where relevant audiences already exist, what they care about, and how they
-      engage with products and culture.
+      <span className="text-white">Paza</span> shifts the focus from targeting
+      audiences to locating them. By mapping behavioral, contextual, and
+      community signals, it identifies where relevant audiences already exist
+      across creators, communities, and digital environments, what they care
+      about, and how they engage with products, culture, and influence networks.
     </p>
     <p>
-      It replaces surface-level targeting with behavioral signal analysis, mapping
-      real audience intent, values, and consumption patterns across creators and
-      communities. Brands can discover creators whose audiences already match
-      their ideal customers, reducing wasted spend and improving conversion
-      efficiency.
+      Instead of asking who looks like a customer, Paza helps brands identify who
+      is most likely to care about a product and why. It replaces probabilistic
+      assumptions with evidence-based audience relevance, enabling brands to
+      discover creators and communities whose audiences already align with their
+      ideal customers.
     </p>
     <p>
-      It also enables continuous collaboration between brands and creator
-      networks, allowing campaigns to be shaped by real audience behavior rather
-      than static demographic assumptions.
+      The result is stronger audience-product alignment, more efficient customer
+      acquisition, and growth strategies built around genuine audience relevance
+      rather than purchased attention. The goal is not more impressions. The goal
+      is finding the audiences most likely to care, trust, and convert.
     </p>
   </div>
 </div>              
@@ -279,6 +291,9 @@ To better understand audience identity, interests, intent, and behavior in order
             Our community
           </h3>
           <div className="mt-8 sm:mt-12 flex justify-center">
+          <Link
+          href="/waitlist"
+          >
             <button
               type="button"
               className="h-12 sm:h-14 w-full sm:w-[340px] border border-zinc-600 text-[20px] sm:text-[34px] inline-flex items-center justify-between px-4 hover:border-zinc-400"
@@ -286,64 +301,90 @@ To better understand audience identity, interests, intent, and behavior in order
               <span>Join Us Today</span>
               <ArrowUpRight className="h-5 w-5 sm:h-7 sm:w-7" />
             </button>
+            </Link>
           </div>
         </div>
 
-        <div className={`${CONTAINER} py-12 sm:py-16`}>
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1fr] gap-10 md:gap-8 items-start">
-            <div className="order-1 md:order-0">
-              <div className="text-[14px]">
-                <p>Home</p>
-              </div>
-              <div className="mt-8 sm:mt-16 flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => scrollPageToTop()}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-card text-foreground transition-colors hover:border-zinc-600 hover:bg-zinc-900"
-                  aria-label="Back to top"
+        <div className={`${CONTAINER} border-t border-zinc-800 pt-10 sm:pt-14 pb-10 sm:pb-14`}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-10 gap-x-6 lg:gap-x-12">
+
+            {/* Brand + back to top */}
+            <div className="col-span-2 sm:col-span-1 flex items-center justify-between sm:flex-col sm:items-start sm:justify-start sm:gap-10">
+              <div>
+                <Link
+                  href="/"
+                  className="text-[13px] font-medium uppercase tracking-[0.18em] text-foreground dark:text-white hover:text-orange-500 transition-colors"
                 >
-                  <ArrowUp className="h-5 w-5" strokeWidth={1.5} />
-                </button>
+                  Paza Social
+                </Link>
+                <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-zinc-600">
+                  © 2024 — All rights reserved
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => scrollPageToTop()}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-foreground transition-colors hover:border-zinc-500 hover:bg-zinc-900"
+                aria-label="Back to top"
+              >
+                <ArrowUp className="h-4 w-4" strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Navigation */}
+            <div>
+              <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Navigation</p>
+              <div className="space-y-2.5 text-[15px]">
+                <div>
+                  <Link href="/services" className="text-orange-500 hover:opacity-75 transition-opacity">
+                    Services
+                  </Link>
+                </div>
+                <div>
+                  <Link href="/#contact" className="text-foreground dark:text-zinc-300 hover:text-white transition-colors">
+                    Partnership
+                  </Link>
+                </div>
+                <div>
+                  <Link href="/about" className="text-foreground dark:text-zinc-300 hover:text-white transition-colors">
+                    About us
+                  </Link>
+                </div>
               </div>
             </div>
 
-            <div className="text-[14px] order-3 md:order-0">
-              <div className="space-y-1">
-                <p className="text-orange-500">Services</p>
-                <p>Partnership</p>
-                <p>About us</p>
-              </div>
-              <div className="mt-10 sm:mt-16 space-y-1 text-foreground dark:text-zinc-300">
+            {/* Contact */}
+            <div>
+              <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Contact</p>
+              <div className="space-y-2 text-[15px] text-foreground dark:text-zinc-300">
                 <p>+1 891 989-11-91</p>
                 <p>hello@logoipsum.com</p>
-                <p className="text-orange-500">Call me back</p>
               </div>
-              <div className="mt-6 text-[10px] uppercase text-zinc-500">
-                <p>Contact us</p>
-              </div>
-              <div className="mt-7 text-[10px] uppercase text-zinc-500">
-                <p>Follow us</p>
-              </div>
-              <div className="mt-3 flex items-center gap-4 text-[14px]">
-                <span>Telegram</span>
-                <span>/</span>
-                <span>Whatsapp</span>
-                <span>/</span>
-                <span>Instagram</span>
-              </div>
-              <div className="mt-10 sm:mt-16 text-[10px] uppercase text-zinc-500">
-                <p>© 2023 — copyright</p>
-                <p>Privacy</p>
-              </div>
+              <button
+                type="button"
+                className="mt-3 text-[14px] text-orange-500 hover:opacity-75 transition-opacity"
+              >
+                Call me back →
+              </button>
             </div>
 
-            <div className="text-[14px] order-2 md:order-0">
-              <p>Contacts</p>
-              <p className="mt-8 sm:mt-20 text-foreground dark:text-zinc-300">
+            {/* Location + Social */}
+            <div className="col-span-2 sm:col-span-1">
+              <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Location</p>
+              <p className="text-[15px] text-foreground dark:text-zinc-300 leading-relaxed">
                 2972 Westheimer Rd. Santa Ana,<br />
                 Illinois 85486
               </p>
+              <p className="mb-3 mt-6 text-[11px] uppercase tracking-[0.22em] text-zinc-600">Follow us</p>
+              <div className="flex flex-wrap items-center gap-3 text-[14px] text-foreground dark:text-zinc-400">
+                <span>Telegram</span>
+                <span className="text-zinc-700">/</span>
+                <span>Whatsapp</span>
+                <span className="text-zinc-700">/</span>
+                <span>Instagram</span>
+              </div>
             </div>
+
           </div>
         </div>
       </section>

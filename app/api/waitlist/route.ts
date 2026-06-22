@@ -3,7 +3,14 @@ import { Resend } from "resend";
 import { createServerClient } from "@/lib/supabase/server";
 import { waitlistSchema } from "@/lib/data/waitlist";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Instantiate lazily: `new Resend(undefined)` throws "Missing API key" at
+// module-load time, which crashes `next build` during page-data collection
+// even though the key is only needed at request time.
+function getResend(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  return new Resend(apiKey);
+}
 
 export async function POST(req: Request) {
   try {
@@ -34,13 +41,18 @@ export async function POST(req: Request) {
     }
 
     if (email) {
-      try {
-        await resend.contacts.create({
-          email,
-          unsubscribed: false,
-        });
-      } catch (resendError) {
-        console.error("Failed to create Resend contact", { email, error: resendError });
+      const resend = getResend();
+      if (!resend) {
+        console.warn("RESEND_API_KEY not set; skipping Resend contact creation.");
+      } else {
+        try {
+          await resend.contacts.create({
+            email,
+            unsubscribed: false,
+          });
+        } catch (resendError) {
+          console.error("Failed to create Resend contact", { email, error: resendError });
+        }
       }
     }
 

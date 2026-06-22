@@ -132,10 +132,10 @@ const PORTRAIT_H_DESKTOP = "clamp(200px, 23.33vw, 307px)";
 const PORTRAIT_H_MOBILE = "calc(min(30vw, 116px) * 4 / 3)";
 
 /** Connecting headlines — Figma: #F9F9F9, PP Neue Montreal, 128px / 400 / 172% (capped, responsive) */
-const CONNECTING_HEADLINE_FONT =
-  '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
+// const CONNECTING_HEADLINE_FONT =
+//   '"PP Neue Montreal", var(--font-sans), ui-sans-serif, system-ui, sans-serif';
 const connectingHeadlineBase = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
+  // fontFamily: CONNECTING_HEADLINE_FONT,
   fontWeight: 400,
   fontStyle: "normal" as const,
   lineHeight: 1.72,
@@ -154,7 +154,7 @@ const connectingHeadlineDesktop: CSSProperties = {
  * orange keywords use #FF6B00 (same stack on white lines).
  */
 export const servicesQuoteTypography: CSSProperties = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
+  // fontFamily: CONNECTING_HEADLINE_FONT,
   // fontSize: "clamp(0.850rem, 2.2vw + 0.5rem, 40px)",
   fontSize: "clamp(0.8125rem, 1.8vw + 0.45rem, 2rem)",
   fontStyle: "normal",
@@ -165,14 +165,6 @@ export const servicesQuoteTypography: CSSProperties = {
 const servicesQuoteOrange: CSSProperties = {
   ...servicesQuoteTypography,
   color: "#FF6B00",
-};
-
-const servicesRowTitle: CSSProperties = {
-  fontFamily: CONNECTING_HEADLINE_FONT,
-  fontWeight: 400,
-  fontStyle: "normal",
-  lineHeight: 1.72,
-  fontSize: "clamp(0.9rem, 2.5vw + 0.2rem, 2.125rem)",
 };
 
 // function ConnectingHeroSection() {
@@ -510,21 +502,21 @@ function MissionIntroSection() {
         </MaskedReveal>
 
         <MaskedReveal delay={0.06}>
-<div className="mx-auto mt-2 max-w-[1400px] px-2 text-left sm:mt-10 sm:px-8 lg:px-12">
+<div className="mx-auto mt-2 max-w-[1400px] px-2 text-left sm:mt-10  sm:px-8 lg:px-12">
   {/* The Ultra-Clean, Explicit Two-Line Cinematic Headline */}
-  <h2 className="text-[clamp(1.2rem,3.8vw+0.5rem,2.2rem)] leading-[1.05] tracking-[-0.05em] text-neutral-900 dark:text-neutral-50">
+  <h2 className="text-[clamp(1.2rem,3.8vw+0.5rem,2.2rem)] leading-[1.54] tracking-[-0.05em] pl-9 text-neutral-900 dark:text-neutral-50">
     Paza is an{" "}
     <span className="text-neutral-400 dark:text-neutral-600">
-      audience intelligence and collaboration infrastructure
+      audience intelligence and collaboration infrastructure for
     </span>
     <br className="hidden xl:inline" />{" "}
     {/* Clean break to line two at desktop */}
-    for brands, creators, and{" "}
+    brands, creators, and{" "}
     <span className="whitespace-nowrap">community networks.</span>
   </h2>
 
   {/* Perfectly Proportioned Editorial Body Copy */}
-  <div className="mt-5 max-w-4xl space-y-2 text-[16px] leading-[1.8] tracking-[-0.01em] text-neutral-600 dark:text-neutral-400 sm:text-[18px] md:text-[19px]">
+  <div className="mt-5  space-y-2 pl-9  text-[16px] leading-[1.8] tracking-[-0.01em] text-neutral-600 dark:text-neutral-400 sm:text-[18px] md:text-[19px]">
     <p>
       It maps audience identity, interests, intent, and behavior alongside
       brand and creator identities, values, and positioning.
@@ -587,64 +579,25 @@ function StudioSecondarySection() {
           </div>
         </MaskedReveal>
 
-        {/* Text Content - Improved centering */}
-        {/* <MaskedReveal delay={0.08}> */}
-        {/*   <div className="mx-auto mt-10 text-base max-w-[1080px] px-4 sm:px-6 lg:px-8 sm:mt-14 md:mt-20 text-justify" > */}
-        {/*     <h3 className=" text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]"> */}
-        {/*       Digital advertising systems rely on fragmented proxy signals such as{" "} */}
-        {/*       <span className="text-neutral-500 dark:text-zinc-500"> */}
-        {/*         demographics, clicks, views, likes, and engagement */}
-        {/*       </span>{" "} */}
-        {/*       to understand audiences and optimize campaigns. */}
-        {/*     </h3> */}
-        {/**/}
-        {/*     <div className="mt-6 text-justify space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]"> */}
-        {/*       <p> */}
-        {/*         While these signals help predict short-term conversion, they provide */}
-        {/*         limited understanding of why audiences respond to specific products, */}
-        {/*         messages, or creators, and often lose meaning outside the context in */}
-        {/*         which they are generated. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         Privacy restrictions and fragmented platforms further reduce audience */}
-        {/*         visibility, making it difficult for brands to distinguish between */}
-        {/*         existing audiences, newly emerging audiences, and temporary engagement. */}
-        {/*         As a result, brands struggle to build stable models of audience behavior */}
-        {/*         and intent. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         This limits their ability to understand who their audience is, track */}
-        {/*         audiences over time, understand what drives repeat interaction, adapt */}
-        {/*         messaging as familiarity increases, engage existing audiences more */}
-        {/*         effectively, and activate high-value audience segments across contexts. */}
-        {/*       </p> */}
-        {/*       <p> */}
-        {/*         <span className="text-neutral-900 dark:text-white">Paza</span> improves */}
-        {/*         audience understanding by linking audience signals to products, creators, */}
-        {/*         and community environments, then observing how those relationships */}
-        {/*         perform and evolve over time. */}
-        {/*       </p> */}
-        {/*     </div> */}
-        {/*   </div> */}
-        {/* </MaskedReveal> */}
-
-
 
         <MaskedReveal delay={0.08}>
   <div className="mx-auto mt-10 max-w-[1080px] px-4 text-base text-left sm:mt-14 sm:px-6 lg:px-8 md:mt-20">
-    <h3 className="text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-      Digital advertising relies on fragmented, top-of-funnel proxies such as{" "}
-      <span className="text-neutral-500 dark:text-zinc-500">
-        demographics, clicks, and superficial engagement
-      </span>{" "}
-      to infer audience intent.
-    </h3>
+
+  {/* <div className=""> */}
+<h3 className="text-[clamp(1rem,3vw,2rem)] leading-[1.2] tracking-[-0.02em] text-neutral-900 dark:text-white">
+  Digital advertising relies on fragmented, top-of-funnel proxies.
+  <br />
+  <span className="text-neutral-500 dark:text-zinc-500">
+    Such as demographics, clicks, and superficial engagement to infer audience intent.
+  </span>
+</h3>
+
 
     <div className="mt-6 space-y-2 text-base leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
       <p>
         While these metrics help optimize for short-term conversions, they fail
-        to capture the causal drivers of behaviour—the underlying reasons behind
-        audience responses—and often lose relevance outside the platforms where
+        to capture the causal drivers of behaviour the underlying reasons behind
+        audience responses and often lose relevance outside the platforms where
         they originate.
       </p>
 
@@ -666,15 +619,12 @@ function StudioSecondarySection() {
         <span className="text-neutral-900 dark:text-white">Paza</span> replaces
         platform proxies with deterministic environmental anchors. By anchoring
         audience identity to specific products, creators, and communities, Paza
-        maps how these structural relationships evolve and convert—delivering
-        portable, platform-independent audience intelligence.
+        maps how these structural relationships evolve and convert delivering
+        portable, platform independent audience intelligence.
       </p>
     </div>
   </div>
 </MaskedReveal>
-
-
-
         {/* CTA */}
         <MaskedReveal delay={0.14}>
           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
@@ -691,88 +641,6 @@ function StudioSecondarySection() {
     </section>
   );
 }
-
-
-// function StudioSecondarySection() {
-//   return (
-//     <section className={cn("py-12 sm:py-16 md:py-20 lg:py-24", LANDING_PLATE)}>
-//       <div className={PAGE}>
-//         <MaskedReveal delay={0}>
-//           <div className="relative mx-auto w-full max-w-[min(92%,720px)] overflow-hidden border border-zinc-800/90">
-//             <div className="relative aspect-[16/10] w-full sm:aspect-[5/3]">
-//               <Image
-//                 src={campaignPressStudio}
-//                 alt="Collaborators reviewing work at a desk in a studio"
-//                 fill
-//                 className="object-cover object-center grayscale"
-//                 sizes="(max-width: 768px) 92vw, 720px"
-//                 loading="lazy"
-//               />
-//             </div>
-//           </div>
-//         </MaskedReveal>
-//
-//         <MaskedReveal delay={0.08}>
-//
-// {/* <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20"> */}
-// <div className="mt-10 max-w-[1108px] sm:mt-14 md:mt-20 mx-auto px-4 sm:px-6 lg:px-8">
-//   <h3 className="max-w-[980px] text-balance text-[clamp(1.1rem,3.4vw+0.35rem,2.4rem)] leading-[1.18] tracking-[-0.02em] text-neutral-900 dark:text-white sm:leading-[1.12]">
-//     Digital advertising systems rely on fragmented proxy signals such as{" "}
-//     <span className="text-neutral-500 dark:text-zinc-500">
-//       demographics, clicks, views, likes, and engagement
-//     </span>{" "}
-//     to understand audiences and optimize campaigns.
-//   </h3>
-//
-//   <div className="mt-6 max-w-[920px] space-y-5 text-[14px] leading-[1.9] tracking-[-0.01em] text-neutral-600 dark:text-zinc-400 sm:text-[15px] md:text-[16px]">
-//     <p>
-//       While these signals help predict short-term conversion, they provide
-//       limited understanding of why audiences respond to specific products,
-//       messages, or creators, and often lose meaning outside the context in
-//       which they are generated.
-//     </p>
-//
-//     <p>
-//       Privacy restrictions and fragmented platforms further reduce audience
-//       visibility, making it difficult for brands to distinguish between
-//       existing audiences, newly emerging audiences, and temporary engagement.
-//       As a result, brands struggle to build stable models of audience behavior
-//       and intent.
-//     </p>
-//
-//     <p>
-//       This limits their ability to understand who their audience is, track
-//       audiences over time, understand what drives repeat interaction, adapt
-//       messaging as familiarity increases, engage existing audiences more
-//       effectively, and activate high-value audience segments across contexts.
-//     </p>
-//
-//     <p>
-//       <span className="text-neutral-900 dark:text-white">Paza</span> improves
-//       audience understanding by linking audience signals to products, creators,
-//       and community environments, then observing how those relationships
-//       perform and evolve over time.
-//     </p>
-//   </div>
-// </div>
-//
-//         </MaskedReveal>
-//
-//         <MaskedReveal delay={0.14}>
-//           <div className="mt-10 flex w-full justify-center sm:mt-12 md:mt-14 lg:justify-end">
-//             <EditorialRuleCta align="end" href={SIGNUP_HREF}>
-//               <>
-//                 Start your journey
-//                 <ArrowRight className="h-3.5 w-3.5 shrink-0 stroke-[1.75] text-[#FF6B00]" aria-hidden />
-//               </>
-//             </EditorialRuleCta>
-//           </div>
-//         </MaskedReveal>
-//       </div>
-//     </section>
-//   );
-// }
-
 /** Figma / reference — four rows, black plate (always), white type, orange keywords. */
 const SERVICE_ROWS = [
   {
@@ -831,23 +699,18 @@ function OurServicesSection() {
         }}
       >
         <span>
-          {'\u201c'}Infrastructure for mapping audience alignment,{" "}
-          <span style={servicesQuoteOrange}>creator–brand</span>{" "}
-          and
+          {'\u201c'}Infrastructure for audience alignment,{" "}
+          <span style={servicesQuoteOrange}>creator brand matching,collaboration
+          </span>{" "}
         </span>
-        
-        <span className="block">
-          <span style={servicesQuoteOrange}>connecting collaborations</span>{" "}
-          measuring campaign outcomes.{'\u201d'}
+        <span className="">
+          <span style={servicesQuoteOrange}>and campaign outcome measurement </span>{" "}
         </span>
       </p>
     </MaskedReveal>
 
   </div>
 </div>
-
-      {/*   </div> */}
-      {/* </div> */}
 
       <div className="w-full border-y border-border bg-zinc-100 dark:border-white/10 dark:bg-black">
         <ul className="m-0 list-none divide-y divide-border dark:divide-white/10 p-0">
@@ -856,35 +719,52 @@ function OurServicesSection() {
               <Link
                 href="/services#our-services"
                 className={cn(
-                  "group mx-auto grid w-full max-w-[1320px] touch-manipulation items-center",
+                  "group relative mx-auto flex w-full max-w-[1320px] touch-manipulation items-center",
                   PAGE_PAD,
-                  "grid-cols-[minmax(2rem,2.75rem)_minmax(0,5.25rem)_minmax(0,1fr)_auto]",
-                  "gap-x-2 gap-y-2 py-6 sm:gap-x-5 sm:py-8 md:gap-x-8 md:py-10",
-                  "transition-colors hover:bg-black/5 dark:hover:bg-white/3",
+                  "gap-4 py-7 sm:gap-6 sm:py-9 md:gap-8 md:py-11",
+                  "transition-colors duration-300 hover:bg-black/[0.03] dark:hover:bg-white/[0.025]",
                 )}
               >
-                <span className="services-index tabular-nums text-[clamp(1.1rem,2.2vw,1.75rem)] font-medium leading-none text-neutral-900 dark:text-white">
+                {/* Orange left-border that slides down from the top on hover */}
+                <span
+                  className="absolute left-0 top-0 bottom-0 w-[3px] origin-top scale-y-0 bg-[#FF6B00] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-y-100"
+                  aria-hidden
+                />
+
+                {/* Ghost number — large, low-opacity, highlights on hover */}
+                <span
+                  className="pointer-events-none shrink-0 select-none tabular-nums font-black leading-[1] text-neutral-200 transition-colors duration-300 group-hover:text-[#FF6B00]/20 dark:text-white/[0.05] dark:group-hover:text-[#FF6B00]/15"
+                  // style={{ fontSize: "clamp(2.75rem, 8vw, 6.5rem)" }}
+style={{ fontSize: "clamp(4rem, 12vw, 9rem)" }}
+
+                  aria-hidden
+                >
                   {row.index}
                 </span>
-                <span className="services-click hidden min-w-0 whitespace-nowrap text-[10px] font-medium leading-snug tracking-[0.04em] text-neutral-500 dark:text-zinc-500 sm:block sm:text-[11px] md:text-[12px]">
-                  {/* Click to open */}
-                </span>
 
-<div className="min-w-0">
-  <h3
-    className="services-title text-left text-neutral-900 dark:text-white"
-    style={servicesRowTitle}
-  >
-    {row.title}
-  </h3>
+                {/* Title + description */}
+                <div className="min-w-0 flex-1">
+                  <h3
+                    className="text-left font-medium uppercase tracking-[-0.01em] text-neutral-900 transition-colors duration-300 group-hover:text-[#FF6B00] dark:text-white dark:group-hover:text-[#FF6B00]"
+                    style={{
+                      // fontFamily: CONNECTING_HEADLINE_FONT,
+                      fontSize: "clamp(1.05rem, 2.5vw + 0.3rem, 2.25rem)",
+                      lineHeight: 1.12,
+                    }}
+                  >
+                    {row.title}
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-neutral-400 sm:text-[12px] md:text-[13px] dark:text-zinc-500">
+                    {row.description}
+                  </p>
+                </div>
 
-  <p className="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-zinc-500 max-w-3xl">
-    {row.description}
-  </p>
-</div>
-
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center text-neutral-900 transition group-hover:text-[#FF6B00] dark:text-white sm:h-10 sm:w-10">
-                  <ArrowUpRight className="h-5 w-5 stroke-[1.25] sm:h-[22px] sm:w-[22px]" aria-hidden />
+                {/* Circle arrow button */}
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-neutral-900 transition-all duration-300 group-hover:border-[#FF6B00] group-hover:bg-[#FF6B00]/5 group-hover:text-[#FF6B00] dark:border-white/15 dark:text-white sm:h-10 sm:w-10 md:h-11 md:w-11">
+                  <ArrowUpRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:h-[18px] sm:w-[18px]"
+                    aria-hidden
+                  />
                 </span>
               </Link>
             </li>
@@ -1320,65 +1200,143 @@ export function HowItWorksStepPanel({
 //   );
 // }
 
-/** Figma 1419:925 — form + contact grid in one #050505 plate */
 function FigmaContactSection() {
   const docIsDark = useDocumentThemeIsDark();
 
   return (
-    <section id="contact" className={cn("py-12 sm:py-16 md:py-24 lg:py-28", LANDING_PLATE)}>
-      <div className={PAGE}>
-        <div className="grid gap-10 sm:gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start lg:gap-16 xl:gap-20">
-          <div>
+    <section id="contact" className={cn("relative overflow-hidden py-16 sm:py-20 md:py-28 lg:py-36", LANDING_PLATE)}>
+      {/* Ghost "CONTACT" watermark — full section width, clipped by overflow-hidden */}
+      <span
+        className="pointer-events-none absolute -top-2 left-0 select-none font-black uppercase leading-[0.85] text-neutral-900/[0.04] dark:text-white/[0.03]"
+        style={{ fontSize: "clamp(4.5rem, 22vw, 18rem)", letterSpacing: "-0.05em" }}
+        aria-hidden
+      >
+        CONTACT
+      </span>
+
+      <div className={cn(PAGE, "relative z-10")}>
+        {/* Top grid: left intro column + right form column */}
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start lg:gap-20 xl:gap-24">
+
+          {/* ── Left column ─────────────────────────────── */}
+          <div className="flex flex-col">
             <MaskedReveal delay={0}>
               <p className="m-0">
                 <EditorialLabel>Get in touch</EditorialLabel>
               </p>
             </MaskedReveal>
-            <MaskedReveal delay={0.05}>
-              <h2 className="mt-8 text-[clamp(2rem,5vw,4rem)] font-normal uppercase leading-[1.48] tracking-tight text-neutral-900 dark:text-white">
-                let&apos;s talk about YOUR project!
+
+            <MaskedReveal delay={0.06}>
+              <h2
+                className="mt-6 text-neutral-900 sm:mt-8 dark:text-white"
+                style={{
+                  // fontFamily: CONNECTING_HEADLINE_FONT,
+                  fontSize: "clamp(2.4rem, 8vw, 7rem)",
+                  fontWeight: 700,
+                  lineHeight: 0.95,
+                  letterSpacing: "-0.03em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Let&apos;s Talk<br />
+                <span style={{ color: "#FF6B00" }}>About</span><br />
+                Your Project.
               </h2>
             </MaskedReveal>
-            <MaskedReveal delay={0.1}>
-              <p className="mt-6 max-w-[26rem] text-lg leading-[1.35] text-[#8d8d8d]">
-                Have questions, feedback, or partnership ideas? We&apos;d love to hear from you.
-                Reach out and let&apos;s make great things happen!
+
+            <MaskedReveal delay={0.12}>
+              <p className="mt-6 max-w-[22rem] text-sm leading-relaxed text-neutral-500 sm:mt-8 sm:text-base dark:text-neutral-400">
+                Have questions, a collaboration need, or partnership ideas?
+                Reach out and let&apos;s build something great together.
               </p>
             </MaskedReveal>
-            <MaskedReveal delay={0.14}>
-              <p className="mt-8 max-w-[26rem] text-lg leading-[1.35] text-[#8d8d8d]">
-                Have a collaboration need? Contact us to design a solution that scales with your
-                vision
-              </p>
+
+            {/* Social links with "Follow" label */}
+            <MaskedReveal delay={0.16}>
+              <nav
+                className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 sm:mt-10"
+                aria-label="Social links"
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                  Follow
+                </span>
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-neutral-900 underline underline-offset-4 decoration-neutral-300 transition-colors hover:text-[#FF6B00] hover:decoration-[#FF6B00] dark:text-white dark:decoration-white/30"
+                >
+                  Twitter
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-neutral-900 underline underline-offset-4 decoration-neutral-300 transition-colors hover:text-[#FF6B00] hover:decoration-[#FF6B00] dark:text-white dark:decoration-white/30"
+                >
+                  <Instagram className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  Instagram
+                </a>
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-neutral-900 underline underline-offset-4 decoration-neutral-300 transition-colors hover:text-[#FF6B00] hover:decoration-[#FF6B00] dark:text-white dark:decoration-white/30"
+                >
+                  <Youtube className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  Youtube
+                </a>
+              </nav>
             </MaskedReveal>
           </div>
+
+          {/* ── Right column: form in a bordered card ───── */}
           <div className="min-w-0">
-            <LandingContactForm />
+            <div className="border border-border bg-card p-6 sm:p-8 lg:p-10 dark:border-white/[0.08] dark:bg-[#0a0a0a]">
+              <LandingContactForm />
+            </div>
           </div>
         </div>
 
-        {/*
-          Figma contact footer: black plate, CONTACT US + subtext | Start your journey (rule),
-          social row right, divider, Nairobi | phone/email/location grid.
-        */}
-        <div className="mt-12 w-full border-t border-border bg-zinc-100 py-12 text-neutral-900 dark:border-white/10 dark:bg-black dark:text-white sm:mt-16 sm:py-16 md:mt-20 md:py-20 lg:py-24">
-          <div className={PAGE}>
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
-              <div className="min-w-0 max-w-[min(100%,36rem)]">
-                <h2
-                  id="contact-us-heading"
-                  className="m-0 uppercase leading-[1.72] tracking-tight text-neutral-900 dark:text-white"
-                  style={servicesQuoteTypography}
-                >
-                  Contact us
-                </h2>
-                <p className="mt-4 max-w-[26rem] text-base leading-relaxed text-neutral-600 dark:text-[#9e9e9e] sm:text-lg">
-                  Have a collaboration need? Contact us to design a solution that scales with your
-                  vision
-                </p>
-              </div>
-              <div className="shrink-0 self-end lg:self-auto lg:pt-1">
-                <EditorialRuleCta align="end" href={SIGNUP_HREF} invert={docIsDark}>
+        {/* ── Bottom contact bar ───────────────────────── */}
+        <div className="mt-16 border-t border-border pt-8 sm:mt-20 sm:pt-10 dark:border-white/10">
+          <div className="flex flex-col gap-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap lg:gap-12">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Location
+              </p>
+              <p className="mt-2 text-sm leading-snug text-neutral-900 sm:text-base dark:text-white">
+                00100, Ronald Ngala St<br />Nairobi, Kenya
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Phone
+              </p>
+              <a
+                href="tel:+254422189529"
+                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+              >
+                +254 422 189 529
+              </a>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Email
+              </p>
+              <a
+                href="mailto:info@pazasocial.com"
+                className="mt-2 block text-sm text-neutral-900 transition-colors hover:text-[#FF6B00] sm:text-base dark:text-white"
+              >
+                info@pazasocial.com
+              </a>
+            </div>
+            <div className="sm:ml-auto">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-600">
+                Next step
+              </p>
+              <div className="mt-3">
+                <EditorialRuleCta align="start" href={SIGNUP_HREF} invert={docIsDark}>
                   <>
                     Start your journey
                     <ArrowRight
@@ -1390,73 +1348,6 @@ function FigmaContactSection() {
                     />
                   </>
                 </EditorialRuleCta>
-              </div>
-            </div>
-
-            <nav
-              className="mt-10 flex flex-wrap justify-end gap-x-10 gap-y-3 text-lg underline decoration-neutral-400/70 underline-offset-4 dark:decoration-white/40 sm:mt-12"
-              aria-label="Social links"
-            >
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-              >
-                Twitter
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-              >
-                <Instagram className="h-5 w-5 shrink-0" aria-hidden />
-                Instagram
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-              >
-                <Youtube className="h-5 w-5 shrink-0" aria-hidden />
-                Youtube
-              </a>
-            </nav>
-
-            <div className="mt-8 h-px w-full bg-border dark:bg-white/15 sm:mt-10" aria-hidden />
-
-            <div className="mt-10 flex flex-col gap-10 sm:mt-12 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
-              <p
-                className="m-0 uppercase leading-[1.72] tracking-tight text-neutral-900 dark:text-white"
-                style={servicesQuoteTypography}
-              >
-                Nairobi, Kenya
-              </p>
-              <div className="grid w-full max-w-2xl gap-10 sm:grid-cols-3 sm:gap-8 lg:max-w-none">
-                <div className="text-left">
-                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Phone no.</p>
-                  <a
-                    href="tel:+254422189529"
-                    className="mt-2 block text-lg text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-                  >
-                    +254 422 189 529
-                  </a>
-                </div>
-                <div className="text-left">
-                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Email</p>
-                  <a
-                    href="mailto:info@pazasocial.com"
-                    className="mt-2 block text-lg text-neutral-900 transition-colors hover:text-[#FF6B00] dark:text-white"
-                  >
-                    info@pazasocial.com
-                  </a>
-                </div>
-                <div className="text-left">
-                  <p className="text-lg font-medium text-neutral-600 dark:text-[#9e9e9e]">Location</p>
-                  <p className="mt-2 text-lg text-neutral-900 dark:text-white">00100, Ronald Ngala St, Nairobi, Kenya</p>
-                </div>
               </div>
             </div>
           </div>

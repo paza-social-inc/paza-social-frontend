@@ -72,7 +72,7 @@ export default function WaitlistForm() {
   const [data, setData] = useState<Partial<WaitlistPayload>>({});
 
   const mutation = useMutation({
-    mutationFn: (payload: WaitlistPayload) => joinWaitlist(payload as any),
+    mutationFn: (payload: WaitlistPayload) => joinWaitlist(payload),
     onSuccess: () => {
       toast.success("You're on the list! We'll be in touch soon.");
       setStep(1);
@@ -214,7 +214,7 @@ export default function WaitlistForm() {
               <input
                 type="email"
                 placeholder="Business email"
-                value={(data as any).email ?? ""}
+                value={data.email ?? ""}
                 onChange={(e) => setData((d) => ({ ...d, email: e.target.value }))}
                 className="w-full border border-[#8c8c8c] bg-transparent px-3 py-2.5 text-[14px] text-neutral-900 placeholder:text-neutral-500 focus:border-orange-500 focus:outline-none dark:text-white dark:placeholder:text-[#72716d]"
               />
