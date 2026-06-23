@@ -102,7 +102,7 @@ export async function getConnectedSocials(): Promise<ConnectedSocial[]> {
     throw new Error(`GET /api/social-verification failed (${res.status}): ${text}`);
   }
 
-  const data = await res.json() as { socialVerifications: ConnectedSocial[] };
+  const data = (await res.json()) as { socialVerifications: ConnectedSocial[] };
   return data.socialVerifications ?? [];
 }
 
