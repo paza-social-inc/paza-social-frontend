@@ -18,6 +18,11 @@ export default function GoogleCallbackPageClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const hasSubmittedRef = useRef(false);
+  // Captures the OAuth `state` ("brand" | "creator" | null/"login") so the
+  // mutation's onSuccess can tell whether this Google auth originated from the
+  // signup flow (and therefore needs basic-details + onboarding) vs. the login
+  // flow (skip straight through).
+  const signupStateRef = useRef<string | null>(null);
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const googleAuthMutation = useMutation({
@@ -27,6 +32,7 @@ export default function GoogleCallbackPageClient() {
     onSuccess: async (res) => {
       const token = res.data?.token;
       const user = res.data?.user;
+      const isNewUser = Boolean(res.data?.isNewUser);
 
       if (!token || !user) {
         toast.error("Google login succeeded but auth data was missing.");
@@ -52,6 +58,19 @@ export default function GoogleCallbackPageClient() {
         lastname: user.lastName,
         accountType: user.accountType,
       });
+
+      // state = "brand" | "creator" came from the signup flow (the Google
+      // button on the register page). A brand-new Google signup must collect
+      // the same basic details the form collects (birthday for creators,
+      // gender/phone/city, Terms) before onboarding — otherwise metadata is
+      // never picked up. Only a returning Google login skips straight through.
+      const state = signupStateRef.current;
+      const cameFromSignup = state === "brand" || state === "creator";
+      if (isNewUser && cameFromSignup) {
+        const accountTypeParam = state === "brand" ? "brand" : "creator";
+        window.location.href = `/google/complete-signup?accountType=${accountTypeParam}`;
+        return;
+      }
 
       toast.success("Successfully logged in with Google!");
 
@@ -94,6 +113,7 @@ export default function GoogleCallbackPageClient() {
       "None";
 
     hasSubmittedRef.current = true;
+    signupStateRef.current = state;
 
     console.log("GOOGLE CODE:", code);
     console.log("GOOGLE STATE:", state);
