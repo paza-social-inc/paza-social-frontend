@@ -4,8 +4,8 @@ import { demoRequestSchema } from "@/lib/data/demo";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAIL;
-const FROM_EMAIL = process.env.DEMO_FROM_EMAIL;
+const ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAIL as string;
+const FROM_EMAIL = process.env.DEMO_FROM_EMAIL as string;
 
 const ROLE_LABELS: Record<string, string> = {
   brand: "Brand",
