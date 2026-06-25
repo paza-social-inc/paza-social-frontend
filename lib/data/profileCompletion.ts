@@ -37,18 +37,19 @@ interface SectionCheck {
 
 /**
  * Each tab on the creator profile, with the fields that define it.
+ * Field names must match the real backend entity columns (CreatorProfile).
  * Matches the 7 tabs in CreatorProfileView: Story, Capabilities, Routine,
  * Affinities, Style, Audience, Portfolio.
  */
 export function creatorSections(profile: Maybe<CreatorProfile>): SectionCheck[] {
-    const p = profile ?? {};
+    const p = profile ?? ({} as CreatorProfile);
     return [
         { id: "narrative", fields: [p.originStory, p.originStoryTags, p.about] },
         { id: "capabilities", fields: [p.creatorType, p.skillLevel, p.domainShards, p.valueProp, p.assetClassPrimary] },
         { id: "routine", fields: [p.dailyRoutineText, p.dailyCarryText, p.nostalgicProductsText] },
         { id: "affinities", fields: [p.dreamBrandCollaboration, p.alwaysRecommend, p.dreamCollaborator] },
-        { id: "working-style", fields: [p.availabilityType, p.engagementType, p.deliverables, p.personalityTags, p.preferredCommunication] },
-        { id: "audience", fields: [p.audienceLocation, p.audienceDescription, p.languages, p.locales, p.genderMale, p.genderFemale] },
+        { id: "working-style", fields: [p.availabilityType, p.personalityTags] },
+        { id: "audience", fields: [p.audienceLocale, p.audienceDescription, p.languages] },
         { id: "portfolio", fields: [p.pastProjects, p.meaningfulProject, p.primaryVerticals] },
     ];
 }
@@ -59,7 +60,7 @@ export function creatorSections(profile: Maybe<CreatorProfile>): SectionCheck[] 
  * Voice & Tone, Prompts, Portfolio, Products, IP Protection.
  */
 export function brandSections(profile: Maybe<BrandProfile>): SectionCheck[] {
-    const p = profile ?? {};
+    const p = profile ?? ({} as BrandProfile);
     return [
         { id: "identity", fields: [p.brandname, p.displayName, p.website, p.industry, p.subcategory, p.operatingRegions] },
         { id: "media", fields: [p.logo, p.coverImage] },

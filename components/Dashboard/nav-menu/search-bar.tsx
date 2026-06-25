@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
     ArrowUpRightIcon,
     CircleFadingArrowUp,
@@ -20,6 +21,7 @@ import {
 
 export default function SearchBar() {
     const [open, setOpen] = React.useState(false)
+    const router = useRouter()
 
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -32,6 +34,12 @@ export default function SearchBar() {
         document.addEventListener("keydown", down)
         return () => document.removeEventListener("keydown", down)
     }, [])
+
+    // Navigate then close the dialog so the destination renders cleanly.
+    const go = React.useCallback((href: string) => {
+        setOpen(false)
+        router.push(href)
+    }, [router])
 
     return (
         <>
@@ -60,7 +68,7 @@ export default function SearchBar() {
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
                     <CommandGroup heading="Quick start">
-                        <CommandItem>
+                        <CommandItem onSelect={() => go("/overview")}>
                             <CircleFadingArrowUp
                                 size={16}
                                 className="opacity-60"
@@ -69,7 +77,7 @@ export default function SearchBar() {
                             <span>Content Creator</span>
                             <CommandShortcut className="justify-center">⌘C</CommandShortcut>
                         </CommandItem>
-                        <CommandItem>
+                        <CommandItem onSelect={() => go("/showcase")}>
                             <CircleFadingArrowUp
                                 size={16}
                                 className="opacity-60"
@@ -78,7 +86,7 @@ export default function SearchBar() {
                             <span>Brand Content</span>
                             <CommandShortcut className="justify-center">⌘B</CommandShortcut>
                         </CommandItem>
-                        <CommandItem>
+                        <CommandItem onSelect={() => go("/jobs")}>
                             <CircleFadingArrowUp
                                 size={16}
                                 className="opacity-60"
@@ -90,7 +98,7 @@ export default function SearchBar() {
                     </CommandGroup>
                     <CommandSeparator />
                     <CommandGroup heading="Navigation">
-                        <CommandItem>
+                        <CommandItem onSelect={() => go("/overview")}>
                             <ArrowUpRightIcon
                                 size={16}
                                 className="opacity-60"
@@ -98,7 +106,7 @@ export default function SearchBar() {
                             />
                             <span>Go to dashboard</span>
                         </CommandItem>
-                        <CommandItem>
+                        <CommandItem onSelect={() => go("/campaigns")}>
                             <ArrowUpRightIcon
                                 size={16}
                                 className="opacity-60"
@@ -106,13 +114,37 @@ export default function SearchBar() {
                             />
                             <span>Go to Campaigns</span>
                         </CommandItem>
-                        <CommandItem>
+                        <CommandItem onSelect={() => go("/tasks")}>
                             <ArrowUpRightIcon
                                 size={16}
                                 className="opacity-60"
                                 aria-hidden="true"
                             />
                             <span>Go to Tasks</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => go("/jobs")}>
+                            <ArrowUpRightIcon
+                                size={16}
+                                className="opacity-60"
+                                aria-hidden="true"
+                            />
+                            <span>Go to Jobs</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => go("/showcase")}>
+                            <ArrowUpRightIcon
+                                size={16}
+                                className="opacity-60"
+                                aria-hidden="true"
+                            />
+                            <span>Go to Showcase</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => go("/profile")}>
+                            <ArrowUpRightIcon
+                                size={16}
+                                className="opacity-60"
+                                aria-hidden="true"
+                            />
+                            <span>Go to Profile</span>
                         </CommandItem>
                     </CommandGroup>
                 </CommandList>

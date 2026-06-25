@@ -49,6 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
                 ref={ref}
                 data-slot="button"
                 className={cn(buttonVariants({ variant, size, className }))}
+                suppressHydrationWarning
                 {...props}
             />
         );
@@ -58,6 +59,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
             ref={ref}
             data-slot="button"
             className={cn(buttonVariants({ variant, size, className }))}
+            suppressHydrationWarning
             {...props}
         />
     );

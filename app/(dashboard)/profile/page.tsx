@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import CoverArea from "@/components/Dashboard/profile/coverarea";
 import ShareProfile from "@/components/Dashboard/profile/share-profile";
 import { ProfileSidebar } from "@/components/Dashboard/profile/profile-sidebar";
+import { ProfileCompletionCard } from "@/components/Dashboard/profile/profile-completion-card";
 
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import BrandProfileView from "@/components/Dashboard/brand/BrandProfileView";
@@ -35,6 +36,11 @@ export default function ProfilePage() {
             <div className="flex-1 overflow-y-auto w-full">
                 {/* Cover Photo Section */}
                 <CoverArea />
+
+                {/* Profile completion — compact card for mobile/tablet (sidebar is desktop-only) */}
+                <div className="px-4 pt-6 lg:hidden">
+                    <ProfileCompletionCard variant="compact" />
+                </div>
                 
                 {/* Welcome Section */}
                 <div className="px-4 md:px-8 py-6 border-b pt-24 md:pt-28">
