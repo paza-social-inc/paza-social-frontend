@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/store/auth/useAuth";
@@ -20,6 +21,7 @@ type CreatorTab = typeof VALID_TABS[number];
 
 export default function CreatorProfileView() {
     const { user } = useAuth();
+    const queryClient = useQueryClient();
     const searchParams = useSearchParams();
     const tabParam = searchParams.get("tab");
     const initialTab: CreatorTab =
@@ -27,12 +29,18 @@ export default function CreatorProfileView() {
             ? (tabParam as CreatorTab)
             : "narrative";
 
+    const [activeTab, setActiveTab] = useState<CreatorTab>(initialTab);
     const [profile, setProfile] = useState<CreatorProfile | null>(null);
     const [projects, setProjects] = useState<CreatorPastProject[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const creatorId = Number(user?.id);
+
+    // Ref to the active form so we can scroll it into view when the tab changes
+    // (e.g. after clicking "Complete profile" which deep-links to a section).
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const didMountRef = useRef(false);
 
     const loadProfile = useCallback(async () => {
         if (!creatorId) {
@@ -80,6 +88,34 @@ export default function CreatorProfileView() {
         loadProfile();
     }, [loadProfile]);
 
+    // Scroll the active form into view whenever the active tab changes — but only
+    // after the first render, so we don't jump past the cover/welcome on load.
+    // When arriving via a deep link (?tab=...), though, we DO want to scroll.
+    useEffect(() => {
+        const isDeepLink = Boolean(tabParam);
+        if (!didMountRef.current) {
+            didMountRef.current = true;
+            if (!isDeepLink) return;
+        }
+        const t = setTimeout(() => {
+            contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 50);
+        return () => clearTimeout(t);
+    }, [activeTab, tabParam]);
+
+    // After a section saves, update local state AND refresh the sidebar's
+    // completion computation so the percentage updates in real time.
+    const handleSectionSaved = useCallback((data: CreatorProfile) => {
+        setProfile(data);
+        queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
+    }, [queryClient]);
+
+    // Portfolio manager reloads the whole profile; also refresh completion.
+    const handlePortfolioUpdate = useCallback(async () => {
+        await loadProfile();
+        queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
+    }, [loadProfile, queryClient]);
+
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -89,7 +125,7 @@ export default function CreatorProfileView() {
         );
     }
 
-    // We only show the error state if there's a real failure. 
+    // We only show the error state if there's a real failure.
     // If profile is null, we proceed to allow onboarding/initialization.
     if (error) {
         return (
@@ -104,7 +140,7 @@ export default function CreatorProfileView() {
 
     return (
         <div className="space-y-6">
-            <Tabs defaultValue={initialTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as CreatorTab)} className="w-full">
                 <div className="overflow-x-auto no-scrollbar pb-1">
                     <TabsList className="inline-flex min-w-full h-auto bg-transparent border-b rounded-none p-0 gap-4 md:gap-8 justify-start">
                         <TabsTrigger value="narrative" className="tab-trigger">Story</TabsTrigger>
@@ -117,53 +153,53 @@ export default function CreatorProfileView() {
                     </TabsList>
                 </div>
 
-                <div className="mt-6">
+                <div ref={contentRef} className="mt-6">
                     <TabsContent value="narrative">
                         <CreatorNarrativeForm
                             initialData={profile || {}}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
                     <TabsContent value="capabilities">
                         <CreatorCapabilitiesForm
                             initialData={profile || {}}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
                     <TabsContent value="routine">
                         <CreatorRoutineForm
                             initialData={profile || {}}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
                     <TabsContent value="affinities">
                         <CreatorAffinityForm
                             initialData={profile || {}}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
                     <TabsContent value="working-style">
                         <WorkingStyleForm
                             initialData={profile || {}}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
                     <TabsContent value="audience">
                         <AudienceDemographicsForm
                             initialData={profile || {}}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
                     <TabsContent value="portfolio">
                         <CreatorPortfolioManager
                             initialProjects={projects}
-                            onUpdate={loadProfile}
+                            onUpdate={handlePortfolioUpdate}
                         />
                     </TabsContent>
                 </div>

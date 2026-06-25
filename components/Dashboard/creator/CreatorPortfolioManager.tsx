@@ -10,12 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPlayCircleLine } from "@remixicon/react";
 import { CreatorPastProject, addCreatorPastProject, removeCreatorPastProject } from "@/lib/data/creator";
-import { 
-    PROJECT_ROLES_INDUSTRY, 
-    PROJECT_ROLES_BRAND, 
-    OUTCOME_TYPES, 
-    MEASUREMENT_SOURCES, 
-    REVENUE_BANDS 
+import {
+    PROJECT_ROLES_INDUSTRY,
+    PROJECT_ROLES_BRAND,
+    OUTCOME_TYPES,
+    MEASUREMENT_SOURCES,
+    REVENUE_BANDS
 } from "@/lib/constants/creatorTaxonomy";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -126,7 +126,7 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Project Title</Label>
-                                    <Input 
+                                    <Input
                                         value={newProject.title}
                                         onChange={(e) => setNewProject(p => ({ ...p, title: e.target.value }))}
                                         placeholder="e.g. Nike Summer Ad"
@@ -134,7 +134,7 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Period</Label>
-                                    <Input 
+                                    <Input
                                         value={newProject.period}
                                         onChange={(e) => setNewProject(p => ({ ...p, period: e.target.value }))}
                                         placeholder="e.g. Jan 2024"
@@ -145,7 +145,7 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Industry Role</Label>
-                                    <Select 
+                                    <Select
                                         onValueChange={(val) => setNewProject(p => ({ ...p, projectRoleIndustry: val }))}
                                         defaultValue={newProject.projectRoleIndustry}
                                     >
@@ -157,7 +157,7 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Brand Role (The Energy)</Label>
-                                    <Select 
+                                    <Select
                                         onValueChange={(val) => setNewProject(p => ({ ...p, projectRoleBrand: val }))}
                                         defaultValue={newProject.projectRoleBrand}
                                     >
@@ -171,7 +171,7 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
 
                             <div className="space-y-2">
                                 <Label>Description</Label>
-                                <Textarea 
+                                <Textarea
                                     value={newProject.description}
                                     onChange={(e) => setNewProject(p => ({ ...p, description: e.target.value }))}
                                     className="h-[80px]"
