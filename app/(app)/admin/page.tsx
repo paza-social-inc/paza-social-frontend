@@ -179,7 +179,7 @@
 //             icon={BarChart3}
 //             label="Escrow Held"
 //             value={`KES ${(stats.escrowHeld).toLocaleString()}`}
-//             subtext={`${stats.escrowPending} pending releases`}
+//             subtext={`${stats.escrowPending ?? 0} pending releases`}
 //             color="amber"
 //             trend="down"
 //           />
@@ -373,6 +373,7 @@ import {
   AlertCircle,
   Settings,
   ShieldAlert,
+  Activity,
   CheckCircle2,
   type LucideIcon,
 } from "lucide-react";
@@ -421,6 +422,7 @@ export default function AdminDashboard() {
       
       try {
         const data = await apiFetch("/api/admin/dashboard");
+        // const data = await apiFetch("/api/admin");
         setStats(data.stats);
       } catch (err) {
         console.error("Admin fetch failed:", err);
@@ -538,8 +540,8 @@ export default function AdminDashboard() {
           <StatCard
             icon={BarChart3}
             label="Escrow Held"
-            value={`KES ${stats.escrowHeld.toLocaleString()}`}
-            subtext={`${stats.escrowPending} pending releases`}
+            value={`KES ${(stats.escrowHeld ?? 0).toLocaleString()}`}
+            subtext={`${stats.escrowPending ?? 0} pending releases`}
             color="amber"
             trend="down"
           />
@@ -609,6 +611,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <QuickActionButton label="Review Flagged Items" icon={ShieldAlert} count={stats.flaggedCreators} href="/admin/creators" />
               <QuickActionButton label="Approve Campaigns" icon={CheckCircle2} count={0} href="/admin/campaigns" />
+              <QuickActionButton label="Activity Logs" icon={Activity} count={0} href="/admin/activity" />
             </div>
           </div>
         </div>
