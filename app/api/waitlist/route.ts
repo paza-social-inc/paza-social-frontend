@@ -1,77 +1,110 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { createServerClient } from "@/lib/supabase/server";
 import { waitlistSchema } from "@/lib/data/waitlist";
 
-// Instantiate lazily: `new Resend(undefined)` throws "Missing API key" at
-// module-load time, which crashes `next build` during page-data collection
-// even though the key is only needed at request time.
-function getResend(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
-  return new Resend(apiKey);
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function POST(req: Request) {
+const ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAIL;
+const FROM_EMAIL = process.env.DEMO_FROM_EMAIL;
+
+const ROLE_LABELS: Record<string, string> = {
+  brand: "Brand",
+  agency: "Agency",
+  creator: "Creator",
+  community: "Community",
+  manager: "Creator Manager",
+};
+
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsed = waitlistSchema.safeParse(body);
+
     if (!parsed.success) {
-      return NextResponse.json(
-        { message: parsed.error.issues[0].message },
-        { status: 400 },
-      );
+      const firstError = parsed.error.issues[0]?.message ?? "Invalid request";
+      return NextResponse.json({ message: firstError }, { status: 400 });
     }
 
     const { role, intent, optimization, identity, email } = parsed.data;
+    const roleLabel = ROLE_LABELS[role] ?? role;
 
-    const supabase = createServerClient();
-    const { error } = await supabase
-      .from("waitlist")
-      .insert({ role, intent, optimization, identity, email: email ?? null });
-
-    if (error) {
-      if (error.code === "23505") {
-        return NextResponse.json(
-          { message: "This email is already on the waitlist." },
-          { status: 409 },
-        );
-      }
-      throw error;
-    }
-
-    if (email) {
-      const resend = getResend();
-      if (!resend) {
-        console.warn("RESEND_API_KEY not set; skipping Resend contact creation.");
-      } else {
-        try {
-          await resend.contacts.create({
-            email,
-            unsubscribed: false,
-          });
-        } catch (resendError) {
-          console.error("Failed to create Resend contact", { email, error: resendError });
-        }
-      }
-    }
-
-    return NextResponse.json({
-      message: "You're on the list. We'll be in touch soon.",
+    // Notify the admin. replyTo is only set when the submitter provided an
+    // email (brands/agencies do; creators often don't — only a profile link).
+    await resend.emails.send({
+      from: `Paza Social <${FROM_EMAIL}>`,
+      to: ADMIN_EMAIL,
+      ...(email ? { replyTo: email } : {}),
+      subject: `New waitlist signup — ${roleLabel}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #f5f5f5; margin: 0; padding: 0; }
+              .wrapper { max-width: 560px; margin: 40px auto; background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
+              .header { background: #ff5c00; padding: 24px 32px; }
+              .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.02em; }
+              .body { padding: 32px; }
+              .field { margin-bottom: 20px; }
+              .label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 4px; }
+              .value { font-size: 15px; color: #f5f5f5; }
+              .divider { border: none; border-top: 1px solid #222; margin: 24px 0; }
+              .note { font-size: 13px; color: #666; }
+              .cta { display: inline-block; margin-top: 24px; padding: 12px 24px; background: #ff5c00; color: #fff; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="wrapper">
+              <div class="header">
+                <h1>New Waitlist Signup — PAZA</h1>
+              </div>
+              <div class="body">
+                <div class="field">
+                  <div class="label">Role</div>
+                  <div class="value">${roleLabel}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Intent</div>
+                  <div class="value">${intent}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Optimizing for</div>
+                  <div class="value">${optimization}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Digital footprint</div>
+                  <div class="value">${identity}</div>
+                </div>
+                ${
+                  email
+                    ? `<div class="field">
+                        <div class="label">Email</div>
+                        <div class="value">${email}</div>
+                      </div>`
+                    : ""
+                }
+                <hr class="divider" />
+                <p class="note">${
+                  email
+                    ? `Hit <strong>Reply</strong> to respond directly to ${email}.`
+                    : `No email provided — reach out via their digital footprint above.`
+                }</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
     });
-  } catch(error) {
-    if (error) {
-  console.error("Supabase insert error:", error); // add this
-  // if (error.code === "23505") {
-  //   return NextResponse.json(
-  //     { message: "This email is already on the waitlist." },
-  //     { status: 409 },
-  //   );
-  // }
-  throw error;
-}
+
     return NextResponse.json(
-      { message: "Something went wrong." },
+      { message: "You're on the list! We'll be in touch soon." },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("[waitlist/route] Error:", error);
+    return NextResponse.json(
+      { message: "Something went wrong. Please try again." },
       { status: 500 },
     );
   }

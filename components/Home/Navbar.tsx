@@ -17,6 +17,7 @@ import { Menu } from "lucide-react";
 import { useDocumentThemeIsDark } from "@/lib/useDocumentThemeIsDark";
 import { cn } from "@/lib/utils";
 import { AnimatedThemeToggler } from "@/components/ui/theme-toggle";
+import { DemoRequestModal } from "@/components/Home/DemoRequestModal";
 
 const NAV_CONTAINER = {
   hidden: {},
@@ -55,6 +56,7 @@ function WhatsAppGlyph({ className }: { className?: string }) {
 export default function NavBar() {
   const [active, setActive] = useState("Home");
   const [scrolled, setScrolled] = useState(false);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
   /** Radix Sheet IDs differ SSR vs client — mount sheet only after hydration. */
   const [mobileSheetReady, setMobileSheetReady] = useState(false);
   const path = usePathname();
@@ -225,7 +227,7 @@ export default function NavBar() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="hidden md:block"
         >
-          <Button
+          {/* <Button
             asChild
             className={cn(
               "h-10 min-w-[140px] rounded-none px-4 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-none sm:h-10 sm:min-w-[175px] sm:px-5 sm:text-[12.5px]",
@@ -238,6 +240,17 @@ export default function NavBar() {
             className="whitespace-nowrap">
               Request a demo
             </Link>
+          </Button> */}
+          <Button
+            onClick={() => setDemoModalOpen(true)}
+            className={cn(
+              "h-10 min-w-[140px] rounded-none px-4 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-none sm:h-10 sm:min-w-[175px] sm:px-5 sm:text-[12.5px]",
+              minimalMarketingNav
+                ? "border-0 bg-white text-neutral-900 hover:bg-zinc-100"
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
+            )}
+          >
+            JOIN OUR WAITLIST
           </Button>
         </motion.div>
         {darkMarketingChrome ? (
@@ -365,7 +378,7 @@ export default function NavBar() {
                     Sign up
                   </Link>
                 </SheetClose>
-                <SheetClose asChild>
+                {/* <SheetClose asChild>
                   <Link
                     href="/#contact"
                     className={cn(
@@ -377,7 +390,20 @@ export default function NavBar() {
                   >
                     Request a demo
                   </Link>
-                </SheetClose>
+                </SheetClose> */}
+                <SheetClose asChild>
+                <button
+                  onClick={() => setDemoModalOpen(true)}
+                  className={cn(
+                    "mt-1 flex min-h-[48px] w-full items-center justify-center rounded-xl text-sm font-semibold uppercase tracking-wide",
+                    darkMarketingChrome
+                      ? "bg-white text-neutral-900 hover:bg-zinc-100"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90",
+                  )}
+                >
+                JOIN OUR WAITLIST
+                </button>
+              </SheetClose>
               </div>
             </SheetContent>
           </Sheet>
@@ -385,6 +411,10 @@ export default function NavBar() {
         </div>
       </motion.div>
     </motion.nav>
+    <DemoRequestModal
+      open={demoModalOpen}
+      onOpenChange={setDemoModalOpen}
+    />
     </div>
   );
 }
