@@ -107,9 +107,13 @@ export default function ProfilePage() {
                     </div>
 
                     {forceView === "creator" || (!forceView && !isBrand) ? (
-                        <CreatorProfileView />
+                        <React.Suspense fallback={null}>
+                            <CreatorProfileView />
+                        </React.Suspense>
                     ) : (
-                        <BrandProfileView />
+                        <React.Suspense fallback={null}>
+                            <BrandProfileView />
+                        </React.Suspense>
                     )}
                 </div>
             </div>

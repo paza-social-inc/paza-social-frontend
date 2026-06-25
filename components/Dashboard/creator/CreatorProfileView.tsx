@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/store/auth/useAuth";
@@ -14,8 +15,18 @@ import CreatorRoutineForm from "./CreatorRoutineForm";
 import CreatorAffinityForm from "./CreatorAffinityForm";
 import { RiLoader2Line, RiErrorWarningLine } from "@remixicon/react";
 
+const VALID_TABS = ["narrative", "capabilities", "routine", "affinities", "working-style", "audience", "portfolio"] as const;
+type CreatorTab = typeof VALID_TABS[number];
+
 export default function CreatorProfileView() {
     const { user } = useAuth();
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get("tab");
+    const initialTab: CreatorTab =
+        (VALID_TABS as readonly string[]).includes(tabParam ?? "")
+            ? (tabParam as CreatorTab)
+            : "narrative";
+
     const [profile, setProfile] = useState<CreatorProfile | null>(null);
     const [projects, setProjects] = useState<CreatorPastProject[]>([]);
     const [loading, setLoading] = useState(true);
@@ -93,7 +104,7 @@ export default function CreatorProfileView() {
 
     return (
         <div className="space-y-6">
-            <Tabs defaultValue="narrative" className="w-full">
+            <Tabs defaultValue={initialTab} className="w-full">
                 <div className="overflow-x-auto no-scrollbar pb-1">
                     <TabsList className="inline-flex min-w-full h-auto bg-transparent border-b rounded-none p-0 gap-4 md:gap-8 justify-start">
                         <TabsTrigger value="narrative" className="tab-trigger">Story</TabsTrigger>

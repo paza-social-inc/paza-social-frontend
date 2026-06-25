@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -17,8 +18,17 @@ import BrandMediaUpload from "./BrandMediaUpload";
 import { RiLoader2Line, RiErrorWarningLine, RiStore2Line } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 
+const VALID_TABS = ["identity", "media", "narrative", "voice", "prompts", "portfolio", "products", "protection"] as const;
+type BrandTab = typeof VALID_TABS[number];
+
 export default function BrandProfileView() {
     const { user, token, isAuthenticated } = useAuth();
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get("tab");
+    const initialTab: BrandTab =
+        (VALID_TABS as readonly string[]).includes(tabParam ?? "")
+            ? (tabParam as BrandTab)
+            : "identity";
 
     // AuthMe usually contains the canonical business ID
     const { data: authMe } = useQuery({
@@ -166,7 +176,7 @@ export default function BrandProfileView() {
 
     return (
         <div className="space-y-6">
-            <Tabs defaultValue="identity" className="w-full">
+            <Tabs defaultValue={initialTab} className="w-full">
                 <TabsList className="flex w-full h-auto gap-1 p-1 bg-muted/50 overflow-x-auto">
                     <TabsTrigger value="identity" className="py-2 text-xs sm:text-sm whitespace-nowrap">Identity</TabsTrigger>
                     <TabsTrigger value="media" className="py-2 text-xs sm:text-sm whitespace-nowrap">Media</TabsTrigger>
