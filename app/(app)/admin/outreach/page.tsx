@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { OutreachLead, LeadStatus } from '@/types/outreach'
 import { outreachApi } from '@/components/Admin/outreach/lib/api';
 import LeadsList from '@/components/Admin/outreach/LeadsList';
@@ -13,6 +13,10 @@ export default function OutreachPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Ref to access current selectedLead without adding it to useCallback deps
+  const selectedLeadRef = useRef(selectedLead)
+  selectedLeadRef.current = selectedLead
+
   const fetchLeads = useCallback(async () => {
     try {
       setError(null)
@@ -20,8 +24,9 @@ export default function OutreachPage() {
       setLeads(data.leads)
 
       // keep selected lead in sync after refetch
-      if (selectedLead) {
-        const refreshed = data.leads.find(l => l.id === selectedLead.id)
+      const currentSelected = selectedLeadRef.current
+      if (currentSelected) {
+        const refreshed = data.leads.find(l => l.id === currentSelected.id)
         setSelectedLead(refreshed ?? null)
       }
     } catch (err) {
@@ -29,7 +34,7 @@ export default function OutreachPage() {
     } finally {
       setLoading(false)
     }
-  }, [filter, selectedLead])
+  }, [filter]) // Removed selectedLead from here
 
   useEffect(() => {
     setLoading(true)
@@ -50,7 +55,6 @@ export default function OutreachPage() {
     await outreachApi.approveMessage(messageId)
     await fetchLeads()
 
-    // refresh selected lead so UI reflects approved status immediately
     if (selectedLead) {
       try {
         const full = await outreachApi.getLead(selectedLead.id)
@@ -65,7 +69,6 @@ export default function OutreachPage() {
     await outreachApi.sendMessage(messageId)
     await fetchLeads()
 
-    // refresh selected lead so UI reflects sent status immediately
     if (selectedLead) {
       try {
         const full = await outreachApi.getLead(selectedLead.id)
@@ -83,7 +86,6 @@ export default function OutreachPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* left panel - hidden on mobile when detail is shown */}
       <div className={`${selectedLead ? 'hidden' : 'flex'} md:flex w-full md:w-80 flex-shrink-0 border-r border-gray-200 bg-white flex-col`}>
         <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
           <h1 className="text-sm font-medium text-gray-900">Outreach leads</h1>
@@ -92,7 +94,6 @@ export default function OutreachPage() {
           </span>
         </div>
 
-        {/* filter tabs */}
         <div className="flex gap-1.5 px-3 py-2 border-b border-gray-200 flex-wrap">
           {(['all', 'new', 'scanned', 'approved', 'sent'] as const).map(f => (
             <button
@@ -109,7 +110,6 @@ export default function OutreachPage() {
           ))}
         </div>
 
-        {/* list body */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center h-32 text-sm text-gray-400">
@@ -139,11 +139,9 @@ export default function OutreachPage() {
         </div>
       </div>
 
-      {/* right panel - hidden on mobile when no lead is selected */}
       <div className={`${selectedLead ? 'flex' : 'hidden'} md:flex flex-1 overflow-hidden`}>
         {selectedLead ? (
           <div className="flex flex-col w-full h-full">
-            {/* mobile back button */}
             <div className="md:hidden flex items-center px-4 py-3 border-b border-gray-200 bg-white">
               <button
                 onClick={() => setSelectedLead(null)}

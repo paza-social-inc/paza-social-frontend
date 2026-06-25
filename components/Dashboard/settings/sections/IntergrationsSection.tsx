@@ -17,6 +17,7 @@ import {
     getSocialAuthUrl,
     getConnectedSocials,
     disconnectSocial,
+    getAuthToken,
     SocialPlatform,
     ConnectedSocial,
     NotAuthenticatedError,
@@ -122,6 +123,9 @@ function describeConnected(
     }
 }
 
+const POLL_INTERVAL_MS = 3_000;
+const POLL_TIMEOUT_MS = 3 * 60 * 1_000; // 3 minutes max
+
 export function IntegrationsSection() {
     useAuth();
     const [loadingPlatform, setLoadingPlatform] = React.useState<string | null>(null);
@@ -129,14 +133,26 @@ export function IntegrationsSection() {
     const [loadingList, setLoadingList] = React.useState(true);
     const [disconnecting, setDisconnecting] = React.useState<string | null>(null);
 
-    const refreshConnected = React.useCallback(async () => {
+    // Refs so the polling loop can read fresh state without restarting.
+    const connectedRef = React.useRef(connected);
+    connectedRef.current = connected;
+
+    const refreshConnected = React.useCallback(async (silent = false): Promise<ConnectedSocial[]> => {
         try {
             const list = await getConnectedSocials();
+            // getConnectedSocials returns [] on 401 (token expired) without throwing,
+            // so an empty result here does NOT necessarily mean an error.
             const map: Record<string, ConnectedSocial> = {};
             for (const item of list) map[item.platform] = item;
             setConnected(map);
-        } catch {
-            // Non-fatal: the cards just show as not-connected.
+            return list;
+        } catch (err) {
+            // Only show a toast if this is the initial load (not polling).
+            if (!silent) {
+                console.error("[IntegrationsSection] Failed to fetch connected accounts:", err);
+                toast.error("Could not load connected accounts. Please refresh.");
+            }
+            return [];
         } finally {
             setLoadingList(false);
         }
@@ -146,18 +162,14 @@ export function IntegrationsSection() {
         refreshConnected();
     }, [refreshConnected]);
 
-    // When the user returns to this page after the external OAuth redirect
-    // (e.g. via the browser "Back" button, which restores the page from the
-    // bfcache), the spinner state would otherwise stay frozen and keep every
-    // button disabled until a manual refresh. Reset it whenever the page is
-    // shown again or regains visibility.
+    // When the user returns to this tab after the OAuth flow (same-tab fallback),
+    // reset the spinner and re-fetch.
     React.useEffect(() => {
         const reset = () => setLoadingPlatform(null);
         window.addEventListener("pageshow", reset);
         const onVisibility = () => {
             if (document.visibilityState === "visible") {
                 reset();
-                // Re-fetch so a just-completed connect shows up as connected.
                 refreshConnected();
             }
         };
@@ -168,13 +180,98 @@ export function IntegrationsSection() {
         };
     }, [refreshConnected]);
 
-    const handleConnect = (platform: SocialPlatform) => {
+    /**
+     * Poll the GET endpoint every POLL_INTERVAL_MS until the given platform
+     * appears as connected (or we time out). Returns true on success.
+     */
+    const pollUntilConnected = React.useCallback(
+        (platform: SocialPlatform): Promise<void> => {
+            return new Promise<void>((resolve) => {
+                const start = Date.now();
+                const timer = setInterval(async () => {
+                    // Stop if the user navigated away or timed out.
+                    if (Date.now() - start > POLL_TIMEOUT_MS) {
+                        clearInterval(timer);
+                        resolve();
+                        return;
+                    }
+                    try {
+                        const list = await getConnectedSocials();
+                        // getConnectedSocials returns [] on 401 — that means
+                        // the token expired; stop polling rather than looping forever.
+                        if (list.length === 0 && !getAuthToken()) {
+                            clearInterval(timer);
+                            resolve();
+                            return;
+                        }
+                        // Merge into state regardless — keeps UI up to date.
+                        const map: Record<string, ConnectedSocial> = {};
+                        for (const item of list) map[item.platform] = item;
+                        setConnected(map);
+
+                        if (list.some((r) => r.platform === platform && r.isVerified)) {
+                            clearInterval(timer);
+                            resolve();
+                        }
+                    } catch {
+                        // Network hiccup — keep polling.
+                    }
+                }, POLL_INTERVAL_MS);
+
+                // Cleanup if component unmounts mid-poll.
+                pollTimerRef.current = timer;
+            });
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    );
+
+    // Ref to allow cleanup on unmount.
+    const pollTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+    React.useEffect(() => {
+        return () => {
+            if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        };
+    }, []);
+
+    const handleConnect = async (platform: SocialPlatform) => {
         try {
-            // getSocialAuthUrl throws NotAuthenticatedError when there's no token.
             const url = getSocialAuthUrl(platform);
+            const platformLabel = socialPlatforms.find((p) => p.id === platform)?.name ?? "Account";
+
             setLoadingPlatform(platform);
-            // Redirect to backend auth initiator
-            window.location.href = url;
+
+            // Try opening in a new tab first (better UX — user keeps the settings page open).
+            const newTab = window.open(url, "_blank");
+            if (newTab) {
+                // Sever opener to prevent reverse-tabnabbing.
+                newTab.opener = null;
+
+                // Show "waiting" toast while the user completes OAuth in the other tab.
+                const waitingToast = toast.loading(`Connecting ${platformLabel}… Complete the login in the other tab.`, {
+                    duration: Infinity,
+                    id: `connect-${platform}`,
+                });
+
+                // Poll the backend until the connection appears.
+                await pollUntilConnected(platform);
+
+                // Check if it actually connected (from the latest state).
+                const didConnect = !!connectedRef.current[platform]?.isVerified;
+                toast.dismiss(waitingToast);
+
+                if (didConnect) {
+                    toast.success(`${platformLabel} connected successfully!`);
+                } else {
+                    toast.error(`${platformLabel} connection timed out. Check the other tab or try again.`);
+                }
+            } else {
+                // Popup blocked — fall back to same-tab navigation.
+                toast("Popup blocked — connecting in this tab instead…", { icon: "⚠️" });
+                window.location.href = url;
+                // Same-tab: the app will remount on /settings?verification=success,
+                // and SettingsPage's useEffect handles the toast + tab switch.
+            }
         } catch (err) {
             if (err instanceof NotAuthenticatedError) {
                 toast.error("Please log in to connect an account.");

@@ -54,9 +54,11 @@ export function SettingsPage() {
     return nextItems;
   }, [isBusiness]);
 
+  // Show toast on OAuth redirect back (same-tab fallback).
+  // We read params immediately on first render — do NOT gate on `mounted`,
+  // because a full navigation to /settings?verification=success remounts the
+  // component and we must catch the params on the very first effect run.
   useEffect(() => {
-    if (!mounted) return;
-
     const params = new URLSearchParams(window.location.search);
     const verification = params.get("verification");
 
@@ -104,7 +106,7 @@ export function SettingsPage() {
       "",
       window.location.pathname + (query ? `?${query}` : "")
     );
-  }, [mounted]);
+  }, []);
 
   if (!mounted) {
     return <div className="min-h-[60vh] bg-background" />;

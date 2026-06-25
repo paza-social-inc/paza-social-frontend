@@ -30,16 +30,17 @@ export const outreachApi = {
   },
 
 
-  createLead(data: {
+  async createLead(data: {
     domain: string
     companyName?: string
     country?: string
     contactEmail?: string
   }): Promise<OutreachLead> {
-    return request<OutreachLead>('/api/leads', {
+    const res = await request<{ lead: OutreachLead }>('/api/leads', {
       method: 'POST',
       body: JSON.stringify(data),
     })
+    return res.lead
   },
 
   rescanLead(id: string): Promise<OutreachLead> {
