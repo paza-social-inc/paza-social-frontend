@@ -420,7 +420,8 @@ export default function AdminDashboard() {
       }
       
       try {
-        const data = await apiFetch("/api/admin/dashboard");
+        // const data = await apiFetch("/api/admin/dashboard");
+        const data = await apiFetch("/api/admin");
         setStats(data.stats);
       } catch (err) {
         console.error("Admin fetch failed:", err);
