@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 const VALID_TABS = ["identity", "media", "narrative", "voice", "prompts", "portfolio", "products", "protection"] as const;
 type BrandTab = typeof VALID_TABS[number];
 
-export default function BrandProfileView() {
+function BrandProfileContent() {
     const { user, token, isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
@@ -34,7 +34,6 @@ export default function BrandProfileView() {
 
     const [activeTab, setActiveTab] = useState<BrandTab>(initialTab);
 
-    // AuthMe usually contains the canonical business ID
     const { data: authMe } = useQuery({
         queryKey: ["auth-me", token ?? null],
         queryFn: fetchAuthMe,
@@ -42,7 +41,6 @@ export default function BrandProfileView() {
         staleTime: 5 * 60 * 1000,
     });
 
-    // Try to get businessId from: authMe -> user context -> localStorage bridge (for very fresh creations)
     const [localBridgeId, setLocalBridgeId] = React.useState<number | null>(null);
 
     React.useEffect(() => {
@@ -63,7 +61,6 @@ export default function BrandProfileView() {
     const loadProfile = React.useCallback(async () => {
         let currentId = businessIdFromSession;
 
-        // CRITICAL: If no businessId in session, try to discover it from the backend
         if (!currentId) {
             try {
                 const { ensureBusinessId } = await import("@/lib/data/brandOnboarding");
@@ -118,8 +115,6 @@ export default function BrandProfileView() {
         loadProfile();
     }, [loadProfile]);
 
-    // Ref to the active form so we can scroll it into view when the tab changes
-    // (e.g. after clicking "Complete profile" which deep-links to a section).
     const contentRef = useRef<HTMLDivElement | null>(null);
     const didMountRef = useRef(false);
 
@@ -135,20 +130,16 @@ export default function BrandProfileView() {
         return () => clearTimeout(t);
     }, [activeTab, tabParam]);
 
-    // After a section saves, update local state AND refresh the sidebar's
-    // completion computation so the percentage updates in real time.
     const handleSectionSaved = React.useCallback((data: BrandProfile) => {
         setProfile(data);
         queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
     }, [queryClient]);
 
-    // Media upload gives partial updates; still refresh completion after one.
     const handleMediaUpdate = React.useCallback((updates: Partial<BrandProfile>) => {
         setProfile(prev => prev ? { ...prev, ...updates } : prev);
         queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
     }, [queryClient]);
 
-    // Portfolio/IP/Product reload the whole profile; also refresh completion.
     const handleFullReload = React.useCallback(async () => {
         await loadProfile();
         queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
@@ -163,7 +154,6 @@ export default function BrandProfileView() {
         );
     }
 
-    // Handle case where user is a business but hasn't set up a brand/business entity yet
     if (!activeBusinessId) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
@@ -296,5 +286,18 @@ export default function BrandProfileView() {
                 </div>
             </Tabs>
         </div>
+    );
+}
+
+export default function BrandProfileView() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <RiLoader2Line className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground animate-pulse">Loading brand profile...</p>
+            </div>
+        }>
+            <BrandProfileContent />
+        </Suspense>
     );
 }
