@@ -1,32 +1,131 @@
-import { ChangeEvent, useRef, useState } from "react";
+"use client";
+
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { RiCameraLine } from "@remixicon/react";
+import { RiCameraLine, RiLoader2Line } from "@remixicon/react";
+import { useAuth } from "@/hooks/store/auth/useAuth";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchAuthMe } from "@/lib/data/auth";
+import { getCreatorProfile, uploadCreatorAvatar, uploadCreatorPreview } from "@/lib/data/creator";
+import { getBrandProfile, uploadBrandLogo, uploadBrandCoverImage } from "@/lib/data/brands";
+import toast from "react-hot-toast";
 
 export default function CoverArea() {
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
+    const isBrand = user?.accountType === "Business" || user?.accountType === "Brand";
+
     const bgInputRef = useRef<HTMLInputElement | null>(null);
     const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
+    // Live image sources. Seeded from the persisted profile, updated optimistically
+    // and confirmed with the persisted S3 URL once the upload resolves.
     const [bgImage, setBgImage] = useState("");
-    const [avatarImage, setAvatarImage] = useState("https://c4.wallpaperflare.com/wallpaper/951/991/685/star-wars-darth-vader-low-poly-stormtrooper-wallpaper-preview.jpg");
+    const [avatarImage, setAvatarImage] = useState("");
+    const [uploadingBg, setUploadingBg] = useState(false);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-    const handleBgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) setBgImage(URL.createObjectURL(file));
+    // Brand profiles are keyed on businessId from /api/users/me.
+    const { data: authMe } = useQuery({
+        queryKey: ["auth-me-cover"],
+        queryFn: fetchAuthMe,
+        staleTime: 5 * 60 * 1000,
+    });
+
+    // Load the persisted media so the cover/avatar show on page load (and survive refresh).
+    const { data: profile } = useQuery({
+        queryKey: ["profile-media", isBrand ? "brand" : "creator", authMe?.businessId ?? null],
+        enabled: !isBrand || Boolean(authMe?.businessId),
+        staleTime: 30 * 1000,
+        queryFn: async () => {
+            if (isBrand) {
+                const businessId = authMe?.businessId;
+                if (!businessId) return { avatar: "", bg: "" };
+                const res = await getBrandProfile(businessId);
+                return { avatar: res.data?.logo ?? "", bg: res.data?.coverImage ?? "" };
+            }
+            const res = await getCreatorProfile();
+            return { avatar: res.data?.avatar ?? "", bg: res.data?.preview ?? "" };
+        },
+    });
+
+    // Seed local state once the persisted profile media resolves.
+    useEffect(() => {
+        if (profile) {
+            if (profile.avatar) setAvatarImage(profile.avatar);
+            if (profile.bg) setBgImage(profile.bg);
+        }
+    }, [profile]);
+
+    const refreshCompletion = () => {
+        queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
+        queryClient.invalidateQueries({ queryKey: ["profile-media"] });
     };
 
-    const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleBgChange = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) setAvatarImage(URL.createObjectURL(file));
+        if (!file) return;
+        // Optimistic preview so the user sees the new banner immediately.
+        setBgImage(URL.createObjectURL(file));
+        setUploadingBg(true);
+        try {
+            if (isBrand) {
+                const businessId = authMe?.businessId;
+                if (!businessId) throw new Error("Business profile not found");
+                const res = await uploadBrandCoverImage(businessId, file);
+                setBgImage(res.data?.coverImage ?? "");
+            } else {
+                const res = await uploadCreatorPreview(file);
+                setBgImage(res.data?.preview ?? "");
+            }
+            refreshCompletion();
+            toast.success("Banner updated");
+        } catch (err) {
+            // Revert to the persisted value on failure.
+            setBgImage(profile?.bg ?? "");
+            toast.error(err instanceof Error ? err.message : "Failed to update banner");
+        } finally {
+            setUploadingBg(false);
+            if (bgInputRef.current) bgInputRef.current.value = "";
+        }
     };
+
+    const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setAvatarImage(URL.createObjectURL(file));
+        setUploadingAvatar(true);
+        try {
+            if (isBrand) {
+                const businessId = authMe?.businessId;
+                if (!businessId) throw new Error("Business profile not found");
+                const res = await uploadBrandLogo(businessId, file);
+                setAvatarImage(res.data?.logo ?? "");
+            } else {
+                const res = await uploadCreatorAvatar(file);
+                setAvatarImage(res.data?.avatar ?? "");
+            }
+            refreshCompletion();
+            toast.success("Profile picture updated");
+        } catch (err) {
+            setAvatarImage(profile?.avatar ?? "");
+            toast.error(err instanceof Error ? err.message : "Failed to update profile picture");
+        } finally {
+            setUploadingAvatar(false);
+            if (avatarInputRef.current) avatarInputRef.current.value = "";
+        }
+    };
+
+    const initials = (user?.firstname?.[0] ?? "") + (user?.lastname?.[0] ?? "");
 
     return (
         <div className="relative h-64 group/cover bg-muted-foreground/40 dark:border-b-0 border-b">
-            {/* Background Image (preview) */}
+            {/* Background Image */}
             <div
                 className="absolute inset-0 bg-cover bg-center transition-all"
-                style={{ backgroundImage: `url(${bgImage})` }}
+                style={bgImage ? { backgroundImage: `url(${bgImage})` } : undefined}
             />
 
             {/* Background Upload Hover Overlay */}
@@ -39,7 +138,11 @@ export default function CoverArea() {
                     className="cursor-pointer rounded-full h-11 w-11 group-hover/cover:bg-secondary group-hover/cover:dark:bg-background"
                     size="icon"
                 >
-                    <RiCameraLine className="group-hover/cover:opacity-100 opacity-0 transition-all text-muted-foreground h-6 w-6" />
+                    {uploadingBg ? (
+                        <RiLoader2Line className="h-6 w-6 animate-spin text-muted-foreground" />
+                    ) : (
+                        <RiCameraLine className="group-hover/cover:opacity-100 opacity-0 transition-all text-muted-foreground h-6 w-6" />
+                    )}
                 </Button>
                 <input
                     type="file"
@@ -58,7 +161,9 @@ export default function CoverArea() {
                         <div className="relative group/avatar overflow-hidden">
                             <Avatar className="h-40 w-40 border-4 bg-muted-foreground border-background relative">
                                 <AvatarImage src={avatarImage} className="object-cover" />
-                                <AvatarFallback className="text-2xl">AG</AvatarFallback>
+                                <AvatarFallback className="text-2xl">
+                                    {initials || "U"}
+                                </AvatarFallback>
                             </Avatar>
 
                             {/* Avatar Upload Hover Overlay */}
@@ -71,7 +176,11 @@ export default function CoverArea() {
                                     className="cursor-pointer rounded-full h-11 w-11 group-hover/avatar:bg-secondary group-hover/avatar:dark:bg-background"
                                     size="icon"
                                 >
-                                    <RiCameraLine className="group-hover/avatar:opacity-100 opacity-0 transition-all text-muted-foreground h-6 w-6" />
+                                    {uploadingAvatar ? (
+                                        <RiLoader2Line className="h-6 w-6 animate-spin text-muted-foreground" />
+                                    ) : (
+                                        <RiCameraLine className="group-hover/avatar:opacity-100 opacity-0 transition-all text-muted-foreground h-6 w-6" />
+                                    )}
                                 </Button>
                                 <input
                                     type="file"

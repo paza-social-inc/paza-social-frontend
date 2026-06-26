@@ -1,7 +1,7 @@
+"use client";
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
     RiFolderLine,
 } from "@remixicon/react";
@@ -11,32 +11,15 @@ import {
     EmptyHeader,
     EmptyMedia,
     EmptyTitle,
-} from "@/components/ui/empty"
-
+} from "@/components/ui/empty";
+import { ProfileCompletionCard } from "./profile-completion-card";
 
 export const ProfileSidebar = () => {
-
-
-    const profileStats = {
-        progress: 20
-    };
-
-
     return (
         <div className="border-r max-w-xs sticky top-0">
             <div className="space-y-6 divide-y">
                 {/* Profile Summary */}
-                <div className="text-center space-y-6 py-8 p-6">
-                    <div className="flex flex-col items-center">
-                        <Progress value={profileStats.progress}
-                            strokeWidth={10}
-                            title="Progress"
-                            className="mb-5" size={150}
-                            variant="radial" />
-                        <p className="text-sm text-muted-foreground">Profile {profileStats.progress}% complete</p>
-                        <Button variant="secondary" className="w-full mt-4 h-auto">Complete Profile</Button>
-                    </div>
-                </div>
+                <ProfileCompletionCard variant="full" />
 
                 {/* Skills Section */}
                 <div className="p-6 pt-0">
@@ -67,5 +50,5 @@ export const ProfileSidebar = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};

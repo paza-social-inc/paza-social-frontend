@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -17,10 +19,21 @@ import BrandMediaUpload from "./BrandMediaUpload";
 import { RiLoader2Line, RiErrorWarningLine, RiStore2Line } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 
-export default function BrandProfileView() {
-    const { user, token, isAuthenticated } = useAuth();
+const VALID_TABS = ["identity", "media", "narrative", "voice", "prompts", "portfolio", "products", "protection"] as const;
+type BrandTab = typeof VALID_TABS[number];
 
-    // AuthMe usually contains the canonical business ID
+function BrandProfileContent() {
+    const { user, token, isAuthenticated } = useAuth();
+    const queryClient = useQueryClient();
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get("tab");
+    const initialTab: BrandTab =
+        (VALID_TABS as readonly string[]).includes(tabParam ?? "")
+            ? (tabParam as BrandTab)
+            : "identity";
+
+    const [activeTab, setActiveTab] = useState<BrandTab>(initialTab);
+
     const { data: authMe } = useQuery({
         queryKey: ["auth-me", token ?? null],
         queryFn: fetchAuthMe,
@@ -28,7 +41,6 @@ export default function BrandProfileView() {
         staleTime: 5 * 60 * 1000,
     });
 
-    // Try to get businessId from: authMe -> user context -> localStorage bridge (for very fresh creations)
     const [localBridgeId, setLocalBridgeId] = React.useState<number | null>(null);
 
     React.useEffect(() => {
@@ -49,7 +61,6 @@ export default function BrandProfileView() {
     const loadProfile = React.useCallback(async () => {
         let currentId = businessIdFromSession;
 
-        // CRITICAL: If no businessId in session, try to discover it from the backend
         if (!currentId) {
             try {
                 const { ensureBusinessId } = await import("@/lib/data/brandOnboarding");
@@ -104,6 +115,36 @@ export default function BrandProfileView() {
         loadProfile();
     }, [loadProfile]);
 
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const didMountRef = useRef(false);
+
+    useEffect(() => {
+        const isDeepLink = Boolean(tabParam);
+        if (!didMountRef.current) {
+            didMountRef.current = true;
+            if (!isDeepLink) return;
+        }
+        const t = setTimeout(() => {
+            contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 50);
+        return () => clearTimeout(t);
+    }, [activeTab, tabParam]);
+
+    const handleSectionSaved = React.useCallback((data: BrandProfile) => {
+        setProfile(data);
+        queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
+    }, [queryClient]);
+
+    const handleMediaUpdate = React.useCallback((updates: Partial<BrandProfile>) => {
+        setProfile(prev => prev ? { ...prev, ...updates } : prev);
+        queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
+    }, [queryClient]);
+
+    const handleFullReload = React.useCallback(async () => {
+        await loadProfile();
+        queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
+    }, [loadProfile, queryClient]);
+
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -113,7 +154,6 @@ export default function BrandProfileView() {
         );
     }
 
-    // Handle case where user is a business but hasn't set up a brand/business entity yet
     if (!activeBusinessId) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
@@ -166,7 +206,7 @@ export default function BrandProfileView() {
 
     return (
         <div className="space-y-6">
-            <Tabs defaultValue="identity" className="w-full">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BrandTab)} className="w-full">
                 <TabsList className="flex w-full h-auto gap-1 p-1 bg-muted/50 overflow-x-auto">
                     <TabsTrigger value="identity" className="py-2 text-xs sm:text-sm whitespace-nowrap">Identity</TabsTrigger>
                     <TabsTrigger value="media" className="py-2 text-xs sm:text-sm whitespace-nowrap">Media</TabsTrigger>
@@ -178,12 +218,12 @@ export default function BrandProfileView() {
                     <TabsTrigger value="protection" className="py-2 text-xs sm:text-sm whitespace-nowrap">IP Protection</TabsTrigger>
                 </TabsList>
 
-                <div className="mt-6">
+                <div ref={contentRef} className="mt-6">
                     <TabsContent value="identity">
                         <IdentityForm
                             businessId={activeBusinessId}
                             initialData={profile}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
@@ -192,7 +232,7 @@ export default function BrandProfileView() {
                             businessId={activeBusinessId}
                             currentLogo={profile.logo}
                             currentCover={profile.coverImage}
-                            onUpdate={(updates) => setProfile(prev => prev ? { ...prev, ...updates } : prev)}
+                            onUpdate={handleMediaUpdate}
                         />
                     </TabsContent>
 
@@ -200,7 +240,7 @@ export default function BrandProfileView() {
                         <NarrativeForm
                             businessId={activeBusinessId}
                             initialData={profile}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
@@ -208,7 +248,7 @@ export default function BrandProfileView() {
                         <BrandVoiceForm
                             businessId={activeBusinessId}
                             initialData={profile}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
@@ -216,7 +256,7 @@ export default function BrandProfileView() {
                         <BrandPromptsForm
                             businessId={activeBusinessId}
                             initialData={profile}
-                            onSuccess={(data) => setProfile(data)}
+                            onSuccess={handleSectionSaved}
                         />
                     </TabsContent>
 
@@ -224,7 +264,7 @@ export default function BrandProfileView() {
                         <PastProjectsManager
                             businessId={activeBusinessId}
                             initialProjects={projects}
-                            onUpdate={loadProfile}
+                            onUpdate={handleFullReload}
                         />
                     </TabsContent>
 
@@ -232,6 +272,7 @@ export default function BrandProfileView() {
                         <ProductManager
                             businessId={activeBusinessId}
                             initialProducts={profile.products || []}
+                            onUpdate={handleFullReload}
                         />
                     </TabsContent>
 
@@ -239,11 +280,24 @@ export default function BrandProfileView() {
                         <IpDeclarationForm
                             businessId={activeBusinessId}
                             isAlreadyEnabled={profile.ipPublisherEnabled}
-                            onSuccess={loadProfile}
+                            onSuccess={handleFullReload}
                         />
                     </TabsContent>
                 </div>
             </Tabs>
         </div>
+    );
+}
+
+export default function BrandProfileView() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <RiLoader2Line className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground animate-pulse">Loading brand profile...</p>
+            </div>
+        }>
+            <BrandProfileContent />
+        </Suspense>
     );
 }

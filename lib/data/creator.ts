@@ -2,6 +2,7 @@ import { pazaApi } from "@/lib/axiosClients";
 import { ApiResponse } from "./brands";
 
 export interface CreatorProfile {
+  audienceLocale: unknown;
   id: number;
   creatorname?: string;
   avatar?: string;
@@ -18,7 +19,7 @@ export interface CreatorProfile {
   // ── 3. Working Style & Availability
   availabilityType?: string;
   preferredCommunication?: string;
-  engagementType?: string[]; 
+  engagementType?: string[];
   deliverables?: string[];
   personalityTags?: string[];
   equipmentAndSoftware?: string;
