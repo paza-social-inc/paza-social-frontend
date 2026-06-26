@@ -226,16 +226,16 @@ export function GoogleCompleteSignupForm({
           embedded
           initialData={creatorPrefill}
           className="px-0 pt-0"
-          mode="signup-lite"
-          stepOffset={1}
-          totalSteps={3}
+          mode="full"
+          stepOffset={0}
+          totalSteps={5}
           onComplete={() => router.push("/overview")}
         />
       ) : showBrandJourney ? (
         <BrandOnboarding
           embedded
           className="px-0 pt-0"
-          stepOffset={1}
+          stepOffset={0}
           totalSteps={4}
           onComplete={() => router.push("/overview")}
         />
