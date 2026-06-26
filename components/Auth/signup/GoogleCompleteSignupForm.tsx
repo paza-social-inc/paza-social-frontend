@@ -30,7 +30,7 @@ import {
 import { pazaApi } from "@/lib/axiosClients";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiMailLine } from "@remixicon/react";
+import { RiMailLine, RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import { Loader2 } from "lucide-react";
@@ -41,32 +41,30 @@ import toast from "react-hot-toast";
 import { z, infer as zInfer } from "zod";
 import type { Creator } from "@/types/preferences/Creator/CreatorType";
 
-/**
- * Completes a Google OAuth signup.
- *
- * Google only hands us email + first/last name + avatar, so a brand-new Google
- * account is missing the basic profile details that the regular form signup
- * collects up front (birthday for creators, gender, phone, city) AND a Terms
- * acceptance. This form mirrors those fields (pre-filled from Google where we
- * have them), PUTs them to /api/auth/google/complete-signup, then routes the
- * user into the same creator/brand onboarding journey a form-signed-up user
- * would take — so their metadata is actually picked up instead of skipped.
- */
+const signupPasswordSchema = z
+  .string()
+  .min(6, "Password must be at least 6 characters long.")
+  .regex(/[A-Z]/, "Password must include at least one uppercase letter.")
+  .regex(/[0-9]/, "Password must include at least one number.")
+  .regex(/[^A-Za-z0-9]/, "Password must include at least one special character.");
 
 const sharedFields = {
   firstname: z.string().min(2, "First name must be at least 2 characters"),
   lastname: z.string().min(2, "Last name must be at least 2 characters"),
+  password: signupPasswordSchema,
+  confirmPassword: z.string(),
   agreeToTerms: z.boolean().refine((v) => v === true, {
     message: "You must accept the Terms and Conditions to continue.",
   }),
 } as const;
 
 function buildSchema(accountType: "brand" | "creator") {
-  if (accountType === "brand") {
-    return z.object(sharedFields);
-  }
-  return z.object({
-    ...sharedFields,
+  const base = z.object(sharedFields).refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match.",
+  });
+  if (accountType === "brand") return base;
+  return base.extend({
     birthday: z
       .string()
       .min(1, "Birthday is required")
@@ -81,6 +79,8 @@ type FormData = zInfer<ReturnType<typeof buildSchema>>;
 type FormValues = {
   firstname: string;
   lastname: string;
+  password: string;
+  confirmPassword: string;
   agreeToTerms: boolean;
   birthday?: string;
   gender?: string;
@@ -90,7 +90,6 @@ type FormValues = {
 
 interface GoogleCompleteSignupFormProps extends React.ComponentProps<"div"> {
   accountType: "brand" | "creator";
-  /** Values pulled from the Google profile + JWT, used to prefill the form. */
   defaults: {
     email?: string;
     firstname?: string;
@@ -115,15 +114,16 @@ export function GoogleCompleteSignupForm({
     defaultValues: {
       firstname: defaults.firstname ?? "",
       lastname: defaults.lastname ?? "",
+      password: "",
+      confirmPassword: "",
       agreeToTerms: false,
       ...(accountType === "creator" ? { birthday: "" } : {}),
     },
   });
   const [termsModalOpen, setTermsModalOpen] = useState(false);
-  /** After this form is saved, prefill the creator journey (name + DOB). */
-  const [creatorPrefill, setCreatorPrefill] = useState<Partial<Creator> | null>(
-    null,
-  );
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [creatorPrefill, setCreatorPrefill] = useState<Partial<Creator> | null>(null);
 
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -140,6 +140,8 @@ export function GoogleCompleteSignupForm({
         lastname: data.lastname,
         accountType: accountType === "brand" ? "Business" : "Creator",
       };
+      const pwd = (data as FormValues).password;
+      if (pwd) payload.password = pwd;
       if (accountType === "creator") {
         const birthday = (data as { birthday?: string }).birthday;
         const b = typeof birthday === "string" ? birthday.trim() : "";
@@ -155,11 +157,11 @@ export function GoogleCompleteSignupForm({
       const token = res.data?.token as string | undefined;
       const user = res.data?.user as
         | {
-              id?: number | string;
-              email?: string;
-              firstName?: string;
-              lastName?: string;
-              accountType?: string;
+            id?: number | string;
+            email?: string;
+            firstName?: string;
+            lastName?: string;
+            accountType?: string;
           }
         | undefined;
 
@@ -342,6 +344,62 @@ export function GoogleCompleteSignupForm({
               <FieldDescription>
                 From your Google account — this is what we&apos;ll verify.
               </FieldDescription>
+            </Field>
+
+            <p className="text-xs text-zinc-500">
+              Set a password so you can also log in with your email.
+            </p>
+
+            {/* ── Password ── */}
+            <Field>
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  {...register("password")}
+                  id="password"
+                  type={showPass ? "text" : "password"}
+                  placeholder="••••••••"
+                  required
+                />
+                <InputGroupAddon align="inline-end">
+                  {/* ✅ Fixed: replaced undefined InputGroupButton with a plain button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="flex items-center justify-center p-1 text-zinc-400 hover:text-zinc-200 focus:outline-none"
+                    aria-label={showPass ? "Hide password" : "Show password"}
+                  >
+                    {showPass ? <RiEyeLine size={18} /> : <RiEyeOffLine size={18} />}
+                  </button>
+                </InputGroupAddon>
+              </InputGroup>
+              {errors?.password && <FieldError>{errors.password.message}</FieldError>}
+            </Field>
+
+            {/* ── Confirm Password ── */}
+            <Field>
+              <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  {...register("confirmPassword")}
+                  id="confirm-password"
+                  type={showConfirmPass ? "text" : "password"}
+                  placeholder="••••••••"
+                  required
+                />
+                <InputGroupAddon align="inline-end">
+                  {/* ✅ Fixed: replaced undefined InputGroupButton with a plain button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPass(!showConfirmPass)}
+                    className="flex items-center justify-center p-1 text-zinc-400 hover:text-zinc-200 focus:outline-none"
+                    aria-label={showConfirmPass ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPass ? <RiEyeLine size={18} /> : <RiEyeOffLine size={18} />}
+                  </button>
+                </InputGroupAddon>
+              </InputGroup>
+              {errors?.confirmPassword && <FieldError>{errors.confirmPassword.message}</FieldError>}
             </Field>
 
             {accountType === "creator" ? (

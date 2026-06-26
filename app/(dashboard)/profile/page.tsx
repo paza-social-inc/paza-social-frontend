@@ -38,7 +38,7 @@ export default function ProfilePage() {
                 <CoverArea />
 
                 {/* Profile completion — compact card for mobile/tablet (sidebar is desktop-only) */}
-                <div className="px-4 pt-6 lg:hidden">
+                <div className="px-4 pt-28 lg:hidden">
                     <ProfileCompletionCard variant="compact" />
                 </div>
                 
