@@ -262,6 +262,7 @@ export function CreateCampaignModal({
   });
 
   const onSubmit = (data: FormData) => {
+    if (step < TOTAL_STEPS) return;
     const payload: CreateCampaignDto = {
       title: data.title,
       description: data.description || undefined,
@@ -277,7 +278,8 @@ export function CreateCampaignModal({
     createMutation.mutate(payload);
   };
 
-  const handleNext = async () => {
+  const handleNext = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
     const fields = STEP_FIELDS[step - 1];
     const valid = fields.length === 0 ? true : await trigger(fields);
     if (valid) setStep((s) => Math.min(s + 1, TOTAL_STEPS));
@@ -645,7 +647,7 @@ export function CreateCampaignModal({
               )}
             </div>
             {step < TOTAL_STEPS ? (
-              <Button type="button" onClick={handleNext} className="bg-primary text-primary-foreground hover:opacity-90">
+              <Button type="button" onClick={(e) => { e.preventDefault(); void handleNext(e); }} className="bg-primary text-primary-foreground hover:opacity-90">
                 Next
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
