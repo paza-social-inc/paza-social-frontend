@@ -17,12 +17,15 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group";
 import { pazaApi } from "@/lib/axiosClients";
+import { resendVerificationEmail } from "@/lib/data/auth";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     RiEyeLine,
     RiEyeOffLine,
     RiMailLine,
+    RiCheckLine,
+    RiLoader2Line,
 } from "@remixicon/react";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
@@ -46,9 +49,13 @@ export function LoginForm({
     ...props
 }: React.ComponentProps<"form">) {
     const [showPass, setShowPass] = React.useState(false);
+    const [needsVerification, setNeedsVerification] = React.useState(false);
+    const [resending, setResending] = React.useState(false);
+    const [resendSent, setResendSent] = React.useState(false);
     const {
         register,
         handleSubmit,
+        getValues,
         formState: { errors }
     } = useForm({
         resolver: zodResolver(schema)
@@ -83,8 +90,16 @@ export function LoginForm({
             }
             window.location.href = "/overview";
         },
-        onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+        onError: (error: AxiosError<{ message?: string; error?: string; needsVerification?: boolean }>) => {
             console.error(error);
+
+            // Backend signals the account is not verified yet. Show the
+            // verification banner with a resend option instead of a generic error.
+            if (error?.response?.data?.needsVerification) {
+                setNeedsVerification(true);
+                setResendSent(false);
+                return;
+            }
 
             const message =
                 error?.response?.data?.message ||
@@ -95,7 +110,25 @@ export function LoginForm({
         }
     })
 
+    const handleResend = async () => {
+        const email = getValues("email");
+        if (!email) {
+            toast.error("Enter your email first, then resend.");
+            return;
+        }
+        setResending(true);
+        const res = await resendVerificationEmail(email);
+        setResending(false);
+        if (res.success) {
+            setResendSent(true);
+            toast.success("Verification email sent. Check your inbox.");
+        } else {
+            toast.error(res.message);
+        }
+    };
+
     const onSubmit = (data: FormData) => {
+        setNeedsVerification(false);
         loginMutation.mutate(data);
     }
 
@@ -108,6 +141,48 @@ export function LoginForm({
                         Enter your email below to login to your paza account
                     </p>
                 </div>
+
+                {needsVerification && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/30">
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-start gap-2">
+                                <span className="mt-0.5 text-amber-600">⚠️</span>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                                        Verify your email to log in
+                                    </p>
+                                    <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
+                                        We sent a verification link to your inbox. Check your email (and spam folder) to activate your account.
+                                    </p>
+                                </div>
+                            </div>
+                            {resendSent ? (
+                                <div className="flex items-center gap-1.5 text-xs font-medium text-green-600">
+                                    <RiCheckLine className="h-4 w-4" />
+                                    Verification email sent — check your inbox.
+                                </div>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleResend}
+                                    disabled={resending}
+                                    className="w-fit border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/50"
+                                >
+                                    {resending ? (
+                                        <>
+                                            <RiLoader2Line className="h-4 w-4 animate-spin" />
+                                            Sending…
+                                        </>
+                                    ) : (
+                                        "Resend verification email"
+                                    )}
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                )}
                 <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
                     <InputGroup className="border-border bg-background dark:bg-input/30">

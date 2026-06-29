@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z, infer as zInfer } from "zod"
@@ -25,12 +25,11 @@ const schema = z.object({
 type FormData = zInfer<typeof schema>
 
 export function ResetPasswordForm({
+    token,
     className,
     ...props
-}: React.ComponentProps<"div">) {
-    const searchParams = useSearchParams()
+}: { token: string } & React.ComponentProps<"div">) {
     const router = useRouter()
-    const token = searchParams.get("token")
 
     const {
         register,
@@ -41,7 +40,9 @@ export function ResetPasswordForm({
     })
 
     const resetPasswordMutation = useMutation({
-        mutationFn: (data: FormData) => pazaApi.post("/auth/reset-password", { token, password: data.password }),
+        // Backend route is /api/auth/reset-password/:token — token goes in the URL path.
+        mutationFn: (data: FormData) =>
+            pazaApi.post(`/api/auth/reset-password/${token}`, { password: data.password }),
         onSuccess: () => {
             toast.success("Password reset successfully! You can now log in with your new password.")
             router.push("/login")

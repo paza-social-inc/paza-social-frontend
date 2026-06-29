@@ -35,7 +35,7 @@ export function ForgotPasswordForm({
 
     const router = useRouter()
     const forgotPasswordMutation = useMutation({
-        mutationFn: (data: FormData) => pazaApi.post("/auth/forgot-password", data),
+        mutationFn: (data: FormData) => pazaApi.post("/api/auth/forgot-password", data),
         onSuccess: () => {
             toast.success("Password reset email sent! Please check your inbox.")
             setTimeout(() => router.push("/login"), 2000)

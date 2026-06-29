@@ -185,11 +185,11 @@ export function SignupForm({
                             ? (variables as { birthday: string }).birthday
                             : undefined,
                 });
-                toast.success("Account created — complete your creator profile");
+                toast.success("Account created — we've sent a verification link to your email");
             } else if (accountType === "brand") {
-                toast.success("Account created — complete your brand profile");
+                toast.success("Account created — we've sent a verification link to your email");
             } else {
-                toast.success("Registration successfull");
+                toast.success("Registration successful — please verify your email");
             }
         },
         onError: (err: unknown) => {
