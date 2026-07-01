@@ -28,7 +28,8 @@ import {
     RiSpeakLine,
     RiSettings3Line,
     RiStore2Line,
-    RiUserStarLine
+    RiUserStarLine,
+    RiBrainLine,
 } from "@remixicon/react";
 
 // Navigation structure
@@ -42,6 +43,12 @@ const navItems = [
         title: "Brand Profile",
         url: "/accounts/brand",
         icon: RiStore2Line,
+        accountTypes: ["Business", "Brand"],
+    },
+    {
+        title: "PDE Insights",
+        url: "/accounts/brand/pde",
+        icon: RiBrainLine,
         accountTypes: ["Business", "Brand"],
     },
     {
