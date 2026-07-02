@@ -94,19 +94,21 @@ export default function ShowcaseProjectPageClient() {
   const creatorProfile = buildCreatorProfileFromProject(project);
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="flex min-h-14 items-center gap-3 w-full max-w-5xl mx-auto px-4 sm:px-6">
-          <Button variant="ghost" size="icon" className="shrink-0" asChild>
-            <Link href="/showcase" aria-label="Back to showcase">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <h1 className="text-lg font-semibold truncate">{projectTitle}</h1>
-        </div>
-      </header>
+    <div className="min-h-dvh bg-background text-foreground">    
 
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+      <main className="w-full px-6 pt-2 pb-6 sm:px-8 sm:pt-3 sm:pb-8">
+           <div className="flex items-center gap-3 mb-4">
+              <Link
+                href="/showcase"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Link>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
+                {projectTitle}
+              </h1>
+           </div>
         <section
           className="rounded-2xl border border-border bg-card/30 overflow-hidden"
           aria-label="Project details"

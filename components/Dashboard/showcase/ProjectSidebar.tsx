@@ -403,49 +403,46 @@ export function ProjectSidebar({
           ))}
         </div>
         {projectId && (
-        <div className="pt-1">
-          <div className="mb-1.5 flex items-center justify-between gap-2">
-            <div className="inline-flex items-center gap-2">
-              <span className="text-xs font-semibold text-orange-500 underline underline-offset-2">
-                Openings
-              </span>
-              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
-                {openingsCount}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              {projectId && isOwnProject && (
-                <button
-                  type="button"
-                  onClick={() => setCreateOpeningModalOpen(true)}
-                  className="text-xs text-orange-500 font-medium hover:underline touch-manipulation"
-                >
-                  Add Opening
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setOpeningsListOpen(true)}
-                className="inline-flex items-center gap-1 text-xs text-orange-500 font-medium hover:underline touch-manipulation"
-              >
-                View Opening
-                <span
-                  className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground"
-                  aria-label={`${openingsCount} openings`}
-                >
-                  {openingsCount}
-                </span>
-              </button>
-            </div>
+      <div className="pt-1 space-y-3">
+        {isOwnProject && (
+          <div>
+            <Button
+              type="button"
+              onClick={() => setCreateOpeningModalOpen(true)}
+              className="w-full bg-orange-500 text-white hover:bg-orange-600 h-9 text-sm touch-manipulation"
+            >
+              + Add opening
+            </Button>
           </div>
+        )}
+
+        <div className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-3">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-foreground">
+              Openings
+            </span>
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+              {openingsCount}
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setOpeningsListOpen(true)}
+            className="w-full border-orange-500 text-orange-500 hover:bg-orange-500/10 h-8 text-xs touch-manipulation"
+          >
+            View opening
+          </Button>
           <Progress
             value={openingsPercent}
-            className="h-1.5"
+            className="h-1.5 mt-3"
           />
           <div className="mt-1 flex items-center justify-between text-[9px] text-muted-foreground">
             <span>Complete</span>
             <span>{Math.round(openingsPercent)}%</span>
           </div>
+        </div>
           {projectId && isOwnProject && (
             <CreateOpeningModal
               open={createOpeningModalOpen}

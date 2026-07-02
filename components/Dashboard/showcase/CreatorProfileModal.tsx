@@ -244,7 +244,7 @@ export function CreatorProfileModal({
         <DialogTitle className="sr-only">{creator.name} – Creator profile</DialogTitle>
 
         {/* Cover image */}
-        <div className="relative w-full aspect-21/9 min-h-[140px] bg-muted shrink-0">
+        <div className="relative w-full h-32 sm:h-40 bg-muted shrink-0">
           {coverUrl ? (
             <Image
               src={coverUrl}
@@ -366,30 +366,12 @@ export function CreatorProfileModal({
         {/* Tab content - scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 py-4 sm:py-6">
           {activeTab === "about" && (
-            <div className="space-y-6">
-              <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
-                <p>{aboutLong}</p>
-              </div>
-              {galleryImages.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                  {galleryImages.map((src, i) => (
-                    <div
-                      key={i}
-                      className="relative aspect-video rounded-xl overflow-hidden bg-muted"
-                    >
-                      <Image
-                        src={src}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 33vw, 250px"
-                      />
-                    </div>
-                  ))}
+              <div className="space-y-6">
+                <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                  <p>{aboutLong}</p>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
           {activeTab === "projects" && (
             <div className="space-y-3">

@@ -132,9 +132,6 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
 
   return (
     <div className="flex flex-col w-full md:w-2/3 lg:w-3/4 min-w-0">
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4 truncate">
-        {resolvedTitle}
-      </h1>
       <Carousel className="w-full max-w-4xl">
         <CarouselContent>
           {images.map((src, idx) => (
