@@ -138,7 +138,7 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
             <CarouselItem key={idx}>
               <Card className="overflow-hidden shadow-lg p-0 border-border">
                 <CardContent className="p-0">
-                  <div className="relative w-full aspect-16/10 sm:h-[320px] md:h-[400px] lg:h-[480px] bg-muted">
+                  <div className="relative w-full h-[220px] sm:h-[280px] md:h-[320px] lg:h-[360px] bg-muted">
                     <Image
                       src={src}
                       alt={`${resolvedTitle} slide ${idx + 1}`}

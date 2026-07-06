@@ -523,7 +523,16 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                   </div>
                 </div>
 
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full border-zinc-700 text-zinc-200 hover:bg-zinc-800"
+                    onClick={() => setWizardStep(1)}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
                   <Button
                     type="button"
                     className="min-w-[140px] bg-orange-500 text-black hover:bg-orange-500/90"
@@ -532,7 +541,7 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                     Continue
                   </Button>
                 </div>
-              </div>
+                </div>
             )}
 
             {wizardStep === 3 && (
@@ -616,7 +625,16 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                   )}
                 </div>
 
-                <div className="mt-4 flex justify-end">
+                 <div className="mt-4 flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full border-zinc-700 text-zinc-200 hover:bg-zinc-800"
+                    onClick={() => setWizardStep(2)}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
                   <Button
                     type="button"
                     className="min-w-[140px] bg-orange-500 text-black hover:bg-orange-500/90"
@@ -749,11 +767,12 @@ export default function CreateProjectForm({ initialCampaignId, onClose, mode = "
                 <div className="mt-4 flex justify-between">
                   <Button
                     type="button"
-                    variant="ghost"
-                    className="text-sm text-orange-300 hover:text-orange-200"
+                    variant="outline"
+                    className="rounded-full border-zinc-700 text-zinc-200 hover:bg-zinc-800"
                     onClick={() => setWizardStep(3)}
                   >
-                    &lt; Back
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                     Back
                   </Button>
                   <Button
                     type="button"

@@ -96,7 +96,7 @@ export default function ShowcaseProjectPageClient() {
   return (
     <div className="min-h-dvh bg-background text-foreground">    
 
-      <main className="w-full px-6 pt-2 pb-6 sm:px-8 sm:pt-3 sm:pb-8">
+      <main className="w-full px-3 pt-1 pb-6 sm:px-4 sm:pt-2 sm:pb-8">
            <div className="flex items-center gap-3 mb-4">
               <Link
                 href="/showcase"

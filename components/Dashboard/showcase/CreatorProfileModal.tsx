@@ -11,12 +11,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose
+
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RiMapPinLine } from "@remixicon/react";
-import { Globe, ChevronDown, Loader2 } from "lucide-react";
+import { Globe, ChevronDown, Loader2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { projectsApi } from "@/lib/data/projects";
@@ -234,7 +236,7 @@ export function CreatorProfileModal({
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        showCloseButton={true}
+        showCloseButton={false}
         className={cn(
           "p-0 gap-0 max-w-[calc(100vw-2rem)] sm:max-w-2xl md:max-w-3xl max-h-[90dvh] overflow-hidden flex flex-col",
           "rounded-xl border-border"
@@ -256,6 +258,10 @@ export function CreatorProfileModal({
           ) : (
             <div className="w-full h-full bg-muted" />
           )}
+          <DialogClose className="absolute top-3 right-3 rounded-full bg-black/50 hover:bg-black/70 p-1.5 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/50">
+            <XIcon className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
         </div>
 
         {/* Profile summary card overlapping cover */}

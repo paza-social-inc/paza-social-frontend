@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { RiMapPinLine } from "@remixicon/react";
-import { Facebook, Twitter, Instagram } from "lucide-react";
+import { Facebook, Twitter, Instagram, Users } from "lucide-react";
 import { mockCreator } from "./showcaseData";
 import { OpeningsListSheet } from "./OpeningsListSheet";
 import type { CreatorProfile } from "./CreatorProfileModal";
@@ -549,9 +549,13 @@ export function ProjectSidebar({
         </p>
         <div className="flex flex-wrap gap-2">
           {teamMembers.length === 0 ? (
-            <p className="text-xs text-muted-foreground w-full">
-              No collaborators on the team yet. Approve a proposal to add someone.
-            </p>
+               <div className="w-full rounded-lg border border-dashed border-border py-4 px-3 text-center">
+                  <Users className="h-5 w-5 text-muted-foreground/60 mx-auto mb-1.5" />
+                  <p className="text-xs text-muted-foreground">No collaborators yet</p>
+                  <p className="text-xs text-muted-foreground/70 text-orange-400 mt-0.5">
+                    Approve a proposal to add someone
+                  </p>
+                </div>
           ) : (
             teamMembers.map((m) => {
               const name =
