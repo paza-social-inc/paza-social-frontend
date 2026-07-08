@@ -245,7 +245,7 @@ function formatAmountForDisplay(amount?: number): string {
   return amount.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-function mergeLayer<T extends Record<string, unknown>>(base: T, over: Partial<T> | undefined): T {
+function mergeLayer<T extends object>(base: T, over: Partial<T> | undefined): T {
   if (!over) return { ...base };
   return { ...base, ...over };
 }
@@ -359,7 +359,6 @@ function MoneyField({
     if (!isFocused) {
       setText(formatAmountForDisplay(value?.amount));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value?.amount, isFocused]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
