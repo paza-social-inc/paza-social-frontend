@@ -44,7 +44,7 @@ export function ProjectSlotViewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[min(90vh,720px)] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[min(90vh,800px)] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="pr-8 text-left">
             {slotLabel}

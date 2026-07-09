@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import type { Project } from "@/types/projects/projectTypes";
 import { ProjectQaSection } from "@/components/Dashboard/showcase/ProjectQaSection";
 import { useAuth } from "@/hooks/store/auth/useAuth";
+import { ImageLightbox } from "./ImageLightbox";
 
 type ShowcaseTabId = "about" | "progress" | "assets-funding" | "slots" | "guardrails" | "qas";
 
@@ -39,6 +40,8 @@ function looksLikeImageUrl(url: string): boolean {
 export function ProjectCarousel({ project: projectProp }: { project?: Project }) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<ShowcaseTabId>("about");
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const [lightboxIndex, setLightboxIndex] = React.useState(0);
   const normalizedAccountType = String(
     (user as { accountType?: string; account?: { accountType?: string } } | null)?.accountType ??
       (user as { accountType?: string; account?: { accountType?: string } } | null)?.account?.accountType ??
@@ -131,14 +134,22 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
   }, [tabs, activeTab]);
 
   return (
-    <div className="flex flex-col w-full md:w-2/3 lg:w-3/4 min-w-0">
-      <Carousel className="w-full max-w-4xl">
+    <div className="flex flex-col w-full md:w-5/6 lg:w-11/12 min-w-0 mx-auto">
+      <Carousel className="w-full max-w-5xl">
         <CarouselContent>
           {images.map((src, idx) => (
             <CarouselItem key={idx}>
               <Card className="overflow-hidden shadow-lg p-0 border-border">
                 <CardContent className="p-0">
-                  <div className="relative w-full h-[220px] sm:h-[280px] md:h-[320px] lg:h-[360px] bg-muted">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLightboxIndex(idx);
+                      setLightboxOpen(true);
+                    }}
+                    aria-label={`View ${resolvedTitle} slide ${idx + 1} full size`}
+                    className="relative w-full h-[220px] sm:h-[280px] md:h-[320px] lg:h-[360px] bg-muted block cursor-zoom-in group"
+                  >
                     <Image
                       src={src}
                       alt={`${resolvedTitle} slide ${idx + 1}`}
@@ -146,7 +157,22 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 75vw, 1031px"
                     />
-                  </div>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity h-10 w-10 rounded-full bg-black/50 flex items-center justify-center">
+                        <svg
+                          className="h-5 w-5 text-white"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <circle cx="11" cy="11" r="8" />
+                          <path d="m21 21-4.3-4.3" />
+                          <path d="M11 8v6M8 11h6" />
+                        </svg>
+                      </div>
+                    </div>
+                  </button>
                 </CardContent>
               </Card>
             </CarouselItem>
@@ -155,6 +181,15 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
         <CarouselPrevious className="bg-primary text-primary-foreground hover:opacity-90 border-0 left-2 sm:left-5 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-11 sm:w-11 rounded-full touch-manipulation" />
         <CarouselNext className="bg-primary text-primary-foreground hover:opacity-90 border-0 right-2 sm:right-5 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-11 sm:w-11 rounded-full touch-manipulation" />
       </Carousel>
+
+      <ImageLightbox
+        images={images}
+        open={lightboxOpen}
+        index={lightboxIndex}
+        onOpenChange={setLightboxOpen}
+        onIndexChange={setLightboxIndex}
+        alt={resolvedTitle}
+      />
 
       <div className="flex gap-2 my-4 sm:my-6 mx-auto">
         {images.map((_, idx) => (
@@ -169,7 +204,7 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
       </div>
 
       <div className="pt-2 sm:pt-6 pb-2">
-        <div className="flex gap-4 sm:gap-8 border-b border-border overflow-x-auto">
+        <div className="flex sm:justify-center gap-4 sm:gap-14 border-b border-border overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}

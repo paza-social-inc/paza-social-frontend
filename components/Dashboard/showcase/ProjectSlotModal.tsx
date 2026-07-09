@@ -77,7 +77,7 @@ export function ProjectSlotModal({ open, onOpenChange, initial, slotLabel, onSav
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[min(90vh,720px)] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[min(90vh,800px)] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{initial ? `Edit ${slotLabel}` : `Create ${slotLabel}`}</DialogTitle>
           <DialogDescription>

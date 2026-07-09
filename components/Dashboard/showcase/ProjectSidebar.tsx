@@ -325,21 +325,24 @@ export function ProjectSidebar({
         {isOwnProject && (
         <div
           id="project-proposals"
-          className="scroll-mt-28 space-y-2 pt-1"
+          className="scroll-mt-28 rounded-xl border border-orange-500/30 bg-orange-500/5 p-3"
         >
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-foreground">
               Proposals
-            </p>
-            {projectId && proposals.length > 0 ? (
-              <Link
-                href={`/showcase/projects/${projectId}/proposals`}
-                className="text-[10px] font-medium text-primary hover:underline shrink-0"
-              >
-                View all
-              </Link>
-            ) : null}
+            </span>
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+              {proposals.length}
+            </span>
           </div>
+          {projectId && proposals.length > 0 ? (
+            <Link
+              href={`/showcase/projects/${projectId}/proposals`}
+              className="text-xs font-medium text-primary hover:underline inline-block mb-2"
+            >
+              View all
+            </Link>
+          ) : null}
           {proposalsLoading ? (
             <p className="text-xs text-muted-foreground">Loading…</p>
           ) : proposalsError ? (

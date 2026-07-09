@@ -96,25 +96,25 @@ export default function ShowcaseProjectPageClient() {
   return (
     <div className="min-h-dvh bg-background text-foreground">    
 
-      <main className="w-full px-3 pt-1 pb-6 sm:px-4 sm:pt-2 sm:pb-8">
-           <div className="flex items-center gap-3 mb-4">
+      <main className="w-full px-3 pt-1 pb-6 sm:px-4 sm:pt-2 sm:pb-8 flex flex-col lg:h-[calc(100vh-72px)]">
+           <div className="flex flex-col gap-6 mb-4">
               <Link
                 href="/showcase"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Link>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
                 {projectTitle}
               </h1>
            </div>
         <section
-          className="rounded-2xl border border-border bg-card/30 overflow-hidden"
+          className="rounded-2xl border border-border bg-card/30 overflow-hidden lg:flex-1 lg:min-h-0"
           aria-label="Project details"
         >
-          <div className="flex flex-col lg:flex-row lg:items-stretch gap-0">
-            <div className="w-full lg:flex-1 min-w-0 order-2 lg:order-1 p-4 sm:p-6 lg:border-r lg:border-border">
+          <div className="flex flex-col lg:flex-row lg:items-stretch gap-0 lg:h-full">
+            <div className="w-full lg:flex-1 min-w-0 order-2 lg:order-1 p-4 sm:p-6 lg:border-r lg:border-border lg:overflow-y-auto">
               <ProjectCarousel project={project} />
             </div>
             <div className="w-full lg:w-[360px] xl:w-[380px] shrink-0 order-1 lg:order-2 border-t lg:border-t-0 lg:border-l border-border bg-muted/10">

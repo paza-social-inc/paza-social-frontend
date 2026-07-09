@@ -24,6 +24,7 @@ import { appendFrontendTaskNotification } from "@/lib/frontendTaskNotifications"
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { DASHBOARD_TABS_LIST_TWO_UP_CLASS } from "@/components/layout/DashboardPageShell";
 import { campaignApi } from "@/lib/data/campaigns";
+import { projectsApi } from "@/lib/data/projects";
 
 function mapStatusToColumn(status?: string): TaskColumnKey {
   if (status === "In Progress") return "inProgress";
@@ -185,6 +186,46 @@ export default function TasksPage() {
     enabled: !!user && !isCreatorAccount,
   });
 
+  const { data: creatorProjects } = useQuery({
+    queryKey: ["creator-projects"],
+    queryFn: () => projectsApi.getAll(),
+    enabled: !!user && isCreatorAccount,
+  });
+
+  const { data: collabProjects } = useQuery({
+    queryKey: ["creator-projects", "collaborations", "mine"],
+    queryFn: () => projectsApi.getMyCollaborations(),
+    enabled: !!user && !isCreatorAccount,
+  });
+
+  /** Derive task-like items from showcase project slots so they appear in the backlog column. */
+  const slotTasks = useMemo<Task[]>(() => {
+    const projects = creatorProjects ?? collabProjects ?? [];
+    const seen = new Set<string>();
+    const tasks: Task[] = [];
+    for (const project of projects) {
+      const items = project.slots?.items ?? [];
+      for (const slot of items) {
+        if (!slot || !slot.title?.trim()) continue;
+        const dedupKey = `${project.id}-${slot.id}`;
+        if (seen.has(dedupKey)) continue;
+        seen.add(dedupKey);
+        tasks.push({
+          id: `slot-${project.id}-${slot.id}`,
+          title: slot.title,
+          priority: "medium",
+          description: slot.deliverables
+            ? slot.deliverables.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).join(", ")
+            : undefined,
+          status: "Not Started",
+          budgetKsh: undefined,
+          campaignTitle: project.title,
+        } satisfies Task);
+      }
+    }
+    return tasks;
+  }, [creatorProjects, collabProjects]);
+
   useEffect(() => {
     if (!myTasks) return;
     const next: Record<TaskColumnKey, Task[]> = {
@@ -198,8 +239,12 @@ export default function TasksPage() {
       const col = mapStatusToColumn(mapped.status);
       next[col].push(mapped);
     }
+    // Inject slot-derived tasks into the backlog column
+    if (slotTasks.length > 0) {
+      next.backlog = [...slotTasks, ...next.backlog];
+    }
     setColumns(next);
-  }, [myTasks]);
+  }, [myTasks, slotTasks]);
 
   const tasksForCalendar = useMemo(() => {
     const rawTasks = Object.values(columns).flat();
@@ -536,7 +581,10 @@ export default function TasksPage() {
             <TasksTab
               columns={columns}
               setColumns={setColumns}
-              onTaskOpen={(t) => setDetailTask(t)}
+              onTaskOpen={(t) => {
+                if (t.id.startsWith("slot-")) return;
+                setDetailTask(t);
+              }}
             />
           )}
         </TabsContent>

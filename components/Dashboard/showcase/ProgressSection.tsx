@@ -4,8 +4,16 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { format, parseISO } from "date-fns";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Calendar, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +29,8 @@ import type {
   Project,
   ProjectProgress,
   ProjectProgressGoal,
+  ProjectProgressObjective,
+  ProjectProgressUpdate,
 } from "@/types/projects/projectTypes";
 import { ProjectProgressGoalModal } from "./ProjectProgressGoalModal";
 
@@ -37,6 +47,71 @@ function clampPercent(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+function newId(prefix: string): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeProgressUpdate(raw: unknown): ProjectProgressUpdate | null {
+  if (raw == null || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const id = String(o.id ?? "").trim() || newId("upd");
+  const achieved = Number.isFinite(Number(o.achieved)) ? Number(o.achieved) : 0;
+  const note = String(o.note ?? "").trim() || undefined;
+  const date = String(o.date ?? "").trim() || new Date().toISOString();
+  return { id, achieved, note, date };
+}
+
+function normalizeObjective(raw: unknown): ProjectProgressObjective | null {
+  if (raw == null || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const id =
+    String(o.id ?? "").trim() ||
+    (typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `obj-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const historyRaw = o.history;
+  const history = Array.isArray(historyRaw)
+    ? (historyRaw.map(normalizeProgressUpdate).filter(Boolean) as ProjectProgressUpdate[])
+    : [];
+  return {
+    id,
+    text: String(o.text ?? "").trim(),
+    target: Number.isFinite(Number(o.target)) ? Number(o.target) : 0,
+    achieved: Number.isFinite(Number(o.achieved)) ? Number(o.achieved) : 0,
+    timeframeStart: String(o.timeframeStart ?? "").slice(0, 10),
+    timeframeEnd: String(o.timeframeEnd ?? "").slice(0, 10),
+    history,
+  };
+}
+
+/** Append a new progress-update entry to one objective and bump its `achieved` value. */
+function addProgressUpdate(
+  goals: ProjectProgressGoal[],
+  goalId: string,
+  objectiveId: string,
+  achieved: number,
+  note: string
+): ProjectProgressGoal[] {
+  const entry: ProjectProgressUpdate = {
+    id: newId("upd"),
+    achieved,
+    note: note.trim() || undefined,
+    date: new Date().toISOString(),
+  };
+  return goals.map((g) => {
+    if (g.id !== goalId) return g;
+    return {
+      ...g,
+      objectives: g.objectives.map((o) =>
+        o.id === objectiveId ? { ...o, achieved, history: [entry, ...(o.history ?? [])] } : o
+      ),
+    };
+  });
+}
+
 function normalizeGoal(raw: unknown): ProjectProgressGoal | null {
   if (raw == null || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
@@ -47,14 +122,47 @@ function normalizeGoal(raw: unknown): ProjectProgressGoal | null {
     (typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : `goal-${Date.now()}`);
+  const objectivesRaw = o.objectives;
+  const objectives = Array.isArray(objectivesRaw)
+    ? (objectivesRaw.map(normalizeObjective).filter(Boolean) as ProjectProgressObjective[])
+    : [];
   return {
     id,
     title,
-    objective: String(o.objective ?? ""),
-    target: String(o.target ?? o.goalTarget ?? ""),
-    timeframeStart: String(o.timeframeStart ?? "").slice(0, 10),
-    timeframeEnd: String(o.timeframeEnd ?? "").slice(0, 10),
+    objectives,
+    progressNote: String(o.progressNote ?? ""),
   };
+}
+
+function goalPercent(goal: ProjectProgressGoal): number {
+  const objectives = goal.objectives ?? [];
+  const withTargets = objectives.filter((o) => o.target > 0);
+  if (withTargets.length === 0) return 0;
+  const sum = withTargets.reduce(
+    (acc, o) => acc + Math.min(100, (o.achieved / o.target) * 100),
+    0
+  );
+  return clampPercent(sum / withTargets.length);
+}
+
+function overallGoalsPercent(goals: ProjectProgressGoal[]): number {
+  if (goals.length === 0) return 0;
+  const sum = goals.reduce((acc, g) => acc + goalPercent(g), 0);
+  return clampPercent(sum / goals.length);
+}
+
+function overallObjectivesDoneCount(goals: ProjectProgressGoal[]): { done: number; total: number } {
+  let done = 0;
+  let total = 0;
+  for (const g of goals) {
+    for (const o of g.objectives ?? []) {
+      if (o.target > 0) {
+        total += 1;
+        if (o.achieved >= o.target) done += 1;
+      }
+    }
+  }
+  return { done, total };
 }
 
 /** Merge API `progress` with legacy flat fields used on mock / old payloads. */
@@ -107,12 +215,18 @@ function ProgressSummaryCard({
   status,
   onStatusChange,
   canEditStatus,
+  goalsCount,
+  objectivesDone,
+  objectivesTotal,
 }: {
   percent: number;
   completed: boolean;
   status: string;
   onStatusChange: (s: "Completed" | "In progress") => void;
   canEditStatus: boolean;
+  goalsCount: number;
+  objectivesDone: number;
+  objectivesTotal: number;
 }) {
   return (
     <div
@@ -121,7 +235,7 @@ function ProgressSummaryCard({
         "bg-card dark:bg-[#2C2C2C] text-foreground"
       )}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 p-4 sm:p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 p-4 sm:p-5">
         <div className="flex flex-col items-center sm:items-start gap-2 shrink-0">
           <Progress
             variant="radial"
@@ -165,6 +279,24 @@ function ProgressSummaryCard({
           </div>
         </div>
 
+        <div className="w-full sm:w-32 shrink-0 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Goals
+          </p>
+          <p className="text-sm font-medium text-foreground">
+            {goalsCount} {goalsCount === 1 ? "goal" : "goals"}
+          </p>
+        </div>
+
+        <div className="w-full sm:w-28 shrink-0 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Achieved
+          </p>
+          <p className="text-sm font-medium text-foreground tabular-nums">
+            {objectivesDone} / {objectivesTotal}
+          </p>
+        </div>
+
         <div className="w-full sm:w-40 shrink-0 space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Progress
@@ -172,12 +304,18 @@ function ProgressSummaryCard({
           <div className="flex items-center gap-2">
             <Progress
               value={percent}
-              className="h-2 flex-1 bg-white/20 [&>div]:bg-emerald-500"
+              className="h-2 w-24 sm:w-28 shrink-0 bg-white/20 [&>div]:bg-emerald-500"
             />
             <span className="text-sm font-medium text-foreground tabular-nums shrink-0">
               {percent}%
             </span>
           </div>
+        </div>
+
+        <div className="w-full sm:w-32 hidden sm:block">
+          <p className="text-xs text-muted-foreground leading-snug">
+            Averaged across<br />all goal objectives
+          </p>
         </div>
       </div>
     </div>
@@ -189,6 +327,127 @@ type Props = {
   initial: ProjectProgress;
   canEdit: boolean;
 };
+
+
+/**
+ * One objective's full detail, shown inside the goal popup: progress bar,
+ * time frame, an inline "update progress" form scoped to this objective,
+ * and a collapsible history of past updates (newest first).
+ */
+function ObjectiveDetailCard({
+  objective,
+  canEdit,
+  onSaveUpdate,
+}: {
+  objective: ProjectProgressObjective;
+  canEdit: boolean;
+  onSaveUpdate: (achieved: number, note: string) => void;
+}) {
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [achievedInput, setAchievedInput] = useState("");
+  const [noteInput, setNoteInput] = useState("");
+
+  const pct = objective.target > 0 ? clampPercent((objective.achieved / objective.target) * 100) : 0;
+  const history = objective.history ?? [];
+
+  const handleSave = () => {
+    if (achievedInput.trim() === "" && noteInput.trim() === "") return;
+    const achievedNum =
+      achievedInput.trim() === "" ? objective.achieved : Math.max(0, Number(achievedInput) || 0);
+    onSaveUpdate(achievedNum, noteInput);
+    setAchievedInput("");
+    setNoteInput("");
+  };
+
+  return (
+    <div className="rounded-lg border border-border p-3 space-y-3">
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <span className="text-sm font-medium text-foreground truncate">
+            {objective.text || "Untitled objective"}
+            {objective.target > 0 ? ` – ${objective.target.toLocaleString()}` : ""}
+          </span>
+          <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+            {objective.achieved.toLocaleString()} / {objective.target.toLocaleString()}
+          </span>
+        </div>
+        <Progress value={pct} className="h-1.5" />
+        {objective.timeframeStart || objective.timeframeEnd ? (
+          <div className="mt-1.5 flex items-center gap-1.5 text-muted-foreground">
+            <Calendar className="h-3 w-3 shrink-0" />
+            <span className="text-xs">
+              {formatDateLabel(objective.timeframeStart)} → {formatDateLabel(objective.timeframeEnd)}
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      {canEdit ? (
+        <div className="rounded-md border border-border/70 bg-muted/30 p-2.5 space-y-2">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Update progress
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm sm:w-24"
+              placeholder={objective.achieved.toLocaleString()}
+              value={achievedInput}
+              onChange={(e) => setAchievedInput(e.target.value)}
+            />
+            <input
+              className="flex h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+              placeholder="Add a note (optional)"
+              value={noteInput}
+              onChange={(e) => setNoteInput(e.target.value)}
+            />
+            <Button
+              type="button"
+              size="sm"
+              className="shrink-0 bg-orange-500 font-semibold text-black hover:bg-orange-600"
+              onClick={handleSave}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {history.length > 0 ? (
+        <div>
+          <button
+            type="button"
+            className="flex items-center gap-1.5 text-xs font-medium text-orange-500 hover:text-orange-600"
+            onClick={() => setHistoryOpen((v) => !v)}
+            aria-expanded={historyOpen}
+          >
+            <ChevronDown
+              className={cn("h-3.5 w-3.5 transition-transform", historyOpen ? "rotate-180" : "")}
+            />
+            History ({history.length} update{history.length === 1 ? "" : "s"})
+          </button>
+          {historyOpen ? (
+            <ol className="mt-2 space-y-2.5 border-l border-border pl-3">
+              {history.map((h) => (
+                <li key={h.id} className="text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground tabular-nums">
+                      {h.achieved.toLocaleString()} achieved
+                    </span>
+                    <span className="text-muted-foreground/70">{formatDateLabel(h.date)}</span>
+                  </div>
+                  {h.note ? <p className="mt-0.5 text-muted-foreground">{h.note}</p> : null}
+                </li>
+              ))}
+            </ol>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function ProgressSection({ projectId, initial, canEdit }: Props) {
   const queryClient = useQueryClient();
@@ -203,6 +462,7 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [goalModalInitial, setGoalModalInitial] = useState<ProjectProgressGoal | null>(null);
   const [goalsExpanded, setGoalsExpanded] = useState(false);
+  const [detailGoal, setDetailGoal] = useState<ProjectProgressGoal | null>(null);
 
   useEffect(() => {
     const next = { ...EMPTY_PROGRESS, ...initial, goals: [...(initial.goals ?? [])] };
@@ -210,7 +470,7 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
     setStatusUi(next.completed ? "Completed" : "In progress");
   }, [initial]);
 
-  const percentDisplay = clampPercent(draft.reachPercent ?? 0);
+  const percentDisplay = overallGoalsPercent(draft.goals ?? []);
   const completedDisplay = statusUi === "Completed";
 
   const saveMutation = useMutation({
@@ -293,6 +553,20 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
     const nextGoals = (draft.goals ?? []).filter((g) => g.id !== id);
     setDraft((d) => ({ ...d, goals: nextGoals }));
     saveGoalsMutation.mutate(nextGoals);
+    setDetailGoal((dg) => (dg?.id === id ? null : dg));
+  };
+
+  const handleObjectiveUpdate = (
+    goalId: string,
+    objectiveId: string,
+    achieved: number,
+    note: string
+  ) => {
+    const nextGoals = addProgressUpdate(draft.goals ?? [], goalId, objectiveId, achieved, note);
+    setDraft((d) => ({ ...d, goals: nextGoals }));
+    saveGoalsMutation.mutate(nextGoals);
+    // Keep the open popup's data in sync so the new update/history shows immediately.
+    setDetailGoal((dg) => (dg && dg.id === goalId ? nextGoals.find((g) => g.id === goalId) ?? dg : dg));
   };
 
   const goals = draft.goals ?? [];
@@ -304,13 +578,13 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
     () => ({
       ...draft,
       completed: statusUi === "Completed",
-      reachPercent: statusUi === "Completed" ? 100 : clampPercent(draft.reachPercent ?? 0),
+      reachPercent: statusUi === "Completed" ? 100 : overallGoalsPercent(draft.goals ?? []),
     }),
     [draft, statusUi]
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {canEdit && (
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Button
@@ -321,7 +595,7 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
               saveMutation.mutate({
                 ...payloadForSave,
                 reachPercent:
-                  statusUi === "Completed" ? 100 : clampPercent(draft.reachPercent ?? 0),
+                  statusUi === "Completed" ? 100 : overallGoalsPercent(draft.goals ?? []),
               })
             }
             className="touch-manipulation"
@@ -339,64 +613,17 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
       )}
 
       <ProgressSummaryCard
-        percent={statusUi === "Completed" ? 100 : percentDisplay}
-        completed={completedDisplay}
-        status={statusUi}
-        onStatusChange={handleStatusChange}
-        canEditStatus={canEdit}
-      />
+          percent={statusUi === "Completed" ? 100 : percentDisplay}
+          completed={completedDisplay}
+          status={statusUi}
+          onStatusChange={handleStatusChange}
+          canEditStatus={canEdit}
+          goalsCount={goals.length}
+          objectivesDone={overallObjectivesDoneCount(goals).done}
+          objectivesTotal={overallObjectivesDoneCount(goals).total}
+        />
 
-      {canEdit && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 rounded-lg border border-border bg-card/50 p-4 dark:bg-zinc-900/40">
-          <p className="text-xs font-medium text-muted-foreground sm:col-span-3">
-            Overall reach (optional — shown in the summary card)
-          </p>
-          <div>
-            <label className="text-xs text-muted-foreground" htmlFor="prog-target">
-              Target label
-            </label>
-            <input
-              id="prog-target"
-              className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              value={draft.reachTarget ?? ""}
-              onChange={(e) => setDraft((d) => ({ ...d, reachTarget: e.target.value }))}
-              placeholder="e.g. 500K impressions"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground" htmlFor="prog-achieved">
-              Achieved label
-            </label>
-            <input
-              id="prog-achieved"
-              className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              value={draft.reachAchieved ?? ""}
-              onChange={(e) => setDraft((d) => ({ ...d, reachAchieved: e.target.value }))}
-              placeholder="e.g. 120K so far"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground" htmlFor="prog-pct">
-              Progress %
-            </label>
-            <input
-              id="prog-pct"
-              type="number"
-              min={0}
-              max={100}
-              className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              value={draft.reachPercent ?? 0}
-              onChange={(e) =>
-                setDraft((d) => ({
-                  ...d,
-                  reachPercent: clampPercent(Number(e.target.value)),
-                }))
-              }
-              disabled={statusUi === "Completed"}
-            />
-          </div>
-        </div>
-      )}
+
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -448,7 +675,11 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
           <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {visibleGoals.map((g) => (
-              <Card key={g.id} className="border-border bg-card dark:bg-zinc-900/50">
+              <Card
+                key={g.id}
+                className="border-border bg-card dark:bg-zinc-900/50 cursor-pointer transition-colors hover:border-orange-500/50"
+                onClick={() => setDetailGoal(g)}
+              >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <CardTitle className="line-clamp-2 text-base font-semibold leading-tight pr-2">
                     {g.title}
@@ -461,7 +692,10 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
                         size="icon"
                         className="h-8 w-8"
                         aria-label="Edit goal"
-                        onClick={() => openEditGoal(g)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditGoal(g);
+                        }}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -471,7 +705,10 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
                         size="icon"
                         className="h-8 w-8 text-destructive hover:text-destructive"
                         aria-label="Remove goal"
-                        onClick={() => removeGoal(g.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeGoal(g.id);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -479,39 +716,53 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
                   ) : null}
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                  {g.objective?.trim() ? (
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Objective
-                      </p>
-                      <p className="mt-1 line-clamp-4 whitespace-pre-wrap text-muted-foreground">
-                        {g.objective}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <Progress
+                          variant="radial"
+                          value={goalPercent(g)}
+                          size={44}
+                          strokeWidth={4}
+                          label=""
+                          valueFontSize="0.7rem"
+                          className="text-primary [&_circle:last-of-type]:stroke-primary"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          Overall progress
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          Averaged across objectives
+                        </p>
+                      </div>
                     </div>
-                  ) : null}
-                  {g.target?.trim() ? (
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Target
-                      </p>
-                      <p className="mt-1 text-foreground">{g.target}</p>
-                    </div>
-                  ) : null}
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Time frame
-                    </p>
-                    <p className="mt-1 text-foreground">
-                      {g.timeframeStart || g.timeframeEnd ? (
-                        <>
-                          {formatDateLabel(g.timeframeStart)} → {formatDateLabel(g.timeframeEnd)}
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </p>
-                  </div>
-                </CardContent>
+
+                    {(g.objectives?.length ?? 0) > 0 ? (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          Objectives
+                        </p>
+                        {g.objectives.map((o) => {
+                          const pct = o.target > 0 ? clampPercent((o.achieved / o.target) * 100) : 0;
+                          return (
+                            <div key={o.id} className="rounded-lg border border-border p-2.5">
+                              <div className="flex items-center justify-between gap-2 mb-1.5">
+                                <span className="text-xs text-foreground truncate">
+                                  {o.text || "Untitled objective"}
+                                  {o.target > 0 ? ` – ${o.target.toLocaleString()}` : ""}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                                  {o.achieved.toLocaleString()} / {o.target.toLocaleString()}
+                                </span>
+                              </div>
+                              <Progress value={pct} className="h-1.5" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </CardContent>
               </Card>
             ))}
           </div>
@@ -531,6 +782,75 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
           </>
         )}
       </div>
+
+      
+      <Dialog open={detailGoal !== null} onOpenChange={(next) => !next && setDetailGoal(null)}>
+        <DialogContent
+          overlayClassName="z-200 bg-black/70 backdrop-blur-sm"
+          className="z-201 max-h-[min(90vh,640px)] overflow-y-auto border-border shadow-2xl sm:max-w-2xl"
+        >
+          {detailGoal ? (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <Progress
+                    variant="radial"
+                    value={goalPercent(detailGoal)}
+                    size={48}
+                    strokeWidth={4}
+                    label=""
+                    valueFontSize="0.75rem"
+                    className="shrink-0 text-primary [&_circle:last-of-type]:stroke-primary"
+                  />
+                  <div className="text-left">
+                    <DialogTitle>{detailGoal.title}</DialogTitle>
+                    <DialogDescription>Averaged across objectives</DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              {(detailGoal.objectives?.length ?? 0) > 0 ? (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Objectives
+                  </p>
+                  {detailGoal.objectives.map((o) => (
+                    <ObjectiveDetailCard
+                      key={o.id}
+                      objective={o}
+                      canEdit={canEdit}
+                      onSaveUpdate={(achieved, note) =>
+                        handleObjectiveUpdate(detailGoal.id, o.id, achieved, note)
+                      }
+                    />
+                  ))}
+                </div>
+              ) : null}
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button type="button" variant="outline" onClick={() => setDetailGoal(null)}>
+                  Close
+                </Button>
+                {canEdit ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-1 border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                    onClick={() => {
+                      const g = detailGoal;
+                      setDetailGoal(null);
+                      openEditGoal(g);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit goal
+                  </Button>
+                ) : null}
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <ProjectProgressGoalModal
         open={goalModalOpen}
