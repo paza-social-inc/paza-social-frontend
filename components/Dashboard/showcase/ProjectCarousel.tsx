@@ -8,6 +8,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { mockProject } from "./showcaseData";
@@ -42,6 +43,8 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
   const [activeTab, setActiveTab] = React.useState<ShowcaseTabId>("about");
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const [lightboxIndex, setLightboxIndex] = React.useState(0);
+  const [carouselApi, setCarouselApi] = React.useState<CarouselApi>();
+  const [currentSlide, setCurrentSlide] = React.useState(0);
   const normalizedAccountType = String(
     (user as { accountType?: string; account?: { accountType?: string } } | null)?.accountType ??
       (user as { accountType?: string; account?: { accountType?: string } } | null)?.account?.accountType ??
@@ -133,9 +136,28 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
     }
   }, [tabs, activeTab]);
 
+  // Keep the dot indicators in sync with the carousel's actual current slide,
+  // whether navigation happens via swipe, drag, keyboard, or the prev/next buttons.
+  useEffect(() => {
+    if (!carouselApi) return;
+
+    const onSelect = () => {
+      setCurrentSlide(carouselApi.selectedScrollSnap());
+    };
+
+    onSelect();
+    carouselApi.on("select", onSelect);
+    carouselApi.on("reInit", onSelect);
+
+    return () => {
+      carouselApi.off("select", onSelect);
+      carouselApi.off("reInit", onSelect);
+    };
+  }, [carouselApi]);
+
   return (
     <div className="flex flex-col w-full md:w-5/6 lg:w-11/12 min-w-0 mx-auto">
-      <Carousel className="w-full max-w-5xl">
+      <Carousel className="w-full max-w-5xl" setApi={setCarouselApi}>
         <CarouselContent>
           {images.map((src, idx) => (
             <CarouselItem key={idx}>
@@ -193,11 +215,14 @@ export function ProjectCarousel({ project: projectProp }: { project?: Project })
 
       <div className="flex gap-2 my-4 sm:my-6 mx-auto">
         {images.map((_, idx) => (
-          <div
+          <button
             key={idx}
+            type="button"
+            onClick={() => carouselApi?.scrollTo(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
             className={cn(
               "w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors",
-              idx === 0 ? "bg-primary" : "bg-muted-foreground/30"
+              idx === currentSlide ? "bg-primary" : "bg-muted-foreground/30"
             )}
           />
         ))}

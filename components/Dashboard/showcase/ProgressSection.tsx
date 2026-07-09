@@ -787,7 +787,7 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
       <Dialog open={detailGoal !== null} onOpenChange={(next) => !next && setDetailGoal(null)}>
         <DialogContent
           overlayClassName="z-200 bg-black/70 backdrop-blur-sm"
-          className="z-201 max-h-[min(90vh,640px)] overflow-y-auto border-border shadow-2xl sm:max-w-2xl"
+          className="z-201 max-h-[min(90vh,760px)] overflow-y-auto border-border shadow-2xl sm:max-w-3xl"
         >
           {detailGoal ? (
             <>
@@ -810,22 +810,24 @@ export function ProgressSection({ projectId, initial, canEdit }: Props) {
               </DialogHeader>
 
               {(detailGoal.objectives?.length ?? 0) > 0 ? (
-                <div className="space-y-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Objectives
-                  </p>
-                  {detailGoal.objectives.map((o) => (
-                    <ObjectiveDetailCard
-                      key={o.id}
-                      objective={o}
-                      canEdit={canEdit}
-                      onSaveUpdate={(achieved, note) =>
-                        handleObjectiveUpdate(detailGoal.id, o.id, achieved, note)
-                      }
-                    />
-                  ))}
-                </div>
-              ) : null}
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Objectives
+                    </p>
+                    <div className="space-y-5">
+                      {detailGoal.objectives.map((o) => (
+                        <ObjectiveDetailCard
+                          key={o.id}
+                          objective={o}
+                          canEdit={canEdit}
+                          onSaveUpdate={(achieved, note) =>
+                            handleObjectiveUpdate(detailGoal.id, o.id, achieved, note)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
               <DialogFooter className="gap-2 sm:gap-0">
                 <Button type="button" variant="outline" onClick={() => setDetailGoal(null)}>

@@ -1232,7 +1232,7 @@ export function AssetsFundingSection({ projectId, initial, canEdit }: Props) {
       )}
 
       <Dialog open={ufDialogOpen} onOpenChange={setUfDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Explain use of funds</DialogTitle>
           </DialogHeader>
@@ -1245,8 +1245,8 @@ export function AssetsFundingSection({ projectId, initial, canEdit }: Props) {
             onChange={(e) => setUfNoteDraft(e.target.value)}
             placeholder="e.g. Covers a 3-day shoot with a 4-person crew and post-production."
             maxLength={USE_OF_FUNDS_NOTE_MAX}
-            rows={10}
-            className="min-h-[220px] resize-y"
+            rows={16}
+            className="min-h-[360px] resize-y"
           />
           <div className="text-right text-xs text-muted-foreground">
             {ufNoteDraft.length}/{USE_OF_FUNDS_NOTE_MAX}

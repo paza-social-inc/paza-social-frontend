@@ -51,7 +51,7 @@ export function ImageLightbox({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-[95vw] sm:max-w-4xl w-full h-[85vh] p-0 border-0 bg-black/95 flex items-center justify-center overflow-hidden"
+        className="max-w-[95vw] sm:max-w-6xl w-full h-[85vh] p-0 border-0 bg-neutral-950 flex items-center justify-center overflow-hidden"
       >
         {/* Radix requires a DialogTitle for a11y; visually hidden here */}
         <DialogTitle className="sr-only">
