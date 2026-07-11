@@ -2124,7 +2124,11 @@ export default function PDEShowcasePage() {
               )}
 
               {/* ── Discovery Queries (8.7) ── */}
-              {output.discoveryQueries && (
+              {(() => {
+                const discoveryQuerySet = output.discoveryQueries;
+                if (!discoveryQuerySet) return null;
+
+                return (
                   <div className="mb-4">
                     <Section title="Discovery Queries" icon={Search} subtitle="25-type structured search intelligence — product, problem, adjacent behavior, community, and more">
                       <div className="space-y-4">
@@ -2154,7 +2158,7 @@ export default function PDEShowcasePage() {
                             ["intentExpansion", "Intent Expansion", Target],
                           ] as const
                         ).map(([key, label, Icon_]) => {
-                          const qs = (output.discoveryQueries as any)[key];
+                          const qs = discoveryQuerySet[key as keyof DiscoveryQuerySet];
                           if (!qs || !Array.isArray(qs) || qs.length === 0) return null;
                           return (
                             <div key={key} className="rounded-lg border border-border bg-background p-4">
@@ -2186,7 +2190,8 @@ export default function PDEShowcasePage() {
                       </div>
                     </Section>
                   </div>
-                )}
+                );
+              })()}
 
               {/* ── Contextual Anchors (Step 1) ── */}
               {output.contextualAnchors && output.contextualAnchors.length > 0 && (
