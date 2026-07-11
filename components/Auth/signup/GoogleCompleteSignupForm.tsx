@@ -46,6 +46,14 @@ const BrandOnboarding = dynamic(() => import("@/components/Auth/accountType/Bran
   ),
 });
 
+const CreatorRegistration = dynamic(() => import("@/components/Auth/accountType/Creator/Creator").then(m => ({ default: m.default })), {
+  loading: () => (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  ),
+});
+
 const signupPasswordSchema = z
   .string()
   .min(6, "Password must be at least 6 characters long.")
@@ -134,14 +142,17 @@ export function GoogleCompleteSignupForm({
   const logout = useAuthStore((s) => s.logout);
 
   // ── Bootstrap: ensure the auth token from the OAuth callback (stored in
-  //     localStorage) is available to every pazaApi call, even when the
-  //     axios request interceptor does not fire reliably in production. ──
+  //     localStorage) is available to every pazaApi call. ──
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      if (token) {
-        setApiAuthToken(token);
+    try {
+      if (typeof window !== "undefined") {
+        const token = localStorage.getItem("token");
+        if (token) {
+          setApiAuthToken(token);
+        }
       }
+    } catch (e) {
+      console.warn("[GoogleCompleteSignupForm] Token bootstrap error:", e);
     }
   }, []);
 
@@ -174,17 +185,21 @@ export function GoogleCompleteSignupForm({
     },
     onSuccess: async () => {
       setCompletedEmail(defaults.email ?? "");
-      if (accountType === "brand") {
-        // Ensure the token is wired into pazaApi so BrandOnboarding API calls
-        // (auth/me, business/bootstrap, uploads/image) all succeed.
-        const existingToken =
-          typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        if (existingToken) {
-          setApiAuthToken(existingToken);
+      if (accountType === "brand" || accountType === "creator") {
+        // Ensure the token is wired into pazaApi so onboarding API calls
+        // (auth/me, business/bootstrap, uploads/image, etc.) all succeed.
+        try {
+          const existingToken =
+            typeof window !== "undefined" ? localStorage.getItem("token") : null;
+          if (existingToken) {
+            setApiAuthToken(existingToken);
+          }
+        } catch (e) {
+          console.warn("[GoogleCompleteSignupForm] Token wire-up error:", e);
         }
         setPhase("onboarding");
       } else {
-        // Creator: clear auth and go straight to verification.
+        // Fallback: no account type — clear auth and go to verification.
         try { await clearAuthToken(); } catch {}
         if (typeof window !== "undefined") localStorage.removeItem("token");
         logout();
@@ -221,8 +236,8 @@ export function GoogleCompleteSignupForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      {phase === "verification" && completedEmail ? (
-        <EmailVerificationPrompt email={completedEmail} className="max-w-lg mx-auto" />
+      {phase === "verification" ? (
+        <EmailVerificationPrompt email={completedEmail || "your email"} className="max-w-lg mx-auto" />
       ) : phase === "onboarding" && accountType === "brand" ? (
         <BrandOnboarding
           embedded
@@ -230,9 +245,14 @@ export function GoogleCompleteSignupForm({
           stepOffset={1}
           totalSteps={4}
         />
-      ) : phase === "onboarding" ? (
-        // Creator — shouldn't reach here (onSuccess handles it), but fallback to verification.
-        <EmailVerificationPrompt email={completedEmail} className="max-w-lg mx-auto" />
+      ) : phase === "onboarding" && accountType === "creator" ? (
+        <CreatorRegistration
+          embedded
+          onComplete={handleOnboardingDone}
+          stepOffset={1}
+          totalSteps={3}
+          mode="signup-lite"
+        />
       ) : (
         <form
           key={accountType}

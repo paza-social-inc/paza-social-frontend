@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosHeaders } from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { toast } from "react-hot-toast";
 
 export const DEFAULT_API_URL = "https://api.paza.social";
@@ -14,20 +14,32 @@ let _authToken: string | null = null;
 
 /**
  * Set (or clear) the auth token on the pazaApi instance.
- * Uses three independent mechanisms so the token reaches every request:
- *  1. Axios default headers (guaranteed merge before every request)
- *  2. In-memory variable (_authToken) checked by the request interceptor
+ *
+ * Updates both the in-memory _authToken variable (read by the request
+ * interceptor) and the axios instance default headers so the token
+ * reaches every request regardless of which path fires first.
+ *
+ * NOTE: In axios 1.16.x, pazaApi.defaults.headers is a plain object,
+ * NOT an AxiosHeaders instance — never call .set() / .delete() on it.
  */
 export function setApiAuthToken(token: string | null) {
     _authToken = token;
-    // Axios 1.7+ stores defaults.headers as AxiosHeaders | Partial<RawAxiosHeaders> | null.
-    // Use a type-safe cast to call the AxiosHeaders API.
-    const h = pazaApi.defaults.headers as unknown as AxiosHeaders | null;
-    if (!h) return;
-    if (token) {
-        h.set("Authorization", `Bearer ${token}`);
-    } else {
-        h.delete("Authorization");
+    try {
+        const target = pazaApi.defaults.headers as Record<string, unknown> & { common?: Record<string, unknown> };
+        if (!target) return;
+        // Don't attempt AxiosHeaders.set() — defaults.headers is a plain object
+        // in v1.16.x. Use direct property assignment on the nested `common` dict
+        // which is what Axios merges into per-request headers.
+        const common = target.common ?? target;
+        if (token) {
+            common["Authorization"] = `Bearer ${token}`;
+        } else {
+            delete common["Authorization"];
+        }
+    } catch (e) {
+        // Ignore — the in-memory _authToken fallback via the interceptor
+        // will still provide the token for subsequent requests.
+        console.warn("[setApiAuthToken] Default-header update failed, _authToken fallback remains:", e);
     }
 }
 

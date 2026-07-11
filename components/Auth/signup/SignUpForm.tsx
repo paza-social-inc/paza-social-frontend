@@ -165,7 +165,7 @@ export function SignupForm({
                 }
                 // Set on pazaApi defaults so BrandOnboarding API calls work even if
                 // the request interceptor does not fire (observed in production builds).
-                setApiAuthToken(token);
+                try { setApiAuthToken(token); } catch (e) { console.warn("[SignUpForm] setApiAuthToken:", e); }
                 // Build user object from jwt payload to set zustand auth
                 const payload = decodeJwtPayload(token);
                 setAuth(token, {
@@ -212,8 +212,8 @@ export function SignupForm({
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            {phase === "verification" && signedUpEmail ? (
-                <EmailVerificationPrompt email={signedUpEmail} className="max-w-lg mx-auto" />
+            {phase === "verification" ? (
+                <EmailVerificationPrompt email={signedUpEmail || "your email"} className="max-w-lg mx-auto" />
             ) : phase === "onboarding" && accountType === "brand" ? (
                 <BrandOnboarding
                     embedded
@@ -229,7 +229,7 @@ export function SignupForm({
                 />
             ) : phase === "onboarding" ? (
                 // Creator — go straight to verification after signup.
-                <EmailVerificationPrompt email={signedUpEmail} className="max-w-lg mx-auto" />
+                <EmailVerificationPrompt email={signedUpEmail || "your email"} className="max-w-lg mx-auto" />
             ) : (
                 <form
                     key={accountType}
