@@ -1,9 +1,8 @@
 "use client";
 
 import Logo from "@/assets/Logo";
-import BrandOnboarding from "@/components/Auth/accountType/Brand/BrandOnboarding";
-import CreatorRegistration from "@/components/Auth/accountType/Creator/Creator";
-import { setAuthToken } from "@/app/actions/auth";
+import { clearAuthToken } from "@/app/actions/auth";
+import { EmailVerificationPrompt } from "@/components/Auth/verify-email/EmailVerificationPrompt";
 import { useAuthStore } from "@/hooks/store/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,14 +31,20 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiMailLine, RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z, infer as zInfer } from "zod";
-import type { Creator } from "@/types/preferences/Creator/CreatorType";
+
+const BrandOnboarding = dynamic(() => import("@/components/Auth/accountType/Brand/BrandOnboarding"), {
+  loading: () => (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  ),
+});
 
 const signupPasswordSchema = z
   .string()
@@ -123,10 +128,10 @@ export function GoogleCompleteSignupForm({
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
-  const [creatorPrefill, setCreatorPrefill] = useState<Partial<Creator> | null>(null);
-
-  const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const [phase, setPhase] = useState<"form" | "onboarding" | "verification">("form");
+  /** Email to display on the verification prompt after completing signup. */
+  const [completedEmail, setCompletedEmail] = useState("");
+  const logout = useAuthStore((s) => s.logout);
 
   const onSubmit = (data: FormValues) => {
     const parsed = schema.parse(data);
@@ -153,47 +158,17 @@ export function GoogleCompleteSignupForm({
       if (extra.city) payload.city = extra.city;
       return pazaApi.put("/api/auth/google/complete-signup", payload);
     },
-    onSuccess: async (res: AxiosResponse, variables: FormData) => {
-      const token = res.data?.token as string | undefined;
-      const user = res.data?.user as
-        | {
-            id?: number | string;
-            email?: string;
-            firstName?: string;
-            lastName?: string;
-            accountType?: string;
-          }
-        | undefined;
-
-      if (token && typeof window !== "undefined") {
-        await setAuthToken(token);
-        window.localStorage.setItem("token", token);
-      }
-      if (token && user) {
-        setAuth(token, {
-          id: user.id != null ? String(user.id) : undefined,
-          email: user.email ?? "",
-          firstname: user.firstName,
-          lastname: user.lastName,
-          accountType: user.accountType,
-        });
-      }
-
-      if (accountType === "creator") {
-        setCreatorPrefill({
-          firstName: variables.firstname,
-          lastName: variables.lastname,
-          dateOfBirth:
-            "birthday" in variables &&
-            typeof (variables as { birthday?: unknown }).birthday === "string"
-              ? (variables as { birthday: string }).birthday
-              : undefined,
-        });
-        toast.success("Account created — complete your creator profile");
-      } else if (accountType === "brand") {
-        toast.success("Account created — complete your brand profile");
+    onSuccess: async () => {
+      setCompletedEmail(defaults.email ?? "");
+      if (accountType === "brand") {
+        // Keep auth alive for BrandOnboarding API calls.
+        setPhase("onboarding");
       } else {
-        toast.success("Registration successfull");
+        // Creator: clear auth and go straight to verification.
+        try { await clearAuthToken(); } catch {}
+        if (typeof window !== "undefined") localStorage.removeItem("token");
+        logout();
+        setPhase("verification");
       }
     },
     onError: (err: unknown) => {
@@ -216,31 +191,28 @@ export function GoogleCompleteSignupForm({
     },
   });
 
-  const showCreatorJourney =
-    accountType === "creator" && completeMutation.isSuccess && creatorPrefill != null;
-
-  const showBrandJourney = accountType === "brand" && completeMutation.isSuccess;
+  const handleOnboardingDone = async () => {
+    // Brand onboarding complete — now clear auth and show verification prompt.
+    try { await clearAuthToken(); } catch {}
+    if (typeof window !== "undefined") localStorage.removeItem("token");
+    logout();
+    setPhase("verification");
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      {showCreatorJourney ? (
-        <CreatorRegistration
-          embedded
-          initialData={creatorPrefill}
-          className="px-0 pt-0"
-          mode="full"
-          stepOffset={0}
-          totalSteps={5}
-          onComplete={() => router.push("/overview")}
-        />
-      ) : showBrandJourney ? (
+      {phase === "verification" && completedEmail ? (
+        <EmailVerificationPrompt email={completedEmail} className="max-w-lg mx-auto" />
+      ) : phase === "onboarding" && accountType === "brand" ? (
         <BrandOnboarding
           embedded
-          className="px-0 pt-0"
-          stepOffset={0}
+          onComplete={handleOnboardingDone}
+          stepOffset={1}
           totalSteps={4}
-          onComplete={() => router.push("/overview")}
         />
+      ) : phase === "onboarding" ? (
+        // Creator — shouldn't reach here (onSuccess handles it), but fallback to verification.
+        <EmailVerificationPrompt email={completedEmail} className="max-w-lg mx-auto" />
       ) : (
         <form
           key={accountType}

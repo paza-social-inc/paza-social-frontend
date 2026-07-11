@@ -60,6 +60,7 @@ export interface BrandProfile {
   // ── Relations
   products?: BrandProduct[];
   pastProjects?: BrandPastProject[];
+  creatorPreferences?: BrandCreatorPreference;
 }
 
 export interface BrandProduct {
@@ -219,6 +220,34 @@ export async function uploadBrandCoverImage(businessId: number, file: File): Pro
 export async function updateBrandVoice(businessId: number, data: Partial<BrandProfile>): Promise<ApiResponse<BrandProfile>> {
   const response = await pazaApi.patch<Record<string, unknown>>(`/api/brands/${businessId}/profile/voice`, data);
   return normalizeApiResponse<BrandProfile>(response.data, 'profile');
+}
+
+// ─── H. Brand Creator Preferences ─────────────────────────────────────────
+
+export interface BrandCreatorPreference {
+  id?: number;
+  creatorCategories?: string[];
+  preferredContentFormats?: string[];
+  preferredAudienceSizes?: string[];
+  preferredCharacteristics?: string[];
+  previouslyWorkedWith?: string[];
+  desiredCollaborations?: string[];
+  avoidCreators?: string[];
+  brandSafetyRequirements?: string;
+  brandSafetyTopics?: string[];
+}
+
+export async function getCreatorPreferences(businessId: number): Promise<ApiResponse<BrandCreatorPreference | null>> {
+  const response = await pazaApi.get<Record<string, unknown>>(`/api/brands/${businessId}/creator-preferences`);
+  return normalizeApiResponse<BrandCreatorPreference | null>(response.data, 'data');
+}
+
+export async function updateCreatorPreferences(
+  businessId: number,
+  data: Partial<BrandCreatorPreference>
+): Promise<ApiResponse<BrandCreatorPreference>> {
+  const response = await pazaApi.patch<Record<string, unknown>>(`/api/brands/${businessId}/creator-preferences`, data);
+  return normalizeApiResponse<BrandCreatorPreference>(response.data, 'data');
 }
 
 // ─── Past Project Media ──────────────────────────────────────────────────
