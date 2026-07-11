@@ -20,7 +20,7 @@ import {
     InputGroupInput
 } from "@/components/ui/input-group"
 import { useAuthStore } from "@/hooks/store/auth/useAuth"
-import { pazaApi } from "@/lib/axiosClients"
+import { pazaApi, setApiAuthToken } from "@/lib/axiosClients"
 import { decodeJwtPayload, getEmailFromPayload, getUserIdStringFromPayload, getAccountTypeFromPayload } from "@/lib/jwtPayload"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -165,7 +165,7 @@ export function SignupForm({
                 }
                 // Set on pazaApi defaults so BrandOnboarding API calls work even if
                 // the request interceptor does not fire (observed in production builds).
-                pazaApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+                setApiAuthToken(token);
                 // Build user object from jwt payload to set zustand auth
                 const payload = decodeJwtPayload(token);
                 setAuth(token, {

@@ -26,14 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { pazaApi } from "@/lib/axiosClients";
+import { pazaApi, setApiAuthToken, getAuthHeaderConfig } from "@/lib/axiosClients";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiMailLine, RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z, infer as zInfer } from "zod";
@@ -133,6 +133,18 @@ export function GoogleCompleteSignupForm({
   const [completedEmail, setCompletedEmail] = useState("");
   const logout = useAuthStore((s) => s.logout);
 
+  // ── Bootstrap: ensure the auth token from the OAuth callback (stored in
+  //     localStorage) is available to every pazaApi call, even when the
+  //     axios request interceptor does not fire reliably in production. ──
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        setApiAuthToken(token);
+      }
+    }
+  }, []);
+
   const onSubmit = (data: FormValues) => {
     const parsed = schema.parse(data);
     completeMutation.mutate(parsed);
@@ -156,17 +168,19 @@ export function GoogleCompleteSignupForm({
       if (extra.gender) payload.gender = extra.gender;
       if (extra.phone) payload.phone = extra.phone;
       if (extra.city) payload.city = extra.city;
-      return pazaApi.put("/api/auth/google/complete-signup", payload);
+      // Explicitly pass the auth header so this critical call works even
+      // when the axios interceptor or default headers fail.
+      return pazaApi.put("/api/auth/google/complete-signup", payload, getAuthHeaderConfig());
     },
     onSuccess: async () => {
       setCompletedEmail(defaults.email ?? "");
       if (accountType === "brand") {
-        // Ensure pazaApi has the token on defaults so BrandOnboarding API calls
-        // work even if the request interceptor does not fire (observed in prod).
+        // Ensure the token is wired into pazaApi so BrandOnboarding API calls
+        // (auth/me, business/bootstrap, uploads/image) all succeed.
         const existingToken =
           typeof window !== "undefined" ? localStorage.getItem("token") : null;
         if (existingToken) {
-          pazaApi.defaults.headers.common["Authorization"] = `Bearer ${existingToken}`;
+          setApiAuthToken(existingToken);
         }
         setPhase("onboarding");
       } else {

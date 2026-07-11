@@ -1,4 +1,4 @@
-import { pazaApi } from "@/lib/axiosClients";
+import { pazaApi, getAuthHeaderConfig } from "@/lib/axiosClients";
 
 /** Client state for the brand onboarding screens (matches `BrandOnboarding` form). */
 export type BrandOnboardingFormState = {
@@ -30,9 +30,11 @@ export function parseCoreValuesToArray(raw: string): string[] {
 async function uploadImageFile(file: File): Promise<string> {
     const form = new FormData();
     form.append("file", file);
+    const authCfg = getAuthHeaderConfig();
     const res = await pazaApi.post("/api/uploads/image", form, {
         headers: {
             "Content-Type": "multipart/form-data",
+            ...(authCfg.headers || {}),
         },
     });
     const url = res?.data?.data?.url;
@@ -82,14 +84,15 @@ export function buildBrandProfilePayload(data: BrandOnboardingFormState): Record
 
 /** Reuses an existing membership from GET /api/auth/me when present. */
 export async function ensureBusinessId(args: { companyName?: string; website?: string }): Promise<number> {
-    const me = await pazaApi.get<{ data?: { businessId?: number | null } }>("/api/auth/me");
+    const authCfg = getAuthHeaderConfig();
+    const me = await pazaApi.get<{ data?: { businessId?: number | null } }>("/api/auth/me", authCfg);
     const existing = me.data?.data?.businessId;
     if (existing != null) return existing;
 
     const res = await pazaApi.post<{ businessId: number }>("/api/auth/business/bootstrap", {
         name: args.companyName?.trim() || "My business",
         website: args.website?.trim(),
-    });
+    }, authCfg);
     return res.data.businessId;
 }
 
