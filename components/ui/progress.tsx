@@ -17,6 +17,9 @@ type RadialProgressProps = BaseProps &
         size?: number
         strokeWidth?: number
         label?: string
+        valueFontSize?: string
+        labelFontSize?: string
+
     }
 
 type ProgressProps = LinearProgressProps | RadialProgressProps
@@ -28,6 +31,8 @@ export function Progress(props: ProgressProps) {
             size = 64,
             strokeWidth = 6,
             label = "Progress",
+            valueFontSize = "1.25rem",
+            labelFontSize = "0.75rem",
             className,
             ...svgProps
         } = props as RadialProgressProps
@@ -80,14 +85,16 @@ export function Progress(props: ProgressProps) {
                     <tspan
                         x={center}
                         dy="-0.2em"
-                        className="fill-foreground text-[1.25rem] font-bold"
+                        className="fill-foreground font-bold"
+                         style={{ fontSize: valueFontSize }}
                     >
                         {value}%
                     </tspan>
                     <tspan
                         x={center}
                         dy="1.4em"
-                        className="fill-muted-foreground text-[0.75rem]"
+                        className="fill-muted-foreground"
+                        style={{ fontSize: labelFontSize }}
                     >
                         {label}
                     </tspan>

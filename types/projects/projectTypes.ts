@@ -1,18 +1,112 @@
 // Project-related types for /api/creator-projects (showcase)
 
+/** Asset Type — what kind of ownable IP this project declares (Ownership block). */
+export type AssetType =
+  | "distribution_media"
+  | "relationship_graph"
+  | "content_system"
+  | "ip_vault"
+  | "data_intelligence";
+
+export type YesNoPending = "yes" | "no" | "pending";
+export type YesNo = "yes" | "no";
+export type RevenueSource = "client" | "platform" | "license";
+export type UseOfFundsCategory =
+  | "production"
+  | "marketing_distribution"
+  | "legal_registration"
+  | "team_collaborator_costs"
+  | "licensing_acquisition";
+export type DeliveryGuarantee = "strict" | "partial" | "best_effort";
+export type FailureOutcome = "refund" | "replace" | "reallocate" | "no_remedy";
+
+/**
+ * Supported currency codes for money fields. Any valid ISO 4217 code will still
+ * format correctly via Intl.NumberFormat, this union just drives the picker UI —
+ * extend it freely as new markets are added.
+ */
+export type CurrencyCode =
+  | "KES"
+  | "USD"
+  | "EUR"
+  | "GBP"
+  | "NGN"
+  | "ZAR"
+  | "GHS"
+  | "UGX"
+  | "TZS"
+  | "INR"
+  | "CAD"
+  | "AUD";
+
+/** A currency-aware amount. Replaces bare `number` fields so figures aren't assumed KES. */
+export interface Money {
+  amount?: number;
+  currency?: CurrencyCode;
+}
+
+/** ISO (yyyy-mm-dd) date range, e.g. for "time period" style fields. */
+export interface DateRange {
+  start?: string;
+  end?: string;
+}
+
+/** A supporting document or file attached to the showcase (proof, contracts, decks, etc.). */
+export interface ProjectAttachment {
+  id: string;
+  name: string;
+  /** Set once the file has actually been uploaded to storage. */
+  url?: string;
+  size?: number;
+  uploadedAt?: string;
+}
+
 /** Persisted JSON for the Assets & Funding showcase tab (PUT /api/creator-projects/:id). */
 export interface AssetsFunding {
   hasIP?: boolean;
-  ownership?: { whoOwns?: string; registered?: string; jurisdiction?: string };
-  revenueHistory?: { hasEarned?: boolean; amount?: string; source?: string; period?: string };
-  costLedger?: { production?: string; marketing?: string; legal?: string };
+  /** Type of asset this IP tab is describing — drives which asset-type card copy is shown elsewhere. */
+  assetType?: AssetType;
+  ownership?: {
+    /** Ownership share held by the declaring party, 0–100. */
+    whoOwns?: number;
+    registered?: YesNoPending;
+    /** Country / legal jurisdiction — free text backed by a country picker in the UI. */
+    jurisdiction?: string;
+  };
+  revenueHistory?: {
+    hasEarned?: boolean;
+    /** Currency-aware figure, not free text. */
+    amount?: Money;
+    source?: RevenueSource;
+    /** Date range the earnings cover. */
+    period?: DateRange;
+    /** Filename/URL of uploaded proof. Presence unlocks finance visibility elsewhere. */
+    proofUrl?: string;
+  };
+  costLedger?: { production?: Money; marketing?: Money; legal?: Money };
   seekingFunding?: boolean;
-  capitalIntent?: { amount?: string; useOfFunds?: string; expectedOutcome?: string };
-  deliveryGuarantee?: string;
-  failureOutcome?: string;
-  risk?: { canEarnWithoutCreator?: string; rightsLicensable?: string };
+  capitalIntent?: {
+    /** Funding ask, currency-aware figure. */
+    amount?: Money;
+    useOfFunds?: UseOfFundsCategory;
+    /** Free-text explanation of how the funds will be used, captured via a confirmation dialog. */
+    useOfFundsNote?: string;
+    /** Short outcome statement — capped length, not a pitch paragraph. */
+    expectedOutcome?: string;
+  };
+  deliveryGuarantee?: DeliveryGuarantee;
+  /** "no_remedy" is only a valid selection when deliveryGuarantee === "best_effort". */
+  failureOutcome?: FailureOutcome;
+  risk?: {
+    canEarnWithoutCreator?: YesNo;
+    rightsLicensable?: YesNo;
+    /** Optional free text — known distributors or buyers. */
+    knownDistributors?: string;
+  };
   escrowRequired?: boolean;
   killSwitchEnabled?: boolean;
+  /** Supporting documents — statements, contracts, decks, anything not covered by a dedicated field. */
+  attachments?: ProjectAttachment[];
 }
 
 /** Stable ids for “hard no” mandate categories (showcase Guardrails tab). */
@@ -45,7 +139,6 @@ export interface ProjectGuardrails {
 
 /** One commercial / deliverable slot on the showcase (max 3 per project). */
 export interface ProjectSlotItem {
-  /** Stable id for edit/delete in the UI */
   id: string;
   title: string;
   deliverables?: string;
@@ -57,20 +150,30 @@ export interface ProjectSlotItem {
   proofRequired?: string;
 }
 
-/** One goal on the Progress tab (creator-defined, with optional timeframe). */
-export interface ProjectProgressGoal {
+export type ProjectProgressUpdate = {
+  id: string;
+  achieved: number;
+  note?: string;
+  date: string;
+};
+
+export type ProjectProgressObjective = {
+  id: string;
+  text: string;
+  target: number;
+  achieved: number;
+  timeframeStart?: string;
+  timeframeEnd?: string;
+  history?: ProjectProgressUpdate[];
+};
+
+export type ProjectProgressGoal = {
   id: string;
   title: string;
-  objective?: string;
-  /** Optional measurable target for this specific goal (e.g. 100K impressions). */
-  target?: string;
-  /** ISO date string (YYYY-MM-DD) */
-  timeframeStart?: string;
-  /** ISO date string (YYYY-MM-DD) */
-  timeframeEnd?: string;
-}
+  objectives: ProjectProgressObjective[];
+  progressNote?: string;
+};
 
-/** Persisted JSON for the Progress showcase tab (PUT /api/creator-projects/:id `progress`). */
 export interface ProjectProgress {
   reachTarget?: string;
   reachAchieved?: string;
@@ -79,7 +182,6 @@ export interface ProjectProgress {
   goals?: ProjectProgressGoal[];
 }
 
-/** One node in the threaded Q&A tree (GET /api/creator-projects/:id/qa/posts). */
 export interface ProjectQaPost {
   id: number;
   projectId: number;
@@ -97,11 +199,7 @@ export interface ProjectQaPost {
   replies: ProjectQaPost[];
 }
 
-/** Persisted JSON for the Slots showcase tab (deliverables, usage, KPIs, etc.). */
 export interface ProjectSlots {
-  /**
-   * Up to 3 slots, one per grid column. Use `null` for an empty column so positions stay fixed.
-   */
   items?: (ProjectSlotItem | null)[];
   /** @deprecated Legacy flat lists — migrated into `items` when loading if `items` is absent */
   deliverables?: string[];
@@ -113,38 +211,25 @@ export interface ProjectSlots {
   proofRequired?: string[];
 }
 
-/** Create/update body: POST /api/creator-projects, PUT /api/creator-projects/:id */
 export interface ProjectCreateRequest {
   title: string;
   description?: string;
-  /** Photos, videos, audio, or links */
   mediaUrls?: string[];
   taggedCollaboratorIds?: string[];
   taggedBrandIds?: string[];
   goals?: string[];
-  /** Optional high-level category (e.g. "Design"). Use `null` on update to clear. */
   category?: string | null;
-  /** Optional sub-category or more specific label */
   subCategory?: string;
-  /** Location label for showcase filters (e.g. "Nairobi, Kenya"). Use `null` on update to clear. */
   location?: string | null;
-  /** Keyword tags for showcase discovery filters. Use `null` on update to clear. */
   tags?: string[] | null;
-  /** Link project back to a campaign when created from a campaign */
   sourceCampaignId?: string;
-  /** When true, project can appear in public showcase discovery */
   isPublic?: boolean;
-  /** IP, funding, escrow — showcase Assets & Funding tab */
   assetsFunding?: AssetsFunding | null;
-  /** Slots tab — what the brand gets, commercial range, KPIs */
   slots?: ProjectSlots | null;
-  /** Progress tab — reach summary and structured goals */
   progress?: ProjectProgress | null;
-  /** Guardrails tab */
   guardrails?: ProjectGuardrails | null;
 }
 
-/** Subset of `creator_profiles` returned on creator project payloads. */
 export interface ProjectCreatorProfileRef {
   creatorname?: string | null;
   about?: string | null;
@@ -164,7 +249,6 @@ export interface ProjectCreatorProfileRef {
   experience?: string | null;
 }
 
-/** Nested creator from GET /api/creator-projects/:id (when API includes relation). */
 export interface ProjectCreatorRef {
   id?: number;
   firstName?: string;
@@ -173,11 +257,9 @@ export interface ProjectCreatorRef {
   city?: string;
   createdAt?: string;
   creatorProfile?: ProjectCreatorProfileRef | null;
-  /** Present on single-project responses: total showcase projects for this creator */
   showcaseStats?: { projectsTotal?: number };
 }
 
-/** Approved team member (e.g. after creator accepts a collaboration proposal). */
 export interface ProjectTeamMember {
   id: number;
   userId: number;
@@ -206,7 +288,6 @@ export interface Project {
   id: string;
   _id?: string;
   creatorId?: string | number;
-  /** Populated when API loads `creator` relation */
   creator?: ProjectCreatorRef;
   title?: string;
   description?: string;
@@ -216,33 +297,22 @@ export interface Project {
   mediaUrls?: string[];
   images?: string[];
   goals?: string[];
-  /** Set when project is created from a campaign */
   sourceCampaignId?: string;
-  /** Backend FK (same meaning as sourceCampaignId) */
   campaign_id?: number | null;
-  /** Linked campaign (list/detail) — attachments used as card cover fallback when mediaUrls empty */
   campaign?: { id: number; title?: string; attachments?: string[] | null } | null;
-  /** Owner: visible in public showcase discovery when true */
   isPublic?: boolean;
-  /** For My Projects card display */
   goalCount?: number;
   interestedCount?: number;
   tasksReceivedCount?: number;
   collaboratorsCount?: number;
-  /** From GET /api/creator-projects/:id — users who joined via accepted proposals */
   teamMembers?: ProjectTeamMember[];
   values?: Record<string, unknown>;
   proposals?: unknown[];
   milestones?: unknown[];
-  /** From GET /api/creator-projects/:id — Assets & Funding tab */
   assetsFunding?: AssetsFunding | null;
-  /** Slots tab */
   slots?: ProjectSlots | null;
-  /** Progress tab */
   progress?: ProjectProgress | null;
-  /** Guardrails tab — mandates, creative rules, recourse */
   guardrails?: ProjectGuardrails | null;
-  /** Legacy / mock summary fields when `progress` JSON is absent */
   reachTarget?: string;
   reachAchieved?: string;
   reachPercent?: number;
@@ -256,5 +326,3 @@ export interface ProjectCreateResponse {
 }
 
 export type ProjectGetResponse = Project;
-
-

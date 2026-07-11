@@ -94,21 +94,21 @@ export default function ShowcaseProjectPageClient() {
   const creatorProfile = buildCreatorProfileFromProject(project);
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">    
-
+    <div className="min-h-dvh bg-background text-foreground">
       <main className="w-full px-3 pt-1 pb-6 sm:px-4 sm:pt-2 sm:pb-8">
-           <div className="flex items-center gap-3 mb-4">
-              <Link
-                href="/showcase"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Link>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
-                {projectTitle}
-              </h1>
-           </div>
+        <div className="flex flex-col gap-2 mb-4">
+          <Link
+            href="/showcase"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Link>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+            {projectTitle}
+          </h1>
+        </div>
+
         <section
           className="rounded-2xl border border-border bg-card/30 overflow-hidden"
           aria-label="Project details"
