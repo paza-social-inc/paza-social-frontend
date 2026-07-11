@@ -104,6 +104,6 @@ export async function saveBrandProfileFull(
     if (data.profilePicture instanceof File) {
         payload.logo = await uploadImageFile(data.profilePicture);
     }
-    const res = await pazaApi.put(`/api/brands/${businessId}/profile/full`, payload);
+    const res = await pazaApi.put(`/api/brands/${businessId}/profile/full`, payload, getAuthHeaderConfig());
     return res.data;
 }
