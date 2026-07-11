@@ -161,7 +161,13 @@ export function GoogleCompleteSignupForm({
     onSuccess: async () => {
       setCompletedEmail(defaults.email ?? "");
       if (accountType === "brand") {
-        // Keep auth alive for BrandOnboarding API calls.
+        // Ensure pazaApi has the token on defaults so BrandOnboarding API calls
+        // work even if the request interceptor does not fire (observed in prod).
+        const existingToken =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (existingToken) {
+          pazaApi.defaults.headers.common["Authorization"] = `Bearer ${existingToken}`;
+        }
         setPhase("onboarding");
       } else {
         // Creator: clear auth and go straight to verification.

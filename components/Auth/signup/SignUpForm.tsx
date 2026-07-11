@@ -163,6 +163,9 @@ export function SignupForm({
                 if (typeof window !== "undefined") {
                     localStorage.setItem("token", token);
                 }
+                // Set on pazaApi defaults so BrandOnboarding API calls work even if
+                // the request interceptor does not fire (observed in production builds).
+                pazaApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
                 // Build user object from jwt payload to set zustand auth
                 const payload = decodeJwtPayload(token);
                 setAuth(token, {
