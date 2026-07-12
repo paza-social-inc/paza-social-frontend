@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { CreatorPastProject, CreatorProfile } from "@/lib/data/creator";
+import CreatorAboutCard from "./CreatorAboutCard";
 import CreatorNarrativeForm from "./CreatorNarrativeForm";
 import WorkingStyleForm from "./WorkingStyleForm";
 import CreatorCapabilitiesForm from "./CreatorCapabilitiesForm";
@@ -16,18 +17,30 @@ import CreatorRoutineForm from "./CreatorRoutineForm";
 import CreatorAffinityForm from "./CreatorAffinityForm";
 import { RiLoader2Line, RiErrorWarningLine } from "@remixicon/react";
 
-const VALID_TABS = ["narrative", "capabilities", "routine", "affinities", "working-style", "audience", "portfolio"] as const;
+const VALID_TABS = ["identity", "prompts", "audience", "portfolio"] as const;
 type CreatorTab = typeof VALID_TABS[number];
+
+// Legacy deep-link support: old links using ?tab=narrative / capabilities / working-style /
+// routine / affinities should still land the user on the right new combined tab.
+const LEGACY_TAB_REDIRECTS: Record<string, CreatorTab> = {
+    narrative: "identity",
+    capabilities: "identity",
+    "working-style": "identity",
+    routine: "prompts",
+    affinities: "prompts",
+};
 
 export default function CreatorProfileView() {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
     const tabParam = searchParams.get("tab");
+    const resolvedTabParam =
+        tabParam && LEGACY_TAB_REDIRECTS[tabParam] ? LEGACY_TAB_REDIRECTS[tabParam] : tabParam;
     const initialTab: CreatorTab =
-        (VALID_TABS as readonly string[]).includes(tabParam ?? "")
-            ? (tabParam as CreatorTab)
-            : "narrative";
+        (VALID_TABS as readonly string[]).includes(resolvedTabParam ?? "")
+            ? (resolvedTabParam as CreatorTab)
+            : "identity";
 
     const [activeTab, setActiveTab] = useState<CreatorTab>(initialTab);
     const [profile, setProfile] = useState<CreatorProfile | null>(null);
@@ -143,47 +156,39 @@ export default function CreatorProfileView() {
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as CreatorTab)} className="w-full">
                 <div className="overflow-x-auto no-scrollbar pb-1">
                     <TabsList className="inline-flex min-w-full h-auto bg-transparent border-b rounded-none p-0 gap-4 md:gap-8 justify-start">
-                        <TabsTrigger value="narrative" className="tab-trigger">Story</TabsTrigger>
-                        <TabsTrigger value="capabilities" className="tab-trigger">Capabilities</TabsTrigger>
-                        <TabsTrigger value="routine" className="tab-trigger">Routine</TabsTrigger>
-                        <TabsTrigger value="affinities" className="tab-trigger">Affinities</TabsTrigger>
-                        <TabsTrigger value="working-style" className="tab-trigger">Style</TabsTrigger>
+                        <TabsTrigger value="identity" className="tab-trigger">Identity</TabsTrigger>
+                        <TabsTrigger value="prompts" className="tab-trigger">Prompt</TabsTrigger>
                         <TabsTrigger value="audience" className="tab-trigger">Audience</TabsTrigger>
                         <TabsTrigger value="portfolio" className="tab-trigger">Portfolio</TabsTrigger>
                     </TabsList>
                 </div>
 
                 <div ref={contentRef} className="mt-6">
-                    <TabsContent value="narrative">
+                    <TabsContent value="identity" className="space-y-6">
+                        <CreatorAboutCard
+                            initialData={profile || {}}
+                            onSuccess={handleSectionSaved}
+                        />
                         <CreatorNarrativeForm
                             initialData={profile || {}}
                             onSuccess={handleSectionSaved}
                         />
-                    </TabsContent>
-
-                    <TabsContent value="capabilities">
                         <CreatorCapabilitiesForm
                             initialData={profile || {}}
                             onSuccess={handleSectionSaved}
                         />
+                        <WorkingStyleForm
+                            initialData={profile || {}}
+                            onSuccess={handleSectionSaved}
+                        />
                     </TabsContent>
 
-                    <TabsContent value="routine">
+                    <TabsContent value="prompts" className="space-y-6">
                         <CreatorRoutineForm
                             initialData={profile || {}}
                             onSuccess={handleSectionSaved}
                         />
-                    </TabsContent>
-
-                    <TabsContent value="affinities">
                         <CreatorAffinityForm
-                            initialData={profile || {}}
-                            onSuccess={handleSectionSaved}
-                        />
-                    </TabsContent>
-
-                    <TabsContent value="working-style">
-                        <WorkingStyleForm
                             initialData={profile || {}}
                             onSuccess={handleSectionSaved}
                         />

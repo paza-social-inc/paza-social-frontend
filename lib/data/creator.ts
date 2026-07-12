@@ -102,6 +102,14 @@ export async function updateFullCreatorProfile(data: Partial<CreatorProfile>): P
 }
 
 // ─── Section Updates ──────────────────────────────────────────────────────
+export async function updatePrompts(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
+  const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/prompts", data);
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
+}
 
 export async function updateNarrativeIdentity(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
   const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/narrative", data);
@@ -156,6 +164,22 @@ export async function listCreatorPastProjects(): Promise<ApiResponse<CreatorPast
     success: Array.isArray(response.data.projects),
     message: response.data.message,
     data: response.data.projects
+  };
+}
+
+
+export async function updateCreatorPastProject(
+  projectId: number,
+  data: Omit<CreatorPastProject, "id">
+): Promise<ApiResponse<CreatorPastProject>> {
+  const response = await pazaApi.patch<{ message: string; project: CreatorPastProject }>(
+    `/api/creators/past-projects/${projectId}`,
+    data
+  );
+  return {
+    success: !!response.data.project,
+    message: response.data.message,
+    data: response.data.project
   };
 }
 

@@ -74,12 +74,19 @@ export function AboutSection({ projectId, initial, initialMediaUrls, canEdit }: 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(initial);
   const [mediaUrls, setMediaUrls] = useState<string[]>(initialMediaUrls);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>(
+    initialMediaUrls.filter((url) => looksLikeImageUrl(toAbsoluteUploadUrl(url)))
+  );
   const [newLinkInput, setNewLinkInput] = useState("");
+
+  const isKnownImage = (url: string) =>
+    uploadedImageUrls.includes(url) || looksLikeImageUrl(toAbsoluteUploadUrl(url));
+
   const primaryImageUrl = mediaUrls
     .map((url) => toAbsoluteUploadUrl(url))
-    .find((url) => looksLikeImageUrl(url));
+    .find((url) => isKnownImage(url));
 
-  const linkUrls = mediaUrls.filter((url) => url.trim() && !looksLikeImageUrl(toAbsoluteUploadUrl(url)));
+  const linkUrls = mediaUrls.filter((url) => url.trim() && !isKnownImage(url));
 
   const [mediaUploadPending, setMediaUploadPending] = useState(false);
 
@@ -156,6 +163,7 @@ export function AboutSection({ projectId, initial, initialMediaUrls, canEdit }: 
       setMediaUploadPending(true);
       const url = await uploadMediaImage(file);
       setMediaUrls((prev) => [url, ...prev]);
+      setUploadedImageUrls((prev) => [url, ...prev]);
       toast.success("Project image uploaded");
     } catch (err: unknown) {
       const msg =

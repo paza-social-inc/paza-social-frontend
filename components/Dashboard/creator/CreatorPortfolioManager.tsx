@@ -8,8 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPlayCircleLine } from "@remixicon/react";
-import { CreatorPastProject, addCreatorPastProject, removeCreatorPastProject } from "@/lib/data/creator";
+import { RiAddLine, RiDeleteBinLine, RiImageLine, RiLoader2Line, RiPencilLine, RiPlayCircleLine, RiUpload2Line } from "@remixicon/react";
+import {
+    CreatorPastProject,
+    addCreatorPastProject,
+    removeCreatorPastProject,
+    updateCreatorPastProject,
+} from "@/lib/data/creator";
+import { DEFAULT_API_URL, pazaApi } from "@/lib/axiosClients";
 import {
     PROJECT_ROLES_INDUSTRY,
     PROJECT_ROLES_BRAND,
@@ -21,38 +27,151 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import toast from "react-hot-toast";
 
+// Extend the base type locally for the two reflection questions — safe if the
+// backend doesn't store them yet (frontend-only until the API/type is extended).
+type ProjectDraft = Omit<CreatorPastProject, "id"> & {
+    styleEpitome?: string;
+    meaningfulWork?: string;
+};
+
+const EMPTY_PROJECT: ProjectDraft = {
+    title: "",
+    period: "",
+    description: "",
+    mediaLinks: [],
+    producedReusableAsset: false,
+    revenueBand: "<$500",
+    projectRoleIndustry: "",
+    projectRoleBrand: "",
+    outcomeTypes: [],
+    measurementSources: [],
+    styleEpitome: "",
+    meaningfulWork: "",
+};
+
+function toAbsoluteUploadUrl(url: string): string {
+    const v = String(url ?? "").trim();
+    if (!v) return "";
+    if (/^https?:\/\//i.test(v) || v.startsWith("blob:") || v.startsWith("data:")) return v;
+    if (v.startsWith("/uploads/")) {
+        const base = (process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, "");
+        return `${base}${v}`;
+    }
+    return v;
+}
+
+function projectToDraft(project: CreatorPastProject): ProjectDraft {
+    const p = project as CreatorPastProject & { styleEpitome?: string; meaningfulWork?: string };
+    return {
+        title: p.title ?? "",
+        period: p.period ?? "",
+        description: p.description ?? "",
+        mediaLinks: p.mediaLinks ?? [],
+        producedReusableAsset: p.producedReusableAsset ?? false,
+        revenueBand: p.revenueBand ?? "<$500",
+        projectRoleIndustry: p.projectRoleIndustry ?? "",
+        projectRoleBrand: p.projectRoleBrand ?? "",
+        outcomeTypes: p.outcomeTypes ?? [],
+        measurementSources: p.measurementSources ?? [],
+        styleEpitome: p.styleEpitome ?? "",
+        meaningfulWork: p.meaningfulWork ?? "",
+    };
+}
+
 export default function CreatorPortfolioManager({ initialProjects, onUpdate }: { initialProjects: CreatorPastProject[], onUpdate?: () => void }) {
     const [projects, setProjects] = React.useState<CreatorPastProject[]>(initialProjects);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [imageUploadPending, setImageUploadPending] = React.useState(false);
     const [open, setOpen] = React.useState(false);
+    const [editingId, setEditingId] = React.useState<number | null>(null);
 
-    const [newProject, setNewProject] = React.useState<Omit<CreatorPastProject, 'id'>>({
-        title: "",
-        period: "",
-        description: "",
-        mediaLinks: [],
-        producedReusableAsset: false,
-        revenueBand: "<$500",
-        projectRoleIndustry: "",
-        projectRoleBrand: "",
-        outcomeTypes: [],
-        measurementSources: []
-    });
+    const [draft, setDraft] = React.useState<ProjectDraft>(EMPTY_PROJECT);
 
-    const handleAdd = async () => {
-        if (!newProject.title) return toast.error("Title is required");
+    const isEditing = editingId !== null;
+
+    const openCreate = () => {
+        setEditingId(null);
+        setDraft(EMPTY_PROJECT);
+        setOpen(true);
+    };
+
+    const openEdit = (project: CreatorPastProject) => {
+        setEditingId(project.id);
+        setDraft(projectToDraft(project));
+        setOpen(true);
+    };
+
+    const uploadImage = async (file: File): Promise<string> => {
+        const form = new FormData();
+        form.append("file", file);
+        const endpoints = ["/api/uploads/image", "/api/uploads/file"];
+        for (const endpoint of endpoints) {
+            try {
+                const res = await pazaApi.post(endpoint, form, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+                const url = res?.data?.data?.url;
+                if (typeof url === "string" && url.trim()) return url.trim();
+                throw new Error("Upload succeeded but no file URL was returned.");
+            } catch (err: unknown) {
+                const status = (err as { response?: { status?: number } })?.response?.status;
+                if (status === 404) continue;
+                throw err;
+            }
+        }
+        throw new Error("Upload endpoint not available on this backend.");
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.currentTarget.value = "";
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            toast.error("Please upload an image file.");
+            return;
+        }
+        try {
+            setImageUploadPending(true);
+            const url = await uploadImage(file);
+            setDraft((p) => ({ ...p, mediaLinks: [url] }));
+            toast.success("Image uploaded");
+        } catch (err: unknown) {
+            const msg =
+                String((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "").trim() ||
+                (err as Error)?.message ||
+                "Failed to upload image";
+            toast.error(msg);
+        } finally {
+            setImageUploadPending(false);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!draft.title) return toast.error("Title is required");
         setIsSubmitting(true);
         try {
-            const res = await addCreatorPastProject(newProject);
-            if (res.success) {
-                toast.success("Project added to portfolio");
-                setProjects([...projects, res.data]);
-                setOpen(false);
-                setNewProject({ title: "", period: "", description: "", mediaLinks: [], producedReusableAsset: false, revenueBand: "<$500", projectRoleIndustry: "", projectRoleBrand: "", outcomeTypes: [], measurementSources: [] });
-                if (onUpdate) onUpdate();
+            if (isEditing && editingId !== null) {
+                const res = await updateCreatorPastProject(editingId, draft as Omit<CreatorPastProject, "id">);
+                if (res.success) {
+                    toast.success("Project updated");
+                    setProjects((prev) => prev.map((p) => (p.id === editingId ? res.data : p)));
+                    setOpen(false);
+                    setEditingId(null);
+                    setDraft(EMPTY_PROJECT);
+                    if (onUpdate) onUpdate();
+                }
+            } else {
+                const res = await addCreatorPastProject(draft as Omit<CreatorPastProject, "id">);
+                if (res.success) {
+                    toast.success("Project added to portfolio");
+                    setProjects((prev) => [...prev, res.data]);
+                    setOpen(false);
+                    setDraft(EMPTY_PROJECT);
+                    if (onUpdate) onUpdate();
+                }
             }
         } catch {
-            toast.error("Failed to add project");
+            toast.error(isEditing ? "Failed to update project" : "Failed to add project");
         } finally {
             setIsSubmitting(false);
         }
@@ -72,6 +191,8 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
         }
     };
 
+    const previewImageUrl = draft.mediaLinks?.[0] ? toAbsoluteUploadUrl(draft.mediaLinks[0]) : "";
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -79,7 +200,7 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                     <CardTitle>Portfolio & Case Studies</CardTitle>
                     <CardDescription>Showcase your best work to brands.</CardDescription>
                 </div>
-                <Button size="sm" onClick={() => setOpen(true)}>
+                <Button size="sm" onClick={openCreate}>
                     <RiAddLine className="mr-1 h-4 w-4" /> Add Project
                 </Button>
             </CardHeader>
@@ -95,11 +216,14 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                             <Card key={project.id} className="overflow-hidden group relative">
                                 <div className="aspect-video bg-muted flex items-center justify-center relative">
                                     {project.mediaLinks?.[0] ? (
-                                        <Image src={project.mediaLinks[0]} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
+                                        <Image src={toAbsoluteUploadUrl(project.mediaLinks[0])} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
                                     ) : (
                                         <RiImageLine className="h-12 w-12 text-muted-foreground opacity-20" />
                                     )}
-                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => openEdit(project)}>
+                                            <RiPencilLine className="h-4 w-4" />
+                                        </Button>
                                         <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(project.id)}>
                                             <RiDeleteBinLine className="h-4 w-4" />
                                         </Button>
@@ -118,36 +242,78 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                 </div>
 
                 <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-4xl">
                         <DialogHeader>
-                            <DialogTitle>Add Creator Project</DialogTitle>
+                            <DialogTitle>{isEditing ? "Edit Creator Project" : "Add Creator Project"}</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-6 py-4 overflow-y-auto max-h-[70vh]">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-6 py-4 overflow-y-auto max-h-[70vh] pr-1">
+
+                            <div className="space-y-2">
+                                <Label>Project Image</Label>
+                                <div className="rounded-lg border border-border p-3">
+                                    {previewImageUrl ? (
+                                        <div className="relative mb-3 h-44 w-full overflow-hidden rounded-md">
+                                            <Image src={previewImageUrl} alt="Project preview" fill className="object-cover" sizes="800px" />
+                                        </div>
+                                    ) : (
+                                        <div className="mb-3 flex h-44 w-full items-center justify-center rounded-md bg-muted">
+                                            <RiImageLine className="h-10 w-10 text-muted-foreground opacity-30" />
+                                        </div>
+                                    )}
+                                    <input
+                                        id="portfolio-project-image-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleImageUpload}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={imageUploadPending}
+                                        onClick={() => document.getElementById("portfolio-project-image-upload")?.click()}
+                                    >
+                                        {imageUploadPending ? (
+                                            <>
+                                                <RiLoader2Line className="mr-2 h-4 w-4 animate-spin" />
+                                                Uploading…
+                                            </>
+                                        ) : (
+                                            <>
+                                                <RiUpload2Line className="mr-2 h-4 w-4" />
+                                                {previewImageUrl ? "Change image" : "Upload image"}
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label>Project Title</Label>
                                     <Input
-                                        value={newProject.title}
-                                        onChange={(e) => setNewProject(p => ({ ...p, title: e.target.value }))}
+                                        value={draft.title}
+                                        onChange={(e) => setDraft(p => ({ ...p, title: e.target.value }))}
                                         placeholder="e.g. Nike Summer Ad"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Period</Label>
                                     <Input
-                                        value={newProject.period}
-                                        onChange={(e) => setNewProject(p => ({ ...p, period: e.target.value }))}
-                                        placeholder="e.g. Jan 2024"
+                                        type="month"
+                                        value={draft.period}
+                                        onChange={(e) => setDraft(p => ({ ...p, period: e.target.value }))}
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label>Industry Role</Label>
                                     <Select
-                                        onValueChange={(val) => setNewProject(p => ({ ...p, projectRoleIndustry: val }))}
-                                        defaultValue={newProject.projectRoleIndustry}
+                                        onValueChange={(val) => setDraft(p => ({ ...p, projectRoleIndustry: val }))}
+                                        value={draft.projectRoleIndustry || undefined}
                                     >
                                         <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
                                         <SelectContent>
@@ -158,8 +324,8 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                                 <div className="space-y-2">
                                     <Label>Brand Role (The Energy)</Label>
                                     <Select
-                                        onValueChange={(val) => setNewProject(p => ({ ...p, projectRoleBrand: val }))}
-                                        defaultValue={newProject.projectRoleBrand}
+                                        onValueChange={(val) => setDraft(p => ({ ...p, projectRoleBrand: val }))}
+                                        value={draft.projectRoleBrand || undefined}
                                     >
                                         <SelectTrigger><SelectValue placeholder="Select Energy" /></SelectTrigger>
                                         <SelectContent>
@@ -172,19 +338,49 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                             <div className="space-y-2">
                                 <Label>Description</Label>
                                 <Textarea
-                                    value={newProject.description}
-                                    onChange={(e) => setNewProject(p => ({ ...p, description: e.target.value }))}
-                                    className="h-[80px]"
+                                    value={draft.description}
+                                    onChange={(e) => setDraft(p => ({ ...p, description: e.target.value }))}
+                                    className="h-[90px]"
                                     placeholder="Campaign goals and your specific contribution..."
                                 />
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-4">
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-bold">Reflection</h4>
+                                    <div className="space-y-2">
+                                        <Label>Which of your works epitomizes your style?</Label>
+                                        <Textarea
+                                            value={draft.styleEpitome}
+                                            onChange={(e) => setDraft(p => ({ ...p, styleEpitome: e.target.value }))}
+                                            className="h-[80px]"
+                                            placeholder="Describe the work that best represents your creative style…"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-bold invisible md:visible">&nbsp;</h4>
+                                    <div className="space-y-2">
+                                        <Label>Describe a work that was very meaningful to you and why?</Label>
+                                        <Textarea
+                                            value={draft.meaningfulWork}
+                                            onChange={(e) => setDraft(p => ({ ...p, meaningfulWork: e.target.value }))}
+                                            className="h-[80px]"
+                                            placeholder="What made this project stand out to you personally?"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="space-y-4 border-t pt-4">
                                 <h4 className="text-sm font-bold">Commercial Evidence</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <Label>Revenue Band</Label>
-                                        <Select onValueChange={(val) => setNewProject(p => ({ ...p, revenueBand: val as never }))}>
+                                        <Select
+                                            onValueChange={(val) => setDraft(p => ({ ...p, revenueBand: val as never }))}
+                                            value={draft.revenueBand || undefined}
+                                        >
                                             <SelectTrigger><SelectValue placeholder="Select range" /></SelectTrigger>
                                             <SelectContent>
                                                 {REVENUE_BANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
@@ -193,7 +389,10 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Measurement Source</Label>
-                                        <Select onValueChange={(val) => setNewProject(p => ({ ...p, measurementSource: val }))}>
+                                        <Select
+                                            onValueChange={(val) => setDraft(p => ({ ...p, measurementSource: val }))}
+                                            value={(draft as unknown as { measurementSource?: string }).measurementSource || undefined}
+                                        >
                                             <SelectTrigger><SelectValue placeholder="How was it measured?" /></SelectTrigger>
                                             <SelectContent>
                                                 {MEASUREMENT_SOURCES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -208,12 +407,12 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                                         {OUTCOME_TYPES.map(o => (
                                             <Badge
                                                 key={o}
-                                                variant={(newProject.outcomeTypes || []).includes(o) ? "default" : "outline"}
+                                                variant={(draft.outcomeTypes || []).includes(o) ? "default" : "outline"}
                                                 className="cursor-pointer text-[10px]"
                                                 onClick={() => {
-                                                    const current = newProject.outcomeTypes || [];
-                                                    if (current.includes(o)) setNewProject(p => ({ ...p, outcomeTypes: current.filter(x => x !== o) }));
-                                                    else setNewProject(p => ({ ...p, outcomeTypes: [...current, o] }));
+                                                    const current = draft.outcomeTypes || [];
+                                                    if (current.includes(o)) setDraft(p => ({ ...p, outcomeTypes: current.filter(x => x !== o) }));
+                                                    else setDraft(p => ({ ...p, outcomeTypes: [...current, o] }));
                                                 }}
                                             >
                                                 {o}
@@ -225,9 +424,9 @@ export default function CreatorPortfolioManager({ initialProjects, onUpdate }: {
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                            <Button onClick={handleAdd} disabled={isSubmitting}>
+                            <Button onClick={handleSave} disabled={isSubmitting || imageUploadPending}>
                                 {isSubmitting && <RiLoader2Line className="mr-2 h-4 w-4 animate-spin" />}
-                                Add Project
+                                {isEditing ? "Save Changes" : "Add Project"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
