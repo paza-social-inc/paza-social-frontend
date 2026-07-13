@@ -71,7 +71,7 @@ type FullReport = {
   sentimentBreakdown?: { positive: number; neutral: number; negative: number };
   topTopics?: { topic: string; count: number }[];
   competitorMentions?: { competitor: string; count: number }[];
-  narrativeReport?: NarrativeReport;
+  narrativeReport?: NarrativeReport | null;
 };
 
 // Helper: group signals by date (for timeline)
