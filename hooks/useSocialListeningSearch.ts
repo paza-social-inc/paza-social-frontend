@@ -304,7 +304,7 @@ type Environment = {
   riskScore?: number;
 };
 
-type NarrativeReport = {
+export type NarrativeReport = {
   title: string;
   generatedAt: string;
   abstract: string;
@@ -312,7 +312,7 @@ type NarrativeReport = {
   methodologyNote: string;
 };
 
-type FullReport = {
+export type FullReport = {
   summary: {
     totalCreators: number;
     totalSignals: number;
@@ -330,7 +330,7 @@ type FullReport = {
   signals: Signal[];
   jobId: string;
   briefId: string;
-  narrativeReport?: NarrativeReport | null; // <-- NEW
+  narrativeReport?: NarrativeReport | null; 
 };
 
 interface BriefPayload {
@@ -469,7 +469,7 @@ async function fetchFullReport(briefId: string, jobId: string, product: string):
     signals,
     jobId,
     briefId,
-    narrativeReport, // <-- NEW
+    narrativeReport,
   };
 }
 
