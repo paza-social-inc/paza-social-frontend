@@ -1,21 +1,23 @@
 'use client';
 
-interface NarrativeSection {
-  heading: string;
-  paragraphs: string[];
-  evidence?: Array<{ text: string; author: string | null; source: string; url: string | null }>;
+export interface NarrativeEvidence {
+  text: string;
+  author: string | null;
+  source: string;
+  url: string | null;
 }
 
-interface NarrativeReport {
-  // title: string;
-  // generatedAt: string;
-  // abstract: string;
-  // sections: NarrativeSection[];
-  // methodologyNote: string;
+export interface NarrativeSection {
+  heading: string;
+  paragraphs: string[];
+  evidence?: NarrativeEvidence[];
+}
+
+export interface NarrativeReport {
   title: string;
   generatedAt: string;
   abstract: string;
-  sections: Array<{ heading: string; paragraphs: string[]; evidence?: any[] }>;
+  sections: NarrativeSection[];
   methodologyNote: string;
 }
 
@@ -57,12 +59,12 @@ export function NarrativeReportDocument({ report }: { report: NarrativeReport })
                   key={eIdx}
                   className="border-l-2 border-neutral-300 pl-4 italic text-sm text-neutral-600"
                 >
-                  "{e.text}"
+                  &quot;{e.text}&quot;
                   <footer className="not-italic text-xs text-neutral-400 mt-1">
-                    — {e.author ? `@${e.author}` : "Unknown"} on {e.source}
+                    — {e.author ? `@${e.author}` : 'Unknown'} on {e.source}
                     {e.url && (
                       <>
-                        {" · "}
+                        {' · '}
                         <a href={e.url} target="_blank" rel="noopener noreferrer" className="underline">
                           source
                         </a>
