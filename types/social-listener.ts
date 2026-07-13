@@ -78,17 +78,6 @@ export interface Recommendation {
   paza_recommendation: string;
 }
 
-export interface SocialListeningReport {
-  id: string;
-  query: string;
-  timestamp: string;
-  creators: Creator[];
-  communities: Community[];
-  audience: Audience;
-  demand: DemandSignal[];
-  recommendations: Recommendation;
-}
-
 export interface Competitor {
   id: string;
   name: string;
@@ -109,6 +98,6 @@ export interface SocialListeningReport {
   communities: Community[];
   audience: Audience;
   demand: DemandSignal[];
-  competitors: Competitor[];        
+  competitors: Competitor[];
   recommendations: Recommendation;
 }
