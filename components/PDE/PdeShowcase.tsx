@@ -47,7 +47,9 @@ import {
   Activity,
   ArrowLeftRight,
   Search,
+  Filter,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -134,6 +136,143 @@ interface ShowcaseResponse {
   discoveryQueries?: DiscoveryQuerySet | null;
   contextualAnchors?: ContextualAnchorResult[] | null;
   semanticBridges?: SemanticBridgeResult[] | null;
+
+  // ── Signal source breakdown ──
+  signalSourceBreakdown?: Record<string, number>;
+  narrativeSourceBreakdown?: { narrativeIndex: number; sources: Record<string, number> }[];
+
+  // ── Social Listener / Persona Architect (9 Pillars + CIB) ──
+  cibReport?: CIBReport | null;
+  personaArchitect?: PersonaArchitectOutput | null;
+
+  // ── Search provider metadata ──
+  metadata?: {
+    searchProvider?: string;
+    hasLiveSearch?: boolean;
+    mode?: string;
+    collectors?: Record<string, boolean>;
+  };
+}
+
+/* ── CIB / Persona Architect Types (9 Pillars) ──────────────────── */
+
+type NinePillar =
+  | "nourishment" | "sensory" | "logic" | "economic"
+  | "security" | "identity" | "hustle" | "community" | "environment";
+
+interface PillarHeatmapEntry {
+  pillar: NinePillar;
+  share: number;
+  signalCount: number;
+  intensity: number;
+  confidence: number;
+  representativePhrases: string[];
+}
+
+interface PillarHeatmap {
+  distribution: PillarHeatmapEntry[];
+  dominantPillar: NinePillar | null;
+  topThree: NinePillar[];
+  concentration: "concentrated" | "moderate" | "spread";
+}
+
+interface PillarDelta {
+  pillar: NinePillar;
+  brandIntent: number;
+  audienceReality: number;
+  delta: number;
+  severity: "aligned" | "slight_mismatch" | "significant_delta";
+  interpretation: string;
+}
+
+interface PillarDeltaReport {
+  deltas: PillarDelta[];
+  biggestOpportunity: PillarDelta | null;
+  biggestWaste: PillarDelta | null;
+  recommendation: string;
+}
+
+interface FrictionCluster {
+  theme: string;
+  emotion: string;
+  frequency: number;
+  share: number;
+  branded: boolean;
+  mentionedBrands: string[];
+  examples: string[];
+  relatedPillars: NinePillar[];
+}
+
+interface FrictionHeatmap {
+  clusters: FrictionCluster[];
+  totalFrictionSignals: number;
+  unbrandedShare: number;
+  topFrictions: FrictionCluster[];
+}
+
+interface LinguisticVibeEntry {
+  token: string;
+  frequency: number;
+  category: "slang" | "decision_language" | "comparison" | "validation" | "rejection" | "question";
+  relatedPillars: NinePillar[];
+}
+
+interface LinguisticVibe {
+  tokens: LinguisticVibeEntry[];
+  topSlang: string[];
+  topDecisionLanguage: string[];
+  topComparisonTerms: string[];
+  topValidationPhrases: string[];
+  culturalShards: string[];
+}
+
+interface CreatorAlignmentEntry {
+  creatorType: string;
+  primaryPillar: NinePillar;
+  secondaryPillars: NinePillar[];
+  corridorFit: number;
+  corridorName: string;
+  frictionOvercome: string;
+  validationLanguage: string;
+  alignmentScore: number;
+}
+
+interface CreatorAlignmentMap {
+  alignments: CreatorAlignmentEntry[];
+  topForDominantPillar: CreatorAlignmentEntry[];
+  bridgingCreators: CreatorAlignmentEntry[];
+}
+
+interface CIBReport {
+  executiveSummary: string;
+  generatedAt: string;
+  pillarHeatmap: PillarHeatmap;
+  pillarDelta: PillarDeltaReport;
+  linguisticVibe: LinguisticVibe;
+  frictionHeatmap: FrictionHeatmap;
+  creatorAlignment: CreatorAlignmentMap;
+  topRecommendations: string[];
+}
+
+interface NarrativePillarAssignment {
+  narrativeId: string;
+  theme: string;
+  primaryPillar: NinePillar;
+  pillarScores: Partial<Record<NinePillar, number>>;
+}
+
+interface CommunityPillarProfile {
+  communityId: string;
+  communityName: string;
+  dominantPillar: NinePillar;
+  pillarProfile: Partial<Record<NinePillar, number>>;
+}
+
+interface PersonaArchitectOutput {
+  cib: CIBReport;
+  businessObjectivePillar: NinePillar | null;
+  narrativePillarAssignments: NarrativePillarAssignment[];
+  communityPillarProfiles: CommunityPillarProfile[];
 }
 
 /* ── Discovery Query Framework types ──────────────────────────────── */
@@ -571,6 +710,65 @@ const EMOTION_ICONS: Record<string, typeof AlertTriangle> = {
   pride: Star,
 };
 
+/* ------------------------------------------------------------------ */
+/*  Nine Pillars → display helpers                                     */
+/* ------------------------------------------------------------------ */
+
+const PILLAR_LABELS: Record<NinePillar, string> = {
+  nourishment: "Nourishment — physical health, sustenance, basic needs",
+  sensory: "Sensory — pleasure, entertainment, mood, experience",
+  logic: "Logic — practicality, efficiency, performance, functionality",
+  economic: "Economic — cost, value, savings, financial utility",
+  security: "Security — safety, trust, protection, risk-reduction",
+  identity: "Identity — status, social signaling, self-image",
+  hustle: "Hustle — self-improvement, ambition, growth, productivity",
+  community: "Community — social connection, collective identity",
+  environment: "Environment — sustainability, eco-consciousness, ethics",
+};
+
+const PILLAR_SHORT: Record<NinePillar, string> = {
+  nourishment: "Nourishment",
+  sensory: "Sensory",
+  logic: "Logic",
+  economic: "Economic",
+  security: "Security",
+  identity: "Identity",
+  hustle: "Hustle",
+  community: "Community",
+  environment: "Environment",
+};
+
+const PILLAR_COLORS: Record<NinePillar, { bar: string; badge: string; bg: string }> = {
+  nourishment:  { bar: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300", bg: "bg-emerald-50" },
+  sensory:      { bar: "bg-violet-500",  badge: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300", bg: "bg-violet-50" },
+  logic:        { bar: "bg-blue-500",    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300", bg: "bg-blue-50" },
+  economic:     { bar: "bg-amber-500",   badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300", bg: "bg-amber-50" },
+  security:     { bar: "bg-rose-500",    badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300", bg: "bg-rose-50" },
+  identity:     { bar: "bg-purple-500",   badge: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300", bg: "bg-purple-50" },
+  hustle:       { bar: "bg-orange-500",   badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300", bg: "bg-orange-50" },
+  community:    { bar: "bg-pink-500",     badge: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300", bg: "bg-pink-50" },
+  environment:  { bar: "bg-teal-500",     badge: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300", bg: "bg-teal-50" },
+};
+
+/* ------------------------------------------------------------------ */
+/*  Signal source → display mapping                                    */
+/* ------------------------------------------------------------------ */
+
+const SOURCE_META: Record<string, { label: string; icon: typeof MessageCircle; color: string }> = {
+  search_intent: { label: "Search Intent", icon: Search, color: "bg-blue-500" },
+  reddit_forum: { label: "Reddit", icon: MessageCircle, color: "bg-orange-500" },
+  review: { label: "Reviews", icon: Star, color: "bg-amber-500" },
+  tiktok: { label: "TikTok", icon: Hash, color: "bg-pink-500" },
+  facebook: { label: "Facebook", icon: Globe, color: "bg-blue-600" },
+  x: { label: "X / Twitter", icon: MessageCircle, color: "bg-slate-600" },
+  youtube: { label: "YouTube", icon: Hash, color: "bg-red-500" },
+  website: { label: "Website", icon: Globe, color: "bg-teal-500" },
+  hiring: { label: "Hiring", icon: Users, color: "bg-purple-500" },
+  ads: { label: "Ads", icon: DollarSign, color: "bg-emerald-500" },
+  whatsapp: { label: "WhatsApp", icon: MessageCircle, color: "bg-green-500" },
+  sales_data: { label: "Sales Data", icon: TrendingUp, color: "bg-cyan-500" },
+};
+
 const STAGE_LABELS: Record<string, string> = {
   research: "Research",
   comparison: "Comparison",
@@ -870,7 +1068,10 @@ export default function PDEShowcasePage() {
   const [error, setError] = useState("");
   const [showInput, setShowInput] = useState(true);
   const [detailed, setDetailed] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [showFullReport, setShowFullReport] = useState(false);
+  const [downloading, setDownloading] = useState<"full" | "detailed" | null>(null);
+  const downloadingRef = useRef<"full" | "detailed" | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     identity: true,
     reality: false,
@@ -884,6 +1085,158 @@ export default function PDEShowcasePage() {
 
   const toggleSection = (key: string) =>
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  // ── Convert markdown to styled HTML for PDF ──
+  const mdToStyledHTML = useCallback((md: string): string => {
+    let html = md
+      .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
+      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+      .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+      .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+      .replace(/^>\s*(.+)$/gm, '<blockquote><p>$1</p></blockquote>')
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/---/g, "<hr />")
+      .split("\n")
+      .map((line) => {
+        const t = line.trim();
+        if (/^[-*]\s+/.test(t)) return `<li>${t.replace(/^[-*]\s+/, "")}</li>`;
+        if (t.startsWith("<h") || t.startsWith("<blockquote") || t.startsWith("<li") ||
+            t.startsWith("</") || t.startsWith("<pr") || t.startsWith("<co") ||
+            t.startsWith("<hr") || t === "")
+          return t;
+        if (!t.startsWith("<")) return `<p>${t}</p>`;
+        return t;
+      })
+      .join("\n");
+    // Wrap consecutive <li> in <ul>
+    html = html.replace(/((?:<li>.*?<\/li>\n?)+)/g, "<ul>\n$1</ul>");
+    return html;
+  }, []);
+
+  // ── Download report as PDF via browser print engine ──
+  const downloadAsPDF = useCallback(async (content: string, filename: string, type: "full" | "detailed") => {
+    // Guard against concurrent downloads (per-type)
+    if (downloadingRef.current) return;
+    downloadingRef.current = type;
+    setDownloading(type);
+
+    try {
+      const bodyHTML = mdToStyledHTML(content);
+
+      const printHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${filename}</title>
+<style>
+  @page { margin: 12mm 15mm; size: A4; }
+  @media print { html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #111;
+    line-height: 1.7;
+    background: #fff;
+    padding: 0;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 24px; font-weight: 700; margin: 28px 0 12px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; color: #111; page-break-after: avoid; }
+  h2 { font-size: 20px; font-weight: 700; margin: 24px 0 10px; color: #1f2937; page-break-after: avoid; }
+  h3 { font-size: 16px; font-weight: 700; margin: 20px 0 8px; color: #374151; page-break-after: avoid; }
+  h4 { font-size: 14px; font-weight: 700; margin: 16px 0 6px; color: #4b5563; page-break-after: avoid; }
+  p { margin: 8px 0; font-size: 12.5px; color: #333; orphans: 3; widows: 3; }
+  ul, ol { margin: 6px 0 6px 22px; }
+  li { margin: 4px 0; font-size: 12.5px; color: #333; }
+  blockquote { margin: 12px 0; padding: 10px 18px; border-left: 4px solid #d1d5db; background: #f9fafb; font-style: italic; color: #4b5563; border-radius: 0 6px 6px 0; }
+  strong { font-weight: 700; color: #000; }
+  code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-size: 12px; font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace; }
+  pre { background: #1f2937; color: #f3f4f6; padding: 14px 18px; border-radius: 8px; margin: 12px 0; overflow-x: auto; page-break-inside: avoid; }
+  pre code { background: transparent; padding: 0; color: inherit; font-size: 11.5px; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+  img { max-width: 100%; height: auto; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  th, td { border: 1px solid #d1d5db; padding: 6px 10px; text-align: left; }
+  th { background: #f3f4f6; font-weight: 600; }
+  .report-header { text-align: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 3px solid #2563eb; }
+  .report-header h1 { font-size: 26px; border: none; margin: 0 0 4px; color: #1e40af; }
+  .report-header p { font-size: 13px; color: #6b7280; }
+</style>
+</head>
+<body>
+  <div class="report-header">
+    <h1>PDE Blueprint Report</h1>
+    <p>Generated ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+  </div>
+  ${bodyHTML}
+</body>
+</html>`;
+
+      // Create the iframe ON-SCREEN (opacity:0) instead of off-screen.
+      // When the iframe is off-screen (left:-9999px), Chrome's print engine
+      // may not connect to it properly — the afterprint event can fail to
+      // fire, leaving the spinner stuck forever.
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = "position:fixed!important;left:0!important;top:0!important;width:800px!important;height:1px!important;opacity:0!important;pointer-events:none!important;border:none!important;z-index:-1!important;";
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument!;
+      iframeDoc.open();
+      iframeDoc.write(printHTML);
+      iframeDoc.close();
+
+      // Wait for fonts and layout to settle inside the iframe
+      const loadPromise = iframeDoc.fonts
+        ? iframeDoc.fonts.ready
+        : Promise.resolve();
+      await Promise.all([loadPromise, new Promise((r) => setTimeout(r, 500))]);
+
+      // Show instruction before the (modal) print dialog opens
+      toast("Select 'Save as PDF' in the print dialog.", { icon: "🖨️", duration: 5000 });
+
+      // Open the browser's native print dialog — user picks "Save as PDF"
+      const printWindow = iframe.contentWindow!;
+      printWindow.focus();
+      printWindow.print();
+
+      // ── Cleanup: the afterprint event can go missing when the iframe
+      //    was created dynamically or when the user cancels quickly.  Use
+      //    THREE signals to ensure the spinner always stops. ──
+      let cleanedUp = false;
+      const cleanup = () => {
+        if (cleanedUp) return;
+        cleanedUp = true;
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+        downloadingRef.current = null;
+        setDownloading(null);
+      };
+
+      // 1) afterprint — fires natively when the print dialog closes
+      printWindow.addEventListener("afterprint", cleanup, { once: true });
+
+      // 2) Main-window focus — the print dialog is modal; when it closes
+      //    the main window regains focus.  Skip the initial focus burst
+      //    that happens right after print() is called.
+      const MIN_PRINT_MS = 2000;
+      const printStarted = Date.now();
+      const onFocus = () => {
+        if (Date.now() - printStarted >= MIN_PRINT_MS) cleanup();
+        else window.addEventListener("focus", onFocus, { once: true });
+      };
+      window.addEventListener("focus", onFocus, { once: true });
+
+      // 3) Hard timeout — 30s safety net if both events above are lost
+      setTimeout(cleanup, 30_000);
+    } catch (e) {
+      console.error("Failed to open print dialog", e);
+      toast.error("Could not open print dialog. Please try Chrome/Edge.");
+      downloadingRef.current = null;
+      setDownloading(null);
+    }
+  }, [mdToStyledHTML]);
 
   // ── Load preset ──
   const loadPreset = useCallback((preset: ProductPreset) => {
@@ -1054,13 +1407,13 @@ export default function PDEShowcasePage() {
       regulatoryConstraints: regulatoryConstraintsText.split("\n").map((s) => s.trim()).filter(Boolean),
 
       // Substitution
-      directCompetitors: directCompetitorsText.split("\n").map((s) => s.trim()).filter(Boolean),
-      customerMentionedAlternatives: alternativesText.split("\n").map((s) => s.trim()).filter(Boolean),
-      knownUserWorkarounds: workaroundsText.split("\n").map((s) => s.trim()).filter(Boolean),
+      directCompetitors: directCompetitorsText.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean),
+      customerMentionedAlternatives: alternativesText.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean),
+      knownUserWorkarounds: workaroundsText.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean),
 
       // Technology
       technologies: technologiesText.split(",").map((s) => s.trim()).filter(Boolean),
-      observedSignals: observedSignalsText.split("\n").map((s) => s.trim()).filter(Boolean),
+      observedSignals: observedSignalsText.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean),
 
       // Metrics
       repeatPurchaseRate: repeatPurchaseRate ? Number(repeatPurchaseRate) : undefined,
@@ -1350,7 +1703,7 @@ export default function PDEShowcasePage() {
                 {/* ── Section H: S3 Cloud Upload ── */}
                 <CollapsibleSection title="S3 Cloud Upload (Large Files)" icon={Upload} expanded={expandedSections.s3upload} onToggle={() => toggleSection("s3upload")}>
                   <p className="mb-3 text-xs text-muted-foreground">
-                    Upload files directly to S3 — ideal for large datasets (thousands of rows).
+                    Ideal for large datasets (thousands of rows).
                     Files are processed server-side by the PDE pipeline, no payload limits.
                   </p>
                   <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/[0.02] p-5">
@@ -1473,6 +1826,115 @@ export default function PDEShowcasePage() {
                 </div>
               </Section>
 
+              {/* ── Signal Source Breakdown ── */}
+              {output.signalSourceBreakdown && Object.keys(output.signalSourceBreakdown).length > 0 && (
+                <Section
+                  title="Signal Sources"
+                  icon={Search}
+                  subtitle={sourceFilter ? `Filtered by: ${sourceFilter} — click again to clear` : "Consumer signals collected by platform — click a source to filter narratives"}
+                >
+                  <div className="space-y-4">
+                    {/* Total signals bar */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-foreground min-w-[90px]">Total</span>
+                      <div className="h-8 flex-1 rounded-lg overflow-hidden flex">
+                        {(() => {
+                          const total = Object.values(output.signalSourceBreakdown).reduce((a, b) => a + b, 0);
+                          const entries = Object.entries(output.signalSourceBreakdown)
+                            .filter(([_, c]) => c > 0)
+                            .sort(([, a], [, b]) => b - a);
+                          return entries.map(([source, count]) => {
+                            const info = SOURCE_META[source] || { label: source, icon: Hash, color: "bg-slate-400" };
+                            const pct = (count / total) * 100;
+                            return pct > 2 ? (
+                              <div
+                                key={source}
+                                className={`${info.color} h-full flex items-center justify-center text-[10px] font-bold text-white first:rounded-l-lg last:rounded-r-lg cursor-pointer transition-opacity hover:opacity-80 ${sourceFilter === source ? "ring-2 ring-primary ring-offset-1" : ""}`}
+                                style={{ width: `${pct}%` }}
+                                title={`${info.label}: ${count} (${pct.toFixed(0)}%)`}
+                                onClick={() => setSourceFilter(sourceFilter === source ? null : source)}
+                              >
+                                {pct > 10 ? info.label : ""}
+                              </div>
+                            ) : null;
+                          });
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Individual source cards */}
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {Object.entries(output.signalSourceBreakdown)
+                        .filter(([_, count]) => count > 0)
+                        .sort(([, a], [, b]) => b - a)
+                        .map(([source, count]) => {
+                          const total = Object.values(output.signalSourceBreakdown!).reduce((a, b) => a + b, 0);
+                          const pct = ((count / total) * 100).toFixed(0);
+                          const info = SOURCE_META[source] || { label: source.replace(/_/g, " "), icon: Hash, color: "bg-slate-400" };
+                          const Icon = info.icon;
+                          const isActive = sourceFilter === source;
+                          return (
+                            <button
+                              key={source}
+                              onClick={() => setSourceFilter(isActive ? null : source)}
+                              className={`relative rounded-xl border-2 p-4 text-left transition-all ${
+                                isActive
+                                  ? "border-primary bg-primary/5 shadow-md"
+                                  : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className={`rounded-lg p-1.5 ${info.color.replace("bg-", "bg-").replace(/\S+$/, "")}/10`}>
+                                    <Icon size={16} className={info.color.replace("bg-", "text-")} />
+                                  </div>
+                                  <span className="font-semibold text-foreground text-sm capitalize">{info.label}</span>
+                                </div>
+                                <span className={`text-lg font-bold ${isActive ? "text-primary" : "text-foreground"}`}>
+                                  {count}
+                                </span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                                <div className={`h-full rounded-full transition-all ${info.color}`} style={{ width: `${pct}%` }} />
+                              </div>
+                              <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                                <span>{pct}% of all signals</span>
+                                {isActive && <span className="text-primary font-medium">Filtering</span>}
+                              </div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </div>
+                </Section>
+              )}
+
+              {/* ── Provider & mode indicator ── */}
+              {output.metadata && (
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground">
+                    <Search size={13} className="text-primary/70" />
+                    {output.metadata.hasLiveSearch ? (
+                      <>
+                        Live search via{" "}
+                        <strong className="text-foreground">
+                          {output.metadata.searchProvider === "tavily" ? "Tavily" : output.metadata.searchProvider || "default"}
+                        </strong>
+                      </>
+                    ) : output.metadata.mode === "dry-run" ? (
+                      <span>Dry mode <span className="text-muted-foreground/60">(no live search)</span></span>
+                    ) : (
+                      <span>Static analysis</span>
+                    )}
+                  </div>
+                  {output.metadata.collectors && Object.entries(output.metadata.collectors).filter(([, v]) => v).map(([k]) => (
+                    <span key={k} className="rounded-full bg-primary/5 border border-primary/10 px-2 py-0.5 text-[10px] text-primary/70 font-medium">
+                      {k.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase())}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {/* ── Product Summary ── */}
               <Section title="Product Summary" icon={Layers} subtitle="Core product identity as used by the PDE engine">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1487,50 +1949,95 @@ export default function PDEShowcasePage() {
 
               {/* ── Narratives ── */}
               {output.narratives.length > 0 && (
-                <Section title="Customer Narratives" icon={MessageCircle} subtitle="Key themes, emotions, and frictions extracted from customer signals">
+                <Section title="Customer Narratives" icon={MessageCircle} subtitle={
+                  sourceFilter
+                    ? `Showing narratives from ${SOURCE_META[sourceFilter]?.label || sourceFilter} signals only`
+                    : "Key themes, emotions, and frictions extracted from customer signals"
+                }>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    {output.narratives.map((narrative, i) => {
-                      const emotionColor = EMOTION_COLORS[narrative.emotion] || EMOTION_COLORS.frustration;
-                      const EmotionIcon = EMOTION_ICONS[narrative.emotion] || AlertTriangle;
-                      return (
-                        <div key={i} className={`rounded-xl border-2 p-5 shadow-sm ${emotionColor.border}`}>
-                          <div className="mb-3 flex items-start justify-between">
-                            <div>
-                              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Theme</span>
-                              <h4 className="text-lg font-bold text-foreground capitalize">{narrative.theme.replace(/_/g, " ")}</h4>
+                    {output.narratives
+                      .filter((_, i) => {
+                        if (!sourceFilter) return true;
+                        const nsb = output.narrativeSourceBreakdown?.find((n) => n.narrativeIndex === i);
+                        return nsb ? !!nsb.sources[sourceFilter] : true;
+                      })
+                      .map((narrative, fi) => {
+                        const origIndex = output.narratives.indexOf(narrative);
+                        const nsb = output.narrativeSourceBreakdown?.find((n) => n.narrativeIndex === origIndex);
+                        const emotionColor = EMOTION_COLORS[narrative.emotion] || EMOTION_COLORS.frustration;
+                        const EmotionIcon = EMOTION_ICONS[narrative.emotion] || AlertTriangle;
+                        return (
+                          <div key={origIndex} className={`rounded-xl border-2 p-5 shadow-sm transition-all ${emotionColor.border} ${sourceFilter ? (nsb?.sources[sourceFilter] ? "" : "opacity-30") : ""}`}>
+                            <div className="mb-3 flex items-start justify-between">
+                              <div>
+                                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Theme</span>
+                                <h4 className="text-lg font-bold text-foreground capitalize">{narrative.theme.replace(/_/g, " ")}</h4>
+                              </div>
+                              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${emotionColor.bg} ${emotionColor.text}`}>
+                                <EmotionIcon size={12} />{narrative.emotion}
+                              </span>
                             </div>
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${emotionColor.bg} ${emotionColor.text}`}>
-                              <EmotionIcon size={12} />{narrative.emotion}
-                            </span>
-                          </div>
-                          <div className="mb-2"><span className="text-xs font-medium text-muted-foreground">Friction</span><p className="text-sm text-foreground/80">{narrative.friction}</p></div>
-                          <div className="mb-3"><span className="text-xs font-medium text-muted-foreground">Validation</span><p className="text-sm text-foreground/80">{narrative.validation}</p></div>
-                          <div className="mb-3">
-                            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                              <span>Signal frequency</span>
-                              <span className="font-semibold text-foreground">{narrative.frequency} mentions</span>
-                            </div>
-                            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (narrative.frequency / Math.max(...output.narratives.map((n) => n.frequency), 1)) * 100)}%` }} />
-                            </div>
-                          </div>
-                          {narrative.examples.length > 0 && (
-                            <div>
-                              <span className="text-xs font-medium text-muted-foreground mb-1 block">Example Signals</span>
-                              <div className="space-y-1">
-                                {narrative.examples.slice(0, 2).map((ex, j) => (
-                                  <div key={j} className="flex items-start gap-2 text-xs text-foreground/70 bg-muted/50 rounded-lg p-2">
-                                    <Quote size={10} className="mt-0.5 shrink-0 text-muted-foreground" />
-                                    <span>&ldquo;{ex}&rdquo;</span>
-                                  </div>
-                                ))}
+                            <div className="mb-2"><span className="text-xs font-medium text-muted-foreground">Friction</span><p className="text-sm text-foreground/80">{narrative.friction}</p></div>
+                            <div className="mb-3"><span className="text-xs font-medium text-muted-foreground">Validation</span><p className="text-sm text-foreground/80">{narrative.validation}</p></div>
+                            <div className="mb-3">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                                <span>Signal frequency</span>
+                                <span className="font-semibold text-foreground">{narrative.frequency} mentions</span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (narrative.frequency / Math.max(...output.narratives.map((n) => n.frequency), 1)) * 100)}%` }} />
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+
+                            {/* Source badges */}
+                            {nsb && Object.keys(nsb.sources).length > 0 && (
+                              <div className="mb-2 flex flex-wrap gap-1">
+                                {Object.entries(nsb.sources).sort(([, a], [, b]) => b - a).map(([src, count]) => {
+                                  const meta = SOURCE_META[src] || { label: src, icon: Hash, color: "bg-slate-400" };
+                                  return (
+                                    <button
+                                      key={src}
+                                      onClick={(e) => { e.stopPropagation(); setSourceFilter(sourceFilter === src ? null : src); }}
+                                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-all ${
+                                        sourceFilter === src
+                                          ? "bg-primary text-primary-foreground"
+                                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                      }`}
+                                    >
+                                      {count}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {narrative.examples.length > 0 && (
+                              <div>
+                                <span className="text-xs font-medium text-muted-foreground mb-1 block">Example Signals</span>
+                                <div className="space-y-1">
+                                  {narrative.examples.slice(0, 2).map((ex, j) => (
+                                    <div key={j} className="flex items-start gap-2 text-xs text-foreground/70 bg-muted/50 rounded-lg p-2">
+                                      <Quote size={10} className="mt-0.5 shrink-0 text-muted-foreground" />
+                                      <span>&ldquo;{ex}&rdquo;</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                   </div>
+
+                  {/* No matching narratives message */}
+                  {sourceFilter && output.narratives.filter((_, i) => {
+                    const nsb = output.narrativeSourceBreakdown?.find((n) => n.narrativeIndex === i);
+                    return nsb ? !!nsb.sources[sourceFilter] : true;
+                  }).length === 0 && (
+                    <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+                      No narratives found from {SOURCE_META[sourceFilter]?.label || sourceFilter}. Try a different source.
+                    </div>
+                  )}
                 </Section>
               )}
 
@@ -1657,17 +2164,28 @@ export default function PDEShowcasePage() {
 
               {/* ── Full Report ── */}
               <Section title="Full PDE Blueprint Report" icon={FileText} subtitle="Complete formatted analysis">
-                <button
-                  onClick={() => setShowFullReport((s) => !s)}
-                  className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
-                >
-                  <span>{showFullReport ? "Hide full report" : "Show full report"}</span>
-                  {showFullReport ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
+                <div className="flex items-center gap-2 mb-3">
+                  <button
+                    onClick={() => setShowFullReport((s) => !s)}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    {showFullReport ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {showFullReport ? "Hide full report" : "Show full report"}
+                  </button>
+                  <button
+                    onClick={() => downloadAsPDF(output.fullReport, "PDE-Full-Blueprint-Report.pdf", "full")}
+                    disabled={downloading === "full"}
+                    className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {downloading === "full" ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                    {downloading === "full" ? "Preparing…" : "Download PDF"}
+                  </button>
+                </div>
                 <AnimatePresence>
                   {showFullReport && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-4">
-                      <div className="rounded-xl border border-border bg-background p-5 max-h-[600px] overflow-y-auto">
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-2">
+                      <div className="rounded-xl border border-border bg-background p-5 max-h-[600px] overflow-y-auto"
+                      >
                         <MarkdownBlock content={output.fullReport} />
                       </div>
                     </motion.div>
@@ -1678,7 +2196,19 @@ export default function PDEShowcasePage() {
               {/* ── Detailed Report ── */}
               {output.detailedReport && (
                 <Section title="Detailed PDE Blueprint Report" icon={FileText} subtitle="Evidence-backed narrative report with competitor intelligence and full source attribution">
-                  <DetailedMarkdown content={output.detailedReport} />
+                  <div className="flex items-center justify-end mb-3">
+                    <button
+                      onClick={() => downloadAsPDF(output.detailedReport!, "PDE-Detailed-Blueprint-Report.pdf", "detailed")}
+                      disabled={downloading === "detailed"}
+                      className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {downloading === "detailed" ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                      {downloading === "detailed" ? "Preparing…" : "Download PDF"}
+                    </button>
+                  </div>
+                  <div>
+                    <DetailedMarkdown content={output.detailedReport} />
+                  </div>
                 </Section>
               )}
 
@@ -2264,6 +2794,445 @@ export default function PDEShowcasePage() {
                     ))}
                   </div>
                 </Section>
+              )}
+
+              {/* ════════════════════════════════════════════════════════════ */}
+              {/*  SOCIAL LISTENER — 9 PILLARS + CIB                        */}
+              {/* ════════════════════════════════════════════════════════════ */}
+              {output.cibReport && (
+                <>
+                  {/* ── CIB: Executive Summary ── */}
+                  <Section title="Creator Intelligence Brief (CIB)" icon={BrainCircuit} subtitle="Social Listener — 9 Pillars analysis mapping PDE signals to creator-ready audience intelligence">
+                    <div className="rounded-xl border border-primary/10 bg-primary/[0.03] p-5 mb-4">
+                      <p className="text-sm text-foreground/90 leading-relaxed">{output.cibReport.executiveSummary}</p>
+                    </div>
+
+                    {/* ── CIB: Pillar Heatmap ── */}
+                    <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-1.5">
+                      <BarChart3 size={16} className="text-primary" />
+                      Pillar Heatmap
+                      <span className="ml-auto text-xs font-normal text-muted-foreground">
+                        Dominant: <strong className="text-foreground">{output.cibReport.pillarHeatmap.dominantPillar ? PILLAR_LABELS[output.cibReport.pillarHeatmap.dominantPillar] : "N/A"}</strong> &middot;
+                        Concentration: <strong className="text-foreground">{output.cibReport.pillarHeatmap.concentration}</strong>
+                      </span>
+                    </h3>
+                    <div className="space-y-2 mb-5">
+                      {output.cibReport.pillarHeatmap.distribution.map((entry) => {
+                        const color = PILLAR_COLORS[entry.pillar] || PILLAR_COLORS.nourishment;
+                        return (
+                          <div key={entry.pillar} className="flex items-center gap-3">
+                            <span className="w-28 shrink-0 text-xs font-medium text-foreground/80 truncate" title={PILLAR_LABELS[entry.pillar]}>
+                              {PILLAR_SHORT[entry.pillar]}
+                            </span>
+                            <div className="flex-1 h-5 rounded-md bg-muted overflow-hidden relative">
+                              <div
+                                className={`h-full rounded-md transition-all ${color.bar}`}
+                                style={{ width: `${entry.share}%` }}
+                              />
+                              {entry.share > 8 && (
+                                <span className="absolute inset-0 flex items-center px-2 text-[10px] font-bold text-white">
+                                  {entry.share.toFixed(0)}%
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 w-28 shrink-0 justify-end">
+                              <span className="text-[10px] text-muted-foreground">
+                                intensity <strong className="text-foreground">{(entry.intensity * 100).toFixed(0)}%</strong>
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                conf <strong className="text-foreground">{(entry.confidence * 100).toFixed(0)}%</strong>
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      <span className="text-xs text-muted-foreground">Top 3: </span>
+                      {output.cibReport.pillarHeatmap.topThree.map((p) => (
+                        <span key={p} className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                          {PILLAR_SHORT[p]}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* ── CIB: Pillar Delta Report ── */}
+                    <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-1.5 mt-6">
+                      <ArrowLeftRight size={16} className="text-primary" />
+                      Pillar Delta — Brand Intent vs Audience Reality
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-3">{output.cibReport.pillarDelta.recommendation}</p>
+
+                    <div className="overflow-x-auto rounded-lg border border-border mb-4">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-muted/50 border-b border-border">
+                            <th className="px-3 py-2 text-left font-semibold text-foreground">Pillar</th>
+                            <th className="px-3 py-2 text-center font-semibold text-foreground">Brand</th>
+                            <th className="px-3 py-2 text-center font-semibold text-foreground">Audience</th>
+                            <th className="px-3 py-2 text-center font-semibold text-foreground">Δ</th>
+                            <th className="px-3 py-2 text-left font-semibold text-foreground">Severity</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {output.cibReport.pillarDelta.deltas.map((d) => {
+                            const arrow = d.delta > 0 ? "↑" : d.delta < 0 ? "↓" : "→";
+                            const isOpp = d.delta === output.cibReport!.pillarDelta.biggestOpportunity?.delta;
+                            const isWaste = d.delta === output.cibReport!.pillarDelta.biggestWaste?.delta;
+                            return (
+                              <tr key={d.pillar} className={`${isOpp ? "bg-emerald-50/50 dark:bg-emerald-950/10" : isWaste ? "bg-amber-50/50 dark:bg-amber-950/10" : d.severity === "significant_delta" ? "bg-red-50/30 dark:bg-red-950/10" : ""} border-b border-border last:border-0`}>
+                                <td className="px-3 py-1.5 font-medium text-foreground text-xs">{PILLAR_SHORT[d.pillar]}</td>
+                                <td className="px-3 py-1.5 text-center text-foreground/80">{d.brandIntent}%</td>
+                                <td className="px-3 py-1.5 text-center text-foreground/80">{d.audienceReality}%</td>
+                                <td className={`px-3 py-1.5 text-center font-bold text-sm ${d.delta > 0 ? "text-emerald-600 dark:text-emerald-400" : d.delta < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}>
+                                  {arrow} {d.delta > 0 ? "+" : ""}{d.delta}
+                                </td>
+                                <td className="px-3 py-1.5">
+                                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                    d.severity === "aligned" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                    : d.severity === "slight_mismatch" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                  }`}>{d.severity.replace(/_/g, " ")}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Opportunity / Waste callouts */}
+                    {output.cibReport.pillarDelta.biggestOpportunity && (
+                      <div className="rounded-lg border border-emerald-200 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-950/10 p-3 mb-3">
+                        <div className="flex items-start gap-2">
+                          <Rocket size={14} className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Biggest Opportunity</span>
+                            <p className="text-xs text-foreground/70 mt-0.5">{output.cibReport.pillarDelta.biggestOpportunity.interpretation}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {output.cibReport.pillarDelta.biggestWaste && (
+                      <div className="rounded-lg border border-amber-200 dark:border-amber-800/30 bg-amber-50/50 dark:bg-amber-950/10 p-3 mb-2">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">Biggest Waste</span>
+                            <p className="text-xs text-foreground/70 mt-0.5">{output.cibReport.pillarDelta.biggestWaste.interpretation}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Section>
+
+                  {/* ── CIB: Friction Heatmap ── */}
+                  <Section title="Friction Heatmap" icon={AlertTriangle} subtitle="Unbranded objections reveal gaps competitors haven't addressed">
+                    <div className="grid gap-3 sm:grid-cols-3 mb-4">
+                      <MetricCard label="Total Friction Signals" value={String(output.cibReport.frictionHeatmap.totalFrictionSignals)} />
+                      <MetricCard label="Unbranded Share" value={`${output.cibReport.frictionHeatmap.unbrandedShare.toFixed(1)}%`} />
+                      <MetricCard label="Active Clusters" value={String(output.cibReport.frictionHeatmap.clusters.length)} />
+                    </div>
+
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Top 3 Frictions</h4>
+                    <div className="grid gap-3 sm:grid-cols-3 mb-4">
+                      {output.cibReport.frictionHeatmap.topFrictions.map((f, i) => {
+                        const emoColor = EMOTION_COLORS[f.emotion] || EMOTION_COLORS.frustration;
+                        return (
+                          <div key={i} className={`rounded-xl border-2 p-4 ${f.branded ? "border-slate-300 dark:border-slate-600" : "border-amber-300 dark:border-amber-700"} ${emoColor.bg}`}>
+                            <div className="flex items-start justify-between mb-2">
+                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">#{i + 1}</span>
+                              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${emoColor.bg} ${emoColor.text}`}>
+                                {f.emotion}
+                              </span>
+                            </div>
+                            <h5 className="text-sm font-bold text-foreground mb-1 capitalize">{f.theme.replace(/_/g, " ")}</h5>
+                            <div className="text-xs text-muted-foreground mb-2">
+                              {f.share.toFixed(0)}% of friction signals
+                              {f.branded ? (
+                                <span className="ml-2 text-purple-600 dark:text-purple-400">(branded: {f.mentionedBrands.join(", ")})</span>
+                              ) : (
+                                <span className="ml-2 text-emerald-600 dark:text-emerald-400">(unbranded — open gap)</span>
+                              )}
+                            </div>
+                            {f.examples.length > 0 && (
+                              <div className="rounded-lg bg-background/50 border border-border p-2">
+                                <p className="text-xs text-foreground/70 italic">&ldquo;{f.examples[0]}&rdquo;</p>
+                              </div>
+                            )}
+                            {f.relatedPillars.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {f.relatedPillars.slice(0, 3).map((p) => (
+                                  <span key={p} className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                                    {PILLAR_SHORT[p]}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Full cluster table */}
+                    {output.cibReport.frictionHeatmap.clusters.length > 3 && (
+                      <div className="overflow-x-auto rounded-lg border border-border">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-muted/50 border-b border-border">
+                              <th className="px-3 py-2 text-left font-semibold text-foreground">Theme</th>
+                              <th className="px-3 py-2 text-center font-semibold text-foreground">Share</th>
+                              <th className="px-3 py-2 text-center font-semibold text-foreground">Emotion</th>
+                              <th className="px-3 py-2 text-center font-semibold text-foreground">Branded</th>
+                              <th className="px-3 py-2 text-left font-semibold text-foreground">Related Pillars</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {output.cibReport.frictionHeatmap.clusters.map((f, i) => (
+                              <tr key={i} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                                <td className="px-3 py-1.5 font-medium text-foreground capitalize text-xs">{f.theme}</td>
+                                <td className="px-3 py-1.5 text-center text-foreground/80">{f.share.toFixed(0)}%</td>
+                                <td className="px-3 py-1.5 text-center text-foreground/80 capitalize text-xs">{f.emotion}</td>
+                                <td className="px-3 py-1.5 text-center">
+                                  <span className={`text-xs font-medium ${f.branded ? "text-purple-600 dark:text-purple-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                                    {f.branded ? "Yes" : "No"}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-1.5">
+                                  <div className="flex flex-wrap gap-1">
+                                    {f.relatedPillars.slice(0, 3).map((p) => (
+                                      <span key={p} className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground">{PILLAR_SHORT[p]}</span>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </Section>
+
+                  {/* ── CIB: Linguistic Vibe ── */}
+                  <Section title="Linguistic Vibe" icon={Quote} subtitle="Consumer vocabulary, slang, decision language, and validation phrases extracted from signals">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {output.cibReport.linguisticVibe.topSlang.length > 0 && (
+                        <div className="rounded-lg border border-border bg-background p-4">
+                          <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                            <Hash size={12} className="text-primary" /> Top Slang / Vernacular
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {output.cibReport.linguisticVibe.topSlang.map((s) => (
+                              <span key={s} className="rounded-full bg-violet-50 dark:bg-violet-950/20 px-2.5 py-1 text-xs font-medium text-violet-700 dark:text-violet-300">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {output.cibReport.linguisticVibe.topDecisionLanguage.length > 0 && (
+                        <div className="rounded-lg border border-border bg-background p-4">
+                          <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                            <Zap size={12} className="text-primary" /> Decision Language
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {output.cibReport.linguisticVibe.topDecisionLanguage.map((d) => (
+                              <span key={d} className="rounded-full bg-blue-50 dark:bg-blue-950/20 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                                {d}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {output.cibReport.linguisticVibe.topComparisonTerms.length > 0 && (
+                        <div className="rounded-lg border border-border bg-background p-4">
+                          <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                            <ArrowLeftRight size={12} className="text-primary" /> Comparison Terms
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {output.cibReport.linguisticVibe.topComparisonTerms.map((c) => (
+                              <span key={c} className="rounded-full bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 mt-4">
+                      {output.cibReport.linguisticVibe.topValidationPhrases.length > 0 && (
+                        <div className="rounded-lg border border-border bg-background p-4">
+                          <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                            <CheckCircle2 size={12} className="text-primary" /> Validation Phrases
+                          </h4>
+                          <div className="space-y-1">
+                            {output.cibReport.linguisticVibe.topValidationPhrases.map((v, i) => (
+                              <div key={i} className="flex items-start gap-2 text-xs text-foreground/70">
+                                <span className="text-emerald-500">+</span>
+                                <span>&ldquo;{v}&rdquo;</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {output.cibReport.linguisticVibe.culturalShards.length > 0 && (
+                        <div className="rounded-lg border border-border bg-background p-4">
+                          <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                            <Globe size={12} className="text-primary" /> Cultural Shards
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {output.cibReport.linguisticVibe.culturalShards.map((c) => (
+                              <span key={c} className="rounded-full bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Top frequency tokens */}
+                    {output.cibReport.linguisticVibe.tokens.length > 0 && (
+                      <div className="mt-4 rounded-lg border border-border bg-background p-4">
+                        <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                          <Activity size={12} className="text-primary" /> Top Frequency Tokens
+                        </h4>
+                        <div className="flex flex-wrap gap-1.5">
+                          {output.cibReport.linguisticVibe.tokens.slice(0, 20).map((t) => (
+                            <span key={t.token} className="group relative inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-default">
+                              <span>{t.token}</span>
+                              <span className="text-[9px] text-muted-foreground">({t.frequency})</span>
+                              <span className="hidden group-hover:inline absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded border border-border bg-background px-2 py-0.5 text-[9px] text-muted-foreground shadow-lg">
+                                {t.category.replace(/_/g, " ")}
+                              </span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Section>
+
+                  {/* ── CIB: Creator Alignment ── */}
+                  <Section title="Creator Alignment" icon={Users} subtitle="Which creator types map to the dominant pillars and demand corridors">
+                    {output.cibReport.creatorAlignment.topForDominantPillar.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                          <Star size={14} className="text-primary" />
+                          Top Creators for Dominant Pillar ({PILLAR_SHORT[output.cibReport.pillarHeatmap.dominantPillar || "logic"]})
+                        </h4>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          {output.cibReport.creatorAlignment.topForDominantPillar.map((c, i) => (
+                            <div key={i} className="rounded-xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50/30 dark:bg-emerald-950/10 p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h5 className="text-sm font-bold text-foreground">{c.creatorType}</h5>
+                                <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                                  {(c.alignmentScore * 100).toFixed(0)}%
+                                </span>
+                              </div>
+                              <p className="text-xs text-foreground/70 mb-2 line-clamp-2">
+                                Corridor: <strong>{c.corridorName}</strong>
+                              </p>
+                              <p className="text-xs text-foreground/60 mb-2">Overcomes: {c.frictionOvercome}</p>
+                              {c.validationLanguage && (
+                                <div className="rounded-lg bg-background/50 border border-border p-2 mt-2">
+                                  <span className="text-[10px] text-muted-foreground">Key language: </span>
+                                  <span className="text-[10px] text-foreground/70 italic">&ldquo;{c.validationLanguage}&rdquo;</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {output.cibReport.creatorAlignment.bridgingCreators.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                          <Users size={14} className="text-primary" />
+                          Bridging Creators (cross-pillar reach)
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {output.cibReport.creatorAlignment.bridgingCreators.map((c, i) => (
+                            <div key={i} className="rounded-lg border border-border bg-background p-3 flex items-center gap-3">
+                              <div>
+                                <span className="text-sm font-semibold text-foreground">{c.creatorType}</span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {c.secondaryPillars.slice(0, 3).map((p) => (
+                                    <span key={p} className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary">{PILLAR_SHORT[p]}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Full alignment table */}
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Full Creator-Pillar Alignment</h4>
+                    <div className="overflow-x-auto rounded-lg border border-border">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-muted/50 border-b border-border">
+                            <th className="px-3 py-2 text-left font-semibold text-foreground">Creator Type</th>
+                            <th className="px-3 py-2 text-left font-semibold text-foreground">Primary Pillar</th>
+                            <th className="px-3 py-2 text-center font-semibold text-foreground">Alignment</th>
+                            <th className="px-3 py-2 text-center font-semibold text-foreground">Corridor Fit</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {output.cibReport.creatorAlignment.alignments.slice(0, 10).map((c, i) => (
+                            <tr key={i} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                              <td className="px-3 py-1.5 font-medium text-foreground text-xs">{c.creatorType}</td>
+                              <td className="px-3 py-1.5">
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${PILLAR_COLORS[c.primaryPillar]?.badge || "bg-slate-100 text-slate-600"}`}>
+                                  {PILLAR_SHORT[c.primaryPillar]}
+                                </span>
+                              </td>
+                              <td className="px-3 py-1.5 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
+                                    <div className="h-full rounded-full bg-emerald-500" style={{ width: `${c.alignmentScore * 100}%` }} />
+                                  </div>
+                                  <span className="text-xs font-medium text-foreground">{(c.alignmentScore * 100).toFixed(0)}%</span>
+                                </div>
+                              </td>
+                              <td className="px-3 py-1.5 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
+                                    <div className="h-full rounded-full bg-blue-500" style={{ width: `${c.corridorFit * 100}%` }} />
+                                  </div>
+                                  <span className="text-xs font-medium text-foreground">{(c.corridorFit * 100).toFixed(0)}%</span>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Section>
+
+                  {/* ── CIB: Recommendations ── */}
+                  <Section title="CIB Recommendations" icon={Rocket} subtitle="Top actionable recommendations from the Social Listener / Persona Architect">
+                    <div className="space-y-3">
+                      {output.cibReport.topRecommendations.map((rec, i) => (
+                        <div key={i} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 hover:border-primary/30 hover:shadow-sm transition-all">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                            {i + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-foreground/90 leading-relaxed"><FormatInline text={rec} /></p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+                </>
               )}
 
               {/* ── Footer ── */}
