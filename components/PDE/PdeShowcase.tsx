@@ -1088,32 +1088,113 @@ export default function PDEShowcasePage() {
 
   // ── Convert markdown to styled HTML for PDF ──
   const mdToStyledHTML = useCallback((md: string): string => {
-    let html = md
+    // Step 1: Extract and process code blocks first so their contents aren't
+    //         mangled by subsequent regexes.
+    const codeBlocks: string[] = [];
+    const withoutCode = md.replace(/```(\w*)\n?([\s\S]*?)```/g, (_match, _lang, code) => {
+      const idx = codeBlocks.length;
+      codeBlocks.push(code);
+      return `<!--CODEBLOCK_${idx}-->`;
+    });
+
+    // Step 2: Extract table blocks so they get proper <table> markup
+    //         before anything else touches them.
+    const lines = withoutCode.split("\n");
+    const processedLines: string[] = [];
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i]!;
+      const trimmed = line.trim();
+
+      // Detect table: starts with | and has a separator row (|---|) on one of
+      // the next two lines.
+      if (trimmed.startsWith("|") && trimmed.includes("|")) {
+        const tableRows: string[] = [trimmed];
+        i++;
+        while (i < lines.length && lines[i]!.trim().startsWith("|")) {
+          tableRows.push(lines[i]!.trim());
+          i++;
+        }
+        processedLines.push(renderMdTable(tableRows));
+        continue;
+      }
+      processedLines.push(line);
+      i++;
+    }
+
+    // Step 3: Apply all inline markdown transformations.
+    let html = processedLines
+      .join("\n")
       .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
       .replace(/^### (.+)$/gm, "<h3>$1</h3>")
       .replace(/^## (.+)$/gm, "<h2>$1</h2>")
       .replace(/^# (.+)$/gm, "<h1>$1</h1>")
       .replace(/^>\s*(.+)$/gm, '<blockquote><p>$1</p></blockquote>')
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
       .replace(/`([^`]+)`/g, "<code>$1</code>")
       .replace(/---/g, "<hr />")
       .split("\n")
       .map((line) => {
         const t = line.trim();
-        if (/^[-*]\s+/.test(t)) return `<li>${t.replace(/^[-*]\s+/, "")}</li>`;
-        if (t.startsWith("<h") || t.startsWith("<blockquote") || t.startsWith("<li") ||
-            t.startsWith("</") || t.startsWith("<pr") || t.startsWith("<co") ||
-            t.startsWith("<hr") || t === "")
+        // Restore code blocks
+        const codeBlockMatch = t.match(/^<!--CODEBLOCK_(\d+)-->$/);
+        if (codeBlockMatch) {
+          const idx = parseInt(codeBlockMatch[1]!, 10);
+          return `<pre><code>${escapeHtml(codeBlocks[idx] ?? "")}</code></pre>`;
+        }
+        // Skip lines that are already HTML
+        if (/^<(table|thead|tbody|tr|th|td|h[1-4]|blockquote|li|pre|code|hr|ul|ol|div|\/)/.test(t))
           return t;
-        if (!t.startsWith("<")) return `<p>${t}</p>`;
-        return t;
+        if (t === "") return t;
+        if (/^[-*]\s+/.test(t)) return `<li>${t.replace(/^[-*]\s+/, "")}</li>`;
+        return `<p>${t}</p>`;
       })
       .join("\n");
-    // Wrap consecutive <li> in <ul>
+
+    // Step 4: Wrap consecutive <li> in <ul>
     html = html.replace(/((?:<li>.*?<\/li>\n?)+)/g, "<ul>\n$1</ul>");
     return html;
   }, []);
+
+  /** Render a markdown table block (array of |…| lines) into an HTML <table>. */
+  function renderMdTable(rows: string[]): string {
+    if (rows.length < 2) return rows.join("\n");
+
+    // The second row is the separator (|----|----|) — skip it.
+    const headerCells = parseMdRow(rows[0]!);
+    const bodyRows = rows.slice(2).map((r) => parseMdRow(r));
+
+    let table = '<table>\n<thead>\n<tr>';
+    for (const cell of headerCells) {
+      table += `<th>${cell}</th>`;
+    }
+    table += '</tr>\n</thead>\n<tbody>\n';
+    for (const row of bodyRows) {
+      table += '<tr>';
+      for (const cell of row) {
+        table += `<td>${cell}</td>`;
+      }
+      table += '</tr>\n';
+    }
+    table += '</tbody>\n</table>';
+    return table;
+  }
+
+  /** Split a markdown table row like `| A | B | C |` into trimmed cell values. */
+  function parseMdRow(row: string): string[] {
+    return row
+      .split("|")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }
+
+  /** Basic HTML escape so content doesn't break the table markup. */
+  function escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
 
   // ── Download report as PDF via browser print engine ──
   const downloadAsPDF = useCallback(async (content: string, filename: string, type: "full" | "detailed") => {
