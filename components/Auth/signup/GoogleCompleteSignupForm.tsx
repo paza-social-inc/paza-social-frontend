@@ -1,9 +1,8 @@
 "use client";
 
 import Logo from "@/assets/Logo";
-import BrandOnboarding from "@/components/Auth/accountType/Brand/BrandOnboarding";
-import CreatorRegistration from "@/components/Auth/accountType/Creator/Creator";
-import { setAuthToken } from "@/app/actions/auth";
+import { clearAuthToken } from "@/app/actions/auth";
+import { EmailVerificationPrompt } from "@/components/Auth/verify-email/EmailVerificationPrompt";
 import { useAuthStore } from "@/hooks/store/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,19 +26,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { pazaApi } from "@/lib/axiosClients";
+import { pazaApi, setApiAuthToken, getAuthHeaderConfig } from "@/lib/axiosClients";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiMailLine, RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z, infer as zInfer } from "zod";
-import type { Creator } from "@/types/preferences/Creator/CreatorType";
+
+const BrandOnboarding = dynamic(() => import("@/components/Auth/accountType/Brand/BrandOnboarding"), {
+  loading: () => (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  ),
+});
+
+const CreatorRegistration = dynamic(() => import("@/components/Auth/accountType/Creator/Creator").then(m => ({ default: m.default })), {
+  loading: () => (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  ),
+});
 
 const signupPasswordSchema = z
   .string()
@@ -123,10 +136,25 @@ export function GoogleCompleteSignupForm({
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
-  const [creatorPrefill, setCreatorPrefill] = useState<Partial<Creator> | null>(null);
+  const [phase, setPhase] = useState<"form" | "onboarding" | "verification">("form");
+  /** Email to display on the verification prompt after completing signup. */
+  const [completedEmail, setCompletedEmail] = useState("");
+  const logout = useAuthStore((s) => s.logout);
 
-  const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  // ── Bootstrap: ensure the auth token from the OAuth callback (stored in
+  //     localStorage) is available to every pazaApi call. ──
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const token = localStorage.getItem("token");
+        if (token) {
+          setApiAuthToken(token);
+        }
+      }
+    } catch (e) {
+      console.warn("[GoogleCompleteSignupForm] Token bootstrap error:", e);
+    }
+  }, []);
 
   const onSubmit = (data: FormValues) => {
     const parsed = schema.parse(data);
@@ -151,49 +179,31 @@ export function GoogleCompleteSignupForm({
       if (extra.gender) payload.gender = extra.gender;
       if (extra.phone) payload.phone = extra.phone;
       if (extra.city) payload.city = extra.city;
-      return pazaApi.put("/api/auth/google/complete-signup", payload);
+      // Explicitly pass the auth header so this critical call works even
+      // when the axios interceptor or default headers fail.
+      return pazaApi.put("/api/auth/google/complete-signup", payload, getAuthHeaderConfig());
     },
-    onSuccess: async (res: AxiosResponse, variables: FormData) => {
-      const token = res.data?.token as string | undefined;
-      const user = res.data?.user as
-        | {
-            id?: number | string;
-            email?: string;
-            firstName?: string;
-            lastName?: string;
-            accountType?: string;
+    onSuccess: async () => {
+      setCompletedEmail(defaults.email ?? "");
+      if (accountType === "brand" || accountType === "creator") {
+        // Ensure the token is wired into pazaApi so onboarding API calls
+        // (auth/me, business/bootstrap, uploads/image, etc.) all succeed.
+        try {
+          const existingToken =
+            typeof window !== "undefined" ? localStorage.getItem("token") : null;
+          if (existingToken) {
+            setApiAuthToken(existingToken);
           }
-        | undefined;
-
-      if (token && typeof window !== "undefined") {
-        await setAuthToken(token);
-        window.localStorage.setItem("token", token);
-      }
-      if (token && user) {
-        setAuth(token, {
-          id: user.id != null ? String(user.id) : undefined,
-          email: user.email ?? "",
-          firstname: user.firstName,
-          lastname: user.lastName,
-          accountType: user.accountType,
-        });
-      }
-
-      if (accountType === "creator") {
-        setCreatorPrefill({
-          firstName: variables.firstname,
-          lastName: variables.lastname,
-          dateOfBirth:
-            "birthday" in variables &&
-            typeof (variables as { birthday?: unknown }).birthday === "string"
-              ? (variables as { birthday: string }).birthday
-              : undefined,
-        });
-        toast.success("Account created — complete your creator profile");
-      } else if (accountType === "brand") {
-        toast.success("Account created — complete your brand profile");
+        } catch (e) {
+          console.warn("[GoogleCompleteSignupForm] Token wire-up error:", e);
+        }
+        setPhase("onboarding");
       } else {
-        toast.success("Registration successfull");
+        // Fallback: no account type — clear auth and go to verification.
+        try { await clearAuthToken(); } catch {}
+        if (typeof window !== "undefined") localStorage.removeItem("token");
+        logout();
+        setPhase("verification");
       }
     },
     onError: (err: unknown) => {
@@ -216,30 +226,32 @@ export function GoogleCompleteSignupForm({
     },
   });
 
-  const showCreatorJourney =
-    accountType === "creator" && completeMutation.isSuccess && creatorPrefill != null;
-
-  const showBrandJourney = accountType === "brand" && completeMutation.isSuccess;
+  const handleOnboardingDone = async () => {
+    // Brand onboarding complete — now clear auth and show verification prompt.
+    try { await clearAuthToken(); } catch {}
+    if (typeof window !== "undefined") localStorage.removeItem("token");
+    logout();
+    setPhase("verification");
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      {showCreatorJourney ? (
-        <CreatorRegistration
-          embedded
-          initialData={creatorPrefill}
-          className="px-0 pt-0"
-          mode="full"
-          stepOffset={0}
-          totalSteps={5}
-          onComplete={() => router.push("/overview")}
-        />
-      ) : showBrandJourney ? (
+      {phase === "verification" ? (
+        <EmailVerificationPrompt email={completedEmail || "your email"} className="max-w-lg mx-auto" />
+      ) : phase === "onboarding" && accountType === "brand" ? (
         <BrandOnboarding
           embedded
-          className="px-0 pt-0"
-          stepOffset={0}
+          onComplete={handleOnboardingDone}
+          stepOffset={1}
           totalSteps={4}
-          onComplete={() => router.push("/overview")}
+        />
+      ) : phase === "onboarding" && accountType === "creator" ? (
+        <CreatorRegistration
+          embedded
+          onComplete={handleOnboardingDone}
+          stepOffset={1}
+          totalSteps={3}
+          mode="signup-lite"
         />
       ) : (
         <form

@@ -1,10 +1,8 @@
 "use client"
 
 import Logo from "@/assets/Logo"
-import BrandOnboarding from "@/components/Auth/accountType/Brand/BrandOnboarding"
-import CreatorRegistration from "@/components/Auth/accountType/Creator/Creator"
-import { setAuthToken } from "@/app/actions/auth"
-import { useAuthStore } from "@/hooks/store/auth/useAuth"
+import { setAuthToken, clearAuthToken } from "@/app/actions/auth"
+import { EmailVerificationPrompt } from "@/components/Auth/verify-email/EmailVerificationPrompt"
 import { Button } from "@/components/ui/button"
 import {
     Field,
@@ -21,19 +19,28 @@ import {
     InputGroupButton,
     InputGroupInput
 } from "@/components/ui/input-group"
-import { pazaApi } from "@/lib/axiosClients"
+import { useAuthStore } from "@/hooks/store/auth/useAuth"
+import { pazaApi, setApiAuthToken } from "@/lib/axiosClients"
+import { decodeJwtPayload, getEmailFromPayload, getUserIdStringFromPayload, getAccountTypeFromPayload } from "@/lib/jwtPayload"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { RiEyeLine, RiEyeOffLine, RiMailLine } from "@remixicon/react"
 import { useMutation } from "@tanstack/react-query"
-import { AxiosResponse } from "axios"
 import { Loader2 } from "lucide-react"
-import { useRouter, useSearchParams } from "next/navigation"
+import dynamic from "next/dynamic"
+import { useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z, infer as zInfer } from "zod"
-import type { Creator } from "@/types/preferences/Creator/CreatorType"
+
+const BrandOnboarding = dynamic(() => import("@/components/Auth/accountType/Brand/BrandOnboarding"), {
+    loading: () => (
+        <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+    ),
+})
 
 
 const signupPasswordSchema = z
@@ -113,11 +120,10 @@ export function SignupForm({
     const [showPass, setShowPass] = useState(false);
     const [showConfirmPass, setShowConfirmPass] = useState(false);
     const [termsModalOpen, setTermsModalOpen] = useState(false);
-    /** After creator email/password signup, prefill the profile journey (name + DOB from the form). */
-    const [creatorPrefill, setCreatorPrefill] = useState<Partial<Creator> | null>(null);
-
-    const router = useRouter()
     const setAuth = useAuthStore((s) => s.setAuth);
+    const [phase, setPhase] = useState<"form" | "onboarding" | "verification">("form");
+    /** Email of the just-signed-up user, used to show the verification prompt. */
+    const [signedUpEmail, setSignedUpEmail] = useState("");
 
     useEffect(() => {
         const raw = searchParams.get("email");
@@ -149,47 +155,35 @@ export function SignupForm({
             }
             return pazaApi.post("/api/auth/register", payload);
         },
-        onSuccess: async (res: AxiosResponse, variables: FormData) => {
-            const token = res.data?.token as string | undefined;
-            const user = res.data?.user as
-                | {
-                      id?: number | string;
-                      email?: string;
-                      firstName?: string;
-                      lastName?: string;
-                      accountType?: string;
-                  }
-                | undefined;
-
-            if (token && typeof window !== "undefined") {
-                await setAuthToken(token);
-                window.localStorage.setItem("token", token);
-            }
-            if (token && user) {
+        onSuccess: async (res, variables: FormData) => {
+            // Store the token so BrandOnboarding API calls work (they require auth).
+            const token: string | undefined = (res as { data?: { token?: string } })?.data?.token;
+            if (token) {
+                try { await setAuthToken(token); } catch { /* cookie optional */ }
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("token", token);
+                }
+                // Set on pazaApi defaults so BrandOnboarding API calls work even if
+                // the request interceptor does not fire (observed in production builds).
+                try { setApiAuthToken(token); } catch (e) { console.warn("[SignUpForm] setApiAuthToken:", e); }
+                // Build user object from jwt payload to set zustand auth
+                const payload = decodeJwtPayload(token);
                 setAuth(token, {
-                    id: user.id != null ? String(user.id) : undefined,
-                    email: user.email ?? "",
-                    firstname: user.firstName,
-                    lastname: user.lastName,
-                    accountType: user.accountType,
+                    id: getUserIdStringFromPayload(payload),
+                    email: getEmailFromPayload(payload),
+                    accountType: getAccountTypeFromPayload(payload),
                 });
             }
-
-            if (accountType === "creator") {
-                setCreatorPrefill({
-                    firstName: variables.firstname,
-                    lastName: variables.lastname,
-                    dateOfBirth:
-                        "birthday" in variables &&
-                        typeof (variables as { birthday?: unknown }).birthday === "string"
-                            ? (variables as { birthday: string }).birthday
-                            : undefined,
-                });
-                toast.success("Account created — we've sent a verification link to your email");
-            } else if (accountType === "brand") {
-                toast.success("Account created — we've sent a verification link to your email");
+            setSignedUpEmail(variables.email);
+            if (accountType === "brand") {
+                // Keep auth alive for BrandOnboarding API calls.
+                setPhase("onboarding");
             } else {
-                toast.success("Registration successful — please verify your email");
+                // Creator: clear auth and go straight to verification.
+                clearAuthToken().catch(() => {});
+                if (typeof window !== "undefined") localStorage.removeItem("token");
+                useAuthStore.getState().logout();
+                setPhase("verification");
             }
         },
         onError: (err: unknown) => {
@@ -202,11 +196,6 @@ export function SignupForm({
             }
         }
     })
-
-    const showCreatorJourney =
-        accountType === "creator" && signUpMutation.isSuccess && creatorPrefill != null;
-
-    const showBrandJourney = accountType === "brand" && signUpMutation.isSuccess;
 
     const handleGoogleSignup = () => {
         const params = new URLSearchParams({
@@ -223,33 +212,24 @@ export function SignupForm({
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            {showCreatorJourney ? (
-                <CreatorRegistration
-                    embedded
-                    initialData={creatorPrefill}
-                    className="px-0 pt-0"
-                    mode="full"
-                    stepOffset={0}
-                    totalSteps={5}
-                    onComplete={() => router.push("/overview")}
-                />
-            ) : showBrandJourney ? (
+            {phase === "verification" ? (
+                <EmailVerificationPrompt email={signedUpEmail || "your email"} className="max-w-lg mx-auto" />
+            ) : phase === "onboarding" && accountType === "brand" ? (
                 <BrandOnboarding
                     embedded
-                    className="px-0 pt-0"
-                    stepOffset={0}
-                    totalSteps={5}
-                    onComplete={() => router.push("/overview")}
+                    onComplete={async () => {
+                        // Clear auth so user must verify before accessing the app.
+                        await clearAuthToken().catch(() => {});
+                        if (typeof window !== "undefined") localStorage.removeItem("token");
+                        useAuthStore.getState().logout();
+                        setPhase("verification");
+                    }}
+                    stepOffset={1}
+                    totalSteps={4}
                 />
-            ) : signUpMutation.isSuccess ? (
-                <div className="flex flex-col gap-6 h-[calc(100vh-4rem)] justify-center">
-                    <h1 className="text-3xl font-bold">Registration successful</h1>
-                    <p className="text-muted-foreground text-base text-balance">
-                        We have sent a verification email to your email address.
-                        If you haven&apos;t received it, please check your spam folder.
-                    </p>
-                    <Button onClick={() => router.push("/login")}>Login</Button>
-                </div>
+            ) : phase === "onboarding" ? (
+                // Creator — go straight to verification after signup.
+                <EmailVerificationPrompt email={signedUpEmail || "your email"} className="max-w-lg mx-auto" />
             ) : (
                 <form
                     key={accountType}

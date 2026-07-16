@@ -1,4 +1,4 @@
-import { pazaApi } from "@/lib/axiosClients";
+import { pazaApi, getAuthHeaderConfig } from "@/lib/axiosClients";
 import type { Creator } from "@/types/preferences/Creator/CreatorType";
 
 /**
@@ -15,6 +15,14 @@ export function buildCreatorProfilePayload(data: Creator): Record<string, unknow
         about: data.about,
         main: data.main || data.category || "",
         followers: data.followers,
+        // ── Personal info (from PersonalInfoStep) ──
+        firstName: data.firstName,
+        lastName: data.lastName,
+        gender: data.gender,
+        dateOfBirth: data.dateOfBirth,
+        country: data.country,
+        stateRegion: data.stateRegion,
+        // ── Social links (from SocialMediaStep) ──
         instagram: data.instagram,
         tiktok: data.tiktok,
         twitter: data.twitter,
@@ -22,9 +30,11 @@ export function buildCreatorProfilePayload(data: Creator): Record<string, unknow
         linkedin: data.linkedin,
         facebook: data.facebook,
         social: data.social,
+        // ── Career (from SocialCareerStep) ──
         experience: data.experience,
         milestones: data.milestones,
         collabs: collabsStr,
+        // ── Skills (from CategoriesValueStep) ──
         category: data.category,
         subCategory: data.subCategory ?? [],
         corevalue: data.corevalue,
@@ -47,9 +57,11 @@ export function buildCreatorProfilePayload(data: Creator): Record<string, unknow
 async function uploadImageFile(file: File): Promise<string> {
     const form = new FormData();
     form.append("file", file);
+    const authCfg = getAuthHeaderConfig();
     const res = await pazaApi.post("/api/uploads/image", form, {
         headers: {
             "Content-Type": "multipart/form-data",
+            ...(authCfg.headers || {}),
         },
     });
     const url = res?.data?.data?.url;
@@ -72,6 +84,7 @@ export async function saveCreatorProfileFull(data: Creator): Promise<unknown> {
         payloadData.previewFile = undefined;
     }
 
-    const res = await pazaApi.put("/api/auth/creator-profile/full", buildCreatorProfilePayload(payloadData));
+    const authCfg = getAuthHeaderConfig();
+    const res = await pazaApi.put("/api/auth/creator-profile/full", buildCreatorProfilePayload(payloadData), authCfg);
     return res.data;
 }

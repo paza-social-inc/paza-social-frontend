@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RiLoader2Line, RiCompassLine } from "@remixicon/react";
-import { CreatorProfile, updateFullCreatorProfile } from "@/lib/data/creator";
+import { CreatorProfile, updatePrompts } from "@/lib/data/creator";
 import toast from "react-hot-toast";
 
 interface CreatorRoutineFormProps {
@@ -25,7 +25,7 @@ export default function CreatorRoutineForm({ initialData, onSuccess }: CreatorRo
     const onSubmit = async (data: Partial<CreatorProfile>) => {
         setIsSubmitting(true);
         try {
-            const res = await updateFullCreatorProfile(data);
+            const res = await updatePrompts(data);
             if (res.success) {
                 toast.success("Routine & Gear updated");
                 if (onSuccess) onSuccess(res.data);

@@ -4,7 +4,7 @@ import { CategoriesValuesStepProps } from "@/types/preferences/Creator/CreatorTy
 import { cn } from "@/lib/utils";
 import { cj } from "../creatorJourneyTheme";
 import { StepSection } from "./StepSection";
-import { Search, X } from "lucide-react";
+import { Search, X, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 const MAIN_CATEGORIES: { id: string; label: string }[] = [
@@ -38,8 +38,66 @@ const SKILLS_BY_MAIN: Record<string, string[]> = {
     events_experiences: ["Live events", "Festivals", "Hospitality", "Experiential"],
 };
 
+// Core-values taxonomy: pillar -> specific values under that pillar.
+const VALUE_CATEGORIES: { id: string; label: string }[] = [
+    { id: "authenticity", label: "Authenticity" },
+    { id: "innovation", label: "Innovation" },
+    { id: "excellence", label: "Excellence" },
+    { id: "transparency", label: "Transparency" },
+    { id: "inclusivity", label: "Inclusivity" },
+    { id: "sustainability", label: "Sustainability" },
+    { id: "customer_centricity", label: "Customer-Centricity" },
+    { id: "adaptability", label: "Adaptability" },
+    { id: "positioning", label: "Positioning" },
+    { id: "cultural_resonance", label: "Cultural Resonance" },
+    { id: "purpose_conviction", label: "Purpose & Conviction" },
+];
+
+const VALUE_SUBFIELDS: Record<string, string[]> = {
+    authenticity: ["Originality", "Genuine Expression", "Honest Representation"],
+    innovation: [
+        "Visionary Thinking",
+        "Bold Experimentation",
+        "Relentless Curiosity",
+        "Responsive Evolution",
+        "Progressive Innovation",
+    ],
+    excellence: ["High Standards", "Precision", "Disciplined Execution"],
+    transparency: [
+        "Trustworthiness",
+        "Ethical Consistency",
+        "Open Communication",
+        "Clarity in Operations",
+    ],
+    inclusivity: ["Diverse Representation", "Equity", "Cultural Intelligence"],
+    sustainability: ["Environmental Consciousness", "Conscious Resource Use", "Long-Term Thinking"],
+    customer_centricity: [
+        "User-First Approach",
+        "Product-Led Solutions",
+        "Feedback Integration",
+        "Service-Oriented Thinking",
+    ],
+    adaptability: ["Flexibility", "Resilience", "Responsive to Change"],
+    positioning: ["Exclusive", "Timeless", "Niche Authority", "Aspirational Identity"],
+    cultural_resonance: [
+        "Cultural Relevance",
+        "Cultural Impact",
+        "Global Resonance",
+        "Local Authenticity",
+    ],
+    purpose_conviction: [
+        "Mission-Driven Action",
+        "Resolve",
+        "Boldness",
+        "Accountable",
+        "Clarity of Purpose",
+    ],
+};
+
 export default function CategoriesValuesStep({ data, onUpdate }: CategoriesValuesStepProps) {
     const [search, setSearch] = useState("");
+    const [activeValueCats, setActiveValueCats] = useState<string[]>([]);
+    const [customValue, setCustomValue] = useState("");
 
     const filteredMain = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -64,6 +122,34 @@ export default function CategoriesValuesStep({ data, onUpdate }: CategoriesValue
         if (set.has(skill)) set.delete(skill);
         else set.add(skill);
         onUpdate({ topics: Array.from(set) });
+    };
+
+    const toggleValueCategory = (id: string) => {
+        setActiveValueCats((prev) => {
+            if (prev.includes(id)) {
+                // Collapsing a pillar also clears any values selected under it.
+                const subs = new Set(VALUE_SUBFIELDS[id] ?? []);
+                onUpdate({ coreValues: data.coreValues.filter((v) => !subs.has(v)) });
+                return prev.filter((x) => x !== id);
+            }
+            return [...prev, id];
+        });
+    };
+
+    const toggleCoreValue = (value: string) => {
+        const set = new Set(data.coreValues);
+        if (set.has(value)) set.delete(value);
+        else set.add(value);
+        onUpdate({ coreValues: Array.from(set) });
+    };
+
+    const addCustomValue = () => {
+        const v = customValue.trim();
+        if (!v) return;
+        if (!data.coreValues.includes(v)) {
+            onUpdate({ coreValues: [...data.coreValues, v] });
+        }
+        setCustomValue("");
     };
 
     return (
@@ -163,22 +249,131 @@ export default function CategoriesValuesStep({ data, onUpdate }: CategoriesValue
                 </>
             ) : null}
 
-            <div className="space-y-2 border-t border-zinc-800 pt-6">
-                <Label className={cj.labelField} htmlFor="coreValues">
-                    Core values (optional)
-                </Label>
-                <Input
-                    id="coreValues"
-                    placeholder="e.g. authenticity, sustainability — comma separated"
-                    value={data.coreValues.join(", ")}
-                    onChange={(e) =>
-                        onUpdate({
-                            coreValues: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
-                        })
-                    }
-                    className={cn(cj.input, "h-11")}
-                />
-            </div>
+            <StepSection kicker="Core values">
+                <p className="text-sm text-zinc-500">
+                    Select the values that align with your goals and ethos. Pick a pillar, then choose the
+                    specific values under it.
+                </p>
+
+                <div className="rounded-xl border border-zinc-700/80 bg-zinc-900/50 p-3 sm:p-4">
+                    <p className="mb-3 text-[11px] text-zinc-500">Selected values</p>
+                    <div className="min-h-[40px]">
+                        {data.coreValues.length === 0 ? (
+                            <span className="text-sm text-zinc-600">
+                                Pick a pillar below, then select the values under it
+                            </span>
+                        ) : (
+                            <div className="flex flex-wrap gap-2">
+                                {data.coreValues.map((v) => (
+                                    <span
+                                        key={v}
+                                        className="inline-flex items-center gap-1 rounded-full bg-orange-600 px-3 py-1 text-xs font-medium text-white"
+                                    >
+                                        {v}
+                                        <button
+                                            type="button"
+                                            className="rounded-full p-0.5 hover:bg-white/20"
+                                            aria-label={`Remove ${v}`}
+                                            onClick={() => toggleCoreValue(v)}
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                        Choose one or more pillars
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {VALUE_CATEGORIES.map((c) => {
+                            const active = activeValueCats.includes(c.id);
+                            return (
+                                <button
+                                    key={c.id}
+                                    type="button"
+                                    onClick={() => toggleValueCategory(c.id)}
+                                    className={cn(
+                                        cj.chip,
+                                        active && cj.chipActive,
+                                        "inline-flex items-center gap-1.5"
+                                    )}
+                                >
+                                    {c.label}
+                                    {active ? <X className="h-3 w-3 opacity-80" /> : null}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {activeValueCats.length > 0 && (
+                    <div className="space-y-5">
+                        {activeValueCats.map((catId) => {
+                            const cat = VALUE_CATEGORIES.find((c) => c.id === catId);
+                            const subs = VALUE_SUBFIELDS[catId] ?? [];
+                            return (
+                                <div key={catId} className="space-y-2">
+                                    <Label className={cj.labelField}>{cat?.label}</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {subs.map((sub) => {
+                                            const active = data.coreValues.includes(sub);
+                                            return (
+                                                <button
+                                                    key={sub}
+                                                    type="button"
+                                                    onClick={() => toggleCoreValue(sub)}
+                                                    className={cn(
+                                                        cj.chip,
+                                                        active && cj.chipActive,
+                                                        "inline-flex items-center gap-1.5 text-[11px]"
+                                                    )}
+                                                >
+                                                    {sub}
+                                                    {active ? <X className="h-3 w-3 opacity-80" /> : null}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                <div className="space-y-2 border-t border-zinc-800 pt-4">
+                    <Label className={cj.labelField} htmlFor="customCoreValue">
+                        Not represented? Add your own
+                    </Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="customCoreValue"
+                            placeholder="e.g. Craftsmanship"
+                            value={customValue}
+                            onChange={(e) => setCustomValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    addCustomValue();
+                                }
+                            }}
+                            className={cn(cj.input, "h-11")}
+                        />
+                        <button
+                            type="button"
+                            onClick={addCustomValue}
+                            className={cn(cj.chip, "inline-flex h-11 items-center gap-1.5 px-4")}
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </StepSection>
         </div>
     );
 }
