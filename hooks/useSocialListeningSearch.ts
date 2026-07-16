@@ -373,9 +373,12 @@ async function fetchFullReport(briefId: string, jobId: string, product: string):
     socialListenerApi.get(`/api/v1/briefs/${briefId}/jobs/${jobId}/community-leads`),
     socialListenerApi.get(`/api/v1/briefs/${briefId}/jobs/${jobId}/environments`).catch(() => null),
     // NEW: fetch the narrative report with the topic query param
+    // socialListenerApi
+    //   .get(`/api/v1/briefs/${briefId}/jobs/${jobId}/narrative-report?topic=${encodeURIComponent(product)}`)
+    //   .catch(() => null),
     socialListenerApi
-      .get(`/api/v1/briefs/${briefId}/jobs/${jobId}/narrative-report?topic=${encodeURIComponent(product)}`)
-      .catch(() => null),
+    .get(`/api/v1/briefs/${briefId}/jobs/${jobId}/narrative-report?topic=${encodeURIComponent(product)}&includeDiscovery=true`)
+    .catch(() => null),
   ]);
 
   const creators: Creator[] = creatorsRes.data.data?.creators || [];
