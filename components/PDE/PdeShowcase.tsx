@@ -47,7 +47,9 @@ import {
   Activity,
   ArrowLeftRight,
   Search,
+  Calendar,
   Filter,
+  ShoppingBag,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -756,12 +758,16 @@ const PILLAR_COLORS: Record<NinePillar, { bar: string; badge: string; bg: string
 
 const SOURCE_META: Record<string, { label: string; icon: typeof MessageCircle; color: string }> = {
   search_intent: { label: "Search Intent", icon: Search, color: "bg-blue-500" },
-  reddit_forum: { label: "Reddit", icon: MessageCircle, color: "bg-orange-500" },
+  reddit_forum: { label: "Reddit Forum", icon: MessageCircle, color: "bg-orange-500" },
+  reddit: { label: "Reddit", icon: MessageCircle, color: "bg-orange-600" },
   review: { label: "Reviews", icon: Star, color: "bg-amber-500" },
   tiktok: { label: "TikTok", icon: Hash, color: "bg-pink-500" },
   facebook: { label: "Facebook", icon: Globe, color: "bg-blue-600" },
+  instagram: { label: "Instagram", icon: Hash, color: "bg-fuchsia-500" },
   x: { label: "X / Twitter", icon: MessageCircle, color: "bg-slate-600" },
   youtube: { label: "YouTube", icon: Hash, color: "bg-red-500" },
+  quora: { label: "Quora", icon: MessageCircle, color: "bg-red-700" },
+  amazon: { label: "Amazon", icon: ShoppingBag, color: "bg-amber-600" },
   website: { label: "Website", icon: Globe, color: "bg-teal-500" },
   hiring: { label: "Hiring", icon: Users, color: "bg-purple-500" },
   ads: { label: "Ads", icon: DollarSign, color: "bg-emerald-500" },
@@ -1016,6 +1022,7 @@ export default function PDEShowcasePage() {
   const [usageFrequency, setUsageFrequency] = useState("");
   const [price, setPrice] = useState("");
   const [geographyText, setGeographyText] = useState("");
+  const [lookbackMonths, setLookbackMonths] = useState("3"); // default 3 months
   const [salesChannelsText, setSalesChannelsText] = useState("");
   const [businessObjective, setBusinessObjective] = useState("");
 
@@ -1475,6 +1482,7 @@ export default function PDEShowcasePage() {
       usageFrequency: usageFrequency.trim() || undefined,
       price: price.trim() || undefined,
       geography: geographyText.split(",").map((s) => s.trim()).filter(Boolean),
+      lookbackMonths: lookbackMonths ? Number(lookbackMonths) : undefined,
       salesChannels: salesChannelsText.split(",").map((s) => s.trim()).filter(Boolean),
       businessObjective: businessObjective.trim() || undefined,
 
@@ -1546,7 +1554,7 @@ export default function PDEShowcasePage() {
     } finally {
       setLoading(false);
     }
-  }, [brandName, productName, category, functionalClaim, usageTrigger, usageFrequency, price, geographyText, salesChannelsText, businessObjective, dependencyUnit, failureOutcome, transactionSurface, fulfillmentReality, regulatoryConstraintsText, reviewsText, supportTicketsText, faqsText, marketingCopyText, customerCommunicationsText, directCompetitorsText, alternativesText, workaroundsText, technologiesText, observedSignalsText, repeatPurchaseRate, cartAbandonmentRate, detailed]);
+  }, [brandName, productName, category, functionalClaim, usageTrigger, usageFrequency, price, geographyText, lookbackMonths, salesChannelsText, businessObjective, dependencyUnit, failureOutcome, transactionSurface, fulfillmentReality, regulatoryConstraintsText, reviewsText, supportTicketsText, faqsText, marketingCopyText, customerCommunicationsText, directCompetitorsText, alternativesText, workaroundsText, technologiesText, observedSignalsText, repeatPurchaseRate, cartAbandonmentRate, detailed]);
 
   const hasRequired = brandName.trim() && productName.trim() && category.trim() && functionalClaim.trim();
 
@@ -1633,6 +1641,7 @@ export default function PDEShowcasePage() {
                     </div>
                     <TextField label="Business Objective" value={businessObjective} onChange={setBusinessObjective} placeholder="e.g. Increase first-time purchases" icon={Flag} />
                     <TextField label="Geography (comma-separated)" value={geographyText} onChange={setGeographyText} placeholder="e.g. Kenya, Nigeria, Ghana" icon={Globe} />
+                    <TextField label="Lookback (months)" value={lookbackMonths} onChange={setLookbackMonths} placeholder="e.g. 3" icon={Calendar} />
                     <TextField label="Sales Channels (comma-separated)" value={salesChannelsText} onChange={setSalesChannelsText} placeholder="e.g. Supermarkets, Pharmacies" icon={ShoppingCart} />
                   </div>
                 </CollapsibleSection>
