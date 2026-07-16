@@ -15,6 +15,14 @@ export function buildCreatorProfilePayload(data: Creator): Record<string, unknow
         about: data.about,
         main: data.main || data.category || "",
         followers: data.followers,
+        // ── Personal info (from PersonalInfoStep) ──
+        firstName: data.firstName,
+        lastName: data.lastName,
+        gender: data.gender,
+        dateOfBirth: data.dateOfBirth,
+        country: data.country,
+        stateRegion: data.stateRegion,
+        // ── Social links (from SocialMediaStep) ──
         instagram: data.instagram,
         tiktok: data.tiktok,
         twitter: data.twitter,
@@ -22,9 +30,11 @@ export function buildCreatorProfilePayload(data: Creator): Record<string, unknow
         linkedin: data.linkedin,
         facebook: data.facebook,
         social: data.social,
+        // ── Career (from SocialCareerStep) ──
         experience: data.experience,
         milestones: data.milestones,
         collabs: collabsStr,
+        // ── Skills (from CategoriesValueStep) ──
         category: data.category,
         subCategory: data.subCategory ?? [],
         corevalue: data.corevalue,
