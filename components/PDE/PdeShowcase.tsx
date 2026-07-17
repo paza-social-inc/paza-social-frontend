@@ -1720,10 +1720,9 @@ export default function PDEShowcasePage() {
                 </CollapsibleSection>
 
                 {/* ── Section G: File Upload ── */}
-                <CollapsibleSection title="Bulk Import (CSV / PDF)" icon={Upload} expanded={expandedSections.fileupload} onToggle={() => toggleSection("fileupload")}>
+                <CollapsibleSection title="Standard Import" icon={Upload} expanded={expandedSections.fileupload} onToggle={() => toggleSection("fileupload")}>
                   <p className="mb-3 text-xs text-muted-foreground">
-                    Upload a CSV or PDF file to bulk-import reviews, support tickets, FAQs, or marketing copy.
-                    For CSV, the first column is used. Data is appended to the target field.
+                    Upload a CSV or text-based PDF directly. The first column (CSV) or full text (PDF) is appended to your target field. Best for files under 100MB and quick, manual uploads.
                   </p>
                   <div className="rounded-xl border-2 border-dashed border-border bg-background p-5">
                     <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -1784,17 +1783,12 @@ export default function PDEShowcasePage() {
                       </div>
                     )}
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    CSV: first column used. PDF: text content extracted (best-effort for text-based PDFs).
-                    After importing, review and edit the target field above.
-                  </p>
                 </CollapsibleSection>
 
                 {/* ── Section H: S3 Cloud Upload ── */}
-                <CollapsibleSection title="S3 Cloud Upload (Large Files)" icon={Upload} expanded={expandedSections.s3upload} onToggle={() => toggleSection("s3upload")}>
+                <CollapsibleSection title="Large Dataset Upload" icon={Upload} expanded={expandedSections.s3upload} onToggle={() => toggleSection("s3upload")}>
                   <p className="mb-3 text-xs text-muted-foreground">
-                    Ideal for large datasets (thousands of rows).
-                    Files are processed server-side by the PDE pipeline, no payload limits.
+                    Process huge datasets without browser limits. Upload files of any size directly to S3 for server-side processing. Ideal for thousands of rows, large review dumps, and historical data.
                   </p>
                   <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/[0.02] p-5">
                     <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -2744,7 +2738,7 @@ export default function PDEShowcasePage() {
               )}
 
               {/* ── Discovery Queries (8.7) ── */}
-              {(() => {
+              {/* {(() => {
                 const discoveryQuerySet = output.discoveryQueries;
                 if (!discoveryQuerySet) return null;
 
@@ -2811,7 +2805,7 @@ export default function PDEShowcasePage() {
                     </Section>
                   </div>
                 );
-              })()}
+              })()} */}
 
               {/* ── Contextual Anchors (Step 1) ── */}
               {output.contextualAnchors && output.contextualAnchors.length > 0 && (
