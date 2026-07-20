@@ -120,6 +120,15 @@ export async function updateNarrativeIdentity(data: Partial<CreatorProfile>): Pr
   };
 }
 
+export async function updatePhilosophical(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
+  const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/philosophical", data);
+  return {
+    success: !!response.data.profile,
+    message: response.data.message,
+    data: response.data.profile
+  };
+}
+
 export async function updateWorkingStyle(data: Partial<CreatorProfile>): Promise<ApiResponse<CreatorProfile>> {
   const response = await pazaApi.patch<{ message: string; profile: CreatorProfile }>("/api/creators/profile/working-style", data);
   return {
