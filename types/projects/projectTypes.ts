@@ -247,6 +247,49 @@ export interface ProjectCreatorProfileRef {
   category?: string | null;
   topics?: string[] | null;
   experience?: string | null;
+  // ── 1. Narrative Identity ────────────────────────────────────────────────
+  originStory?: string | null;
+  originStoryTags?: string[] | null;
+  // ── 2. Philosophical & Value Alignment ────────────────────────────────────
+  coreValues?: string[] | null;
+  toneEmotional?: string[] | null;
+  toneProfessional?: string[] | null;
+  toneCultural?: string[] | null;
+  toneLifestyle?: string[] | null;
+  // ── 3. Working Style & Availability ───────────────────────────────────────
+  availabilityType?: string | null;
+  personalityTags?: string[] | null;
+  preferredCommunication?: string | null;
+  engagementType?: string[] | null;
+  deliverables?: string[] | null;
+  equipmentAndSoftware?: string | null;
+  // ── 4. Creative Capabilities ──────────────────────────────────────────────
+  skillLevel?: string | null;
+  creatorType?: string[] | null;
+  domainShards?: string[] | null;
+  assetClassPrimary?: string | null;
+  valueProp?: string[] | null;
+  whatPeopleComeTo?: string[] | null;
+  // ── 6. Audience ─────────────────────────────────────────────────────────
+  audienceLocale?: string | null;
+  languages?: string[] | null;
+  audienceDescription?: string | null;
+  genderMale?: number | null;
+  genderFemale?: number | null;
+  locales?: { country: string; city?: string }[] | null;
+  // ── 8. Behavioral Product Data ─────────────────────────────────────────
+  dailyRoutineText?: string | null;
+  dailyCarryText?: string | null;
+  nostalgicProductsText?: string | null;
+  // ── 9. Brand Affinity & Loyalty ────────────────────────────────────────
+  dreamBrandCollaboration?: string[] | null;
+  alwaysRecommend?: string[] | null;
+  // ── 10. Relational Intelligence ────────────────────────────────────────
+  collabMindedPeople?: string | null;
+  dreamCollaborator?: string | null;
+  // ── 11. Project Signature ──────────────────────────────────────────────
+  meaningfulProject?: string | null;
+  primaryVerticals?: string[] | null;
 }
 
 export interface ProjectCreatorRef {
