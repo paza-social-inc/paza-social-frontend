@@ -43,6 +43,39 @@ export type CreatorProfile = {
   aboutLong?: string;
   galleryImages?: string[];
   platformStats?: { platform: string; description: string; link: string; highlighted?: boolean }[];
+
+  // ── Creator DNA — previously collected but never shown on the showcase ──
+  originStoryTags?: string[];
+  toneEmotional?: string[];
+  toneProfessional?: string[];
+  toneCultural?: string[];
+  toneLifestyle?: string[];
+  availabilityType?: string;
+  personalityTags?: string[];
+  preferredCommunication?: string;
+  engagementType?: string[];
+  deliverables?: string[];
+  equipmentAndSoftware?: string;
+  skillLevel?: string;
+  creatorType?: string[];
+  domainShards?: string[];
+  assetClassPrimary?: string;
+  valueProp?: string[];
+  whatPeopleComeTo?: string[];
+  audienceDescription?: string;
+  languages?: string[];
+  genderMale?: number;
+  genderFemale?: number;
+  locales?: { country: string; city?: string }[];
+  dailyRoutineText?: string;
+  dailyCarryText?: string;
+  nostalgicProductsText?: string;
+  dreamBrandCollaboration?: string[];
+  alwaysRecommend?: string[];
+  collabMindedPeople?: string;
+  dreamCollaborator?: string;
+  meaningfulProject?: string;
+  primaryVerticals?: string[];
 };
 
 type TabId = "about" | "projects" | "requests";
@@ -75,6 +108,167 @@ function proposalStatusVariant(
   if (s === "accepted") return "default";
   if (s === "rejected") return "destructive";
   return "secondary";
+}
+
+function TagRow({ label, values }: { label: string; values?: string[] }) {
+  if (!values || values.length === 0) return null;
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {values.map((v) => (
+          <Badge key={v} variant="secondary" className="text-[11px] px-2 py-0.5">
+            {v}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TextRow({ label, value }: { label: string; value?: string | number | null }) {
+  if (value === undefined || value === null || value === "") return null;
+  return (
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="text-sm text-foreground">{value}</p>
+    </div>
+  );
+}
+
+/**
+ * Renders the profile sections that used to be collected on the dashboard but
+ * dropped before reaching the showcase (Narrative, Tone, Working Style,
+ * Creative Capabilities, Audience, Behavioral prompts, Brand Affinity,
+ * Project Signature). Only renders fields that actually have data.
+ */
+function CreatorDnaSection({ creator }: { creator: CreatorProfile }) {
+  const genderSplit =
+    creator.genderMale != null || creator.genderFemale != null
+      ? `Male ${creator.genderMale ?? 0}% · Female ${creator.genderFemale ?? 0}%`
+      : undefined;
+  const topRegions = (creator.locales ?? [])
+    .filter((l) => l?.country)
+    .map((l) => (l.city ? `${l.city}, ${l.country}` : l.country));
+
+  const hasAnyContent =
+    (creator.originStoryTags?.length ?? 0) > 0 ||
+    (creator.toneEmotional?.length ?? 0) > 0 ||
+    (creator.toneProfessional?.length ?? 0) > 0 ||
+    (creator.toneCultural?.length ?? 0) > 0 ||
+    (creator.toneLifestyle?.length ?? 0) > 0 ||
+    !!creator.availabilityType ||
+    (creator.personalityTags?.length ?? 0) > 0 ||
+    !!creator.preferredCommunication ||
+    (creator.engagementType?.length ?? 0) > 0 ||
+    (creator.deliverables?.length ?? 0) > 0 ||
+    !!creator.equipmentAndSoftware ||
+    !!creator.skillLevel ||
+    (creator.creatorType?.length ?? 0) > 0 ||
+    (creator.domainShards?.length ?? 0) > 0 ||
+    !!creator.assetClassPrimary ||
+    (creator.valueProp?.length ?? 0) > 0 ||
+    !!creator.audienceDescription ||
+    (creator.languages?.length ?? 0) > 0 ||
+    !!genderSplit ||
+    topRegions.length > 0 ||
+    !!creator.dailyRoutineText ||
+    !!creator.dailyCarryText ||
+    !!creator.nostalgicProductsText ||
+    (creator.dreamBrandCollaboration?.length ?? 0) > 0 ||
+    (creator.alwaysRecommend?.length ?? 0) > 0 ||
+    !!creator.collabMindedPeople ||
+    !!creator.dreamCollaborator ||
+    !!creator.meaningfulProject ||
+    (creator.primaryVerticals?.length ?? 0) > 0;
+
+  if (!hasAnyContent) return null;
+
+  return (
+    <div className="mt-8 pt-6 border-t border-border space-y-8">
+      <h3 className="text-base font-semibold text-foreground">Creator DNA</h3>
+
+      {((creator.originStoryTags?.length ?? 0) > 0 ||
+        creator.toneEmotional?.length ||
+        creator.toneProfessional?.length ||
+        creator.toneCultural?.length ||
+        creator.toneLifestyle?.length) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TagRow label="Narrative identity" values={creator.originStoryTags} />
+          <TagRow label="Tone — emotional" values={creator.toneEmotional} />
+          <TagRow label="Tone — professional" values={creator.toneProfessional} />
+          <TagRow label="Tone — cultural" values={creator.toneCultural} />
+          <TagRow label="Tone — lifestyle" values={creator.toneLifestyle} />
+        </div>
+      )}
+
+      {(creator.availabilityType ||
+        creator.personalityTags?.length ||
+        creator.preferredCommunication ||
+        creator.engagementType?.length ||
+        creator.deliverables?.length ||
+        creator.equipmentAndSoftware) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TextRow label="Availability" value={creator.availabilityType} />
+          <TextRow label="Preferred communication" value={creator.preferredCommunication} />
+          <TagRow label="Personality" values={creator.personalityTags} />
+          <TagRow label="Engagement models" values={creator.engagementType} />
+          <TagRow label="Standard deliverables" values={creator.deliverables} />
+          <TextRow label="Equipment & software" value={creator.equipmentAndSoftware} />
+        </div>
+      )}
+
+      {(creator.skillLevel ||
+        creator.creatorType?.length ||
+        creator.domainShards?.length ||
+        creator.assetClassPrimary ||
+        creator.valueProp?.length) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TextRow label="Skill level" value={creator.skillLevel} />
+          <TextRow label="Primary asset class" value={creator.assetClassPrimary} />
+          <TagRow label="Creator type" values={creator.creatorType} />
+          <TagRow label="Domain shards" values={creator.domainShards} />
+          <TagRow label="Value proposition" values={creator.valueProp} />
+        </div>
+      )}
+
+      {(creator.audienceDescription || creator.languages?.length || genderSplit || topRegions.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TextRow label="Audience" value={creator.audienceDescription} />
+          <TagRow label="Languages" values={creator.languages} />
+          <TextRow label="Gender split" value={genderSplit} />
+          <TagRow label="Top regions" values={topRegions} />
+        </div>
+      )}
+
+      {(creator.dailyRoutineText || creator.dailyCarryText || creator.nostalgicProductsText) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TextRow label="Daily routine" value={creator.dailyRoutineText} />
+          <TextRow label="Always carries" value={creator.dailyCarryText} />
+          <TextRow label="Nostalgic product" value={creator.nostalgicProductsText} />
+        </div>
+      )}
+
+      {(creator.dreamBrandCollaboration?.length ||
+        creator.alwaysRecommend?.length ||
+        creator.collabMindedPeople ||
+        creator.dreamCollaborator) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TagRow label="Dream brand collaborations" values={creator.dreamBrandCollaboration} />
+          <TagRow label="Always recommends" values={creator.alwaysRecommend} />
+          <TextRow label="Meaningful collaborators" value={creator.collabMindedPeople} />
+          <TextRow label="Future collaboration wishlist" value={creator.dreamCollaborator} />
+        </div>
+      )}
+
+      {(creator.meaningfulProject || creator.primaryVerticals?.length) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TextRow label="Most meaningful project" value={creator.meaningfulProject} />
+          <TagRow label="Primary verticals" values={creator.primaryVerticals} />
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function CreatorProfileModal({
@@ -620,6 +814,9 @@ export function CreatorProfileModal({
               </div>
             </div>
           )}
+
+          {/* Creator DNA - narrative, tone, working style, capabilities, audience, affinity */}
+          {activeTab === "about" && <CreatorDnaSection creator={creator} />}
         </div>
       </DialogContent>
     </Dialog>
