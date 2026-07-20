@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RiCloseLine, RiLoader2Line, RiSparklingLine, RiPaletteLine } from "@remixicon/react";
-import { CreatorProfile, updateNarrativeIdentity } from "@/lib/data/creator";
+import { CreatorProfile, updateNarrativeIdentity, updatePhilosophical } from "@/lib/data/creator";
 import { NARRATIVE_IDENTITY_TAGS, CREATOR_TONE_CATEGORIES } from "@/lib/constants/creatorTaxonomy";
 import toast from "react-hot-toast";
 
@@ -23,12 +23,24 @@ export default function CreatorNarrativeForm({ initialData, onSuccess }: { initi
     const onSubmit = async (data: Partial<CreatorProfile>) => {
         setIsSubmitting(true);
         try {
-            // We'll cast to any for now to allow extra fields (mission, goal, etc) 
-            // while matching the identity-related backend update.
-            const res = await updateNarrativeIdentity(data as Partial<CreatorProfile>);
-            if (res.success) {
+            // This form covers two backend sections: Narrative Identity (originStory,
+            // originStoryTags) and Philosophical & Value Alignment (the tone tags).
+            // They're two separate update endpoints on the backend, so the tone
+            // fields must be sent to /profile/philosophical, not /profile/narrative —
+            // otherwise they're silently dropped by updateNarrativeIdentity(), which
+            // only persists originStory/originStoryTags.
+            const { toneEmotional, toneProfessional, toneCultural, toneLifestyle, ...narrativeData } = data;
+
+            const [narrativeRes, philosophicalRes] = await Promise.all([
+                updateNarrativeIdentity(narrativeData as Partial<CreatorProfile>),
+                updatePhilosophical({ toneEmotional, toneProfessional, toneCultural, toneLifestyle }),
+            ]);
+
+            if (narrativeRes.success && philosophicalRes.success) {
                 toast.success("Creator narrative updated");
-                if (onSuccess) onSuccess(res.data);
+                if (onSuccess) onSuccess({ ...narrativeRes.data, ...philosophicalRes.data });
+            } else {
+                toast.error(narrativeRes.message || philosophicalRes.message || "Failed to update narrative");
             }
         } catch {
             toast.error("Failed to update narrative");
