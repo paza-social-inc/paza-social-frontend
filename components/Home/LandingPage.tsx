@@ -1,6 +1,6 @@
 "use client";
 
-import { Archivo_Black } from "next/font/google";
+import "@fontsource/archivo-black";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -43,12 +43,10 @@ export const LANDING_PLATE =
 export const LANDING_PLATE_DEEP =
   "border-t border-border bg-zinc-100 text-neutral-900 dark:border-white/[0.08] dark:bg-black dark:text-white";
 
-/** Hero “PAZA” — heavy geometric display (Figma / Montserrat-Black class). */
-export const archivoHero = Archivo_Black({
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-});
+/**
+ * Hero “PAZA” — heavy geometric display (Figma / Montserrat-Black class).
+ * Self-hosted via @fontsource/archivo-black — no Google Fonts dependency.
+ */
 
 /** Figma 1419:847 — label & UI accent */
 /** CONNECTING … BRANDS / CREATORS */
@@ -84,8 +82,7 @@ function PazaSplashHero() {
     docIsDark ? "bg-[#0e0e0e] text-white" : "bg-zinc-100 text-neutral-900",
   );
   const heroDisplayType = cn(
-    archivoHero.className,
-    "text-center font-normal uppercase leading-[0.85] tracking-[-0.04em] drop-shadow-xl",
+    "font-['Archivo_Black'] text-center font-normal uppercase leading-[0.85] tracking-[-0.04em] drop-shadow-xl",
     docIsDark ? "text-white" : "text-neutral-900",
   );
 

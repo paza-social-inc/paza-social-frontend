@@ -1,26 +1,10 @@
-import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import "@fontsource-variable/geist";
+import "@fontsource-variable/geist-mono";
+import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import Providers from "@/providers/Providers";
 import { Analytics } from "@/components/Analytics";
 import { siteConfig, absoluteUrl } from "@/lib/seo";
-
-const fontSans = Geist({
-    variable: "--font-sans",
-    subsets: ["latin"],
-    preload: false,
-});
-
-const fontMono = Geist_Mono({
-    variable: "--font-mono",
-    subsets: ["latin"],
-    preload: false,
-});
-
-const Jarkata = Plus_Jakarta_Sans({
-    variable: "--font-jarkata",
-    subsets: ["latin"],
-    preload: false,
-});
 
 export const metadata = {
     metadataBase: new URL(siteConfig.url),
@@ -59,7 +43,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body
-                className={`${fontSans.variable} ${fontMono.variable} ${Jarkata.variable} font-sans antialiased`}
+                className="font-sans antialiased"
             >
                 <Providers
                     attribute="class"
