@@ -2738,7 +2738,7 @@ export default function PDEShowcasePage() {
               )}
 
               {/* ── Discovery Queries (8.7) ── */}
-              {/* {(() => {
+              {(() => {
                 const discoveryQuerySet = output.discoveryQueries;
                 if (!discoveryQuerySet) return null;
 
@@ -2805,7 +2805,7 @@ export default function PDEShowcasePage() {
                     </Section>
                   </div>
                 );
-              })()} */}
+              })()}
 
               {/* ── Contextual Anchors (Step 1) ── */}
               {output.contextualAnchors && output.contextualAnchors.length > 0 && (
