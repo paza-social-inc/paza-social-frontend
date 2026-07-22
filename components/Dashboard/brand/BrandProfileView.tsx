@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/store/auth/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAuthMe } from "@/lib/data/auth";
-import { BrandProfile, BrandPastProject } from "@/lib/data/brands";
+import { BrandProfile, BrandPastProject, BrandCreatorPreference } from "@/lib/data/brands";
 import IdentityForm from "./IdentityForm";
 import NarrativeForm from "./NarrativeForm";
 import ProductManager from "./ProductManager";
@@ -16,10 +16,11 @@ import PastProjectsManager from "./PastProjectsManager";
 import BrandVoiceForm from "./BrandVoiceForm";
 import BrandPromptsForm from "./BrandPromptsForm";
 import BrandMediaUpload from "./BrandMediaUpload";
+import CreatorPreferencesForm from "./CreatorPreferencesForm";
 import { RiLoader2Line, RiErrorWarningLine, RiStore2Line } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 
-const VALID_TABS = ["identity", "media", "narrative", "voice", "prompts", "portfolio", "products", "protection"] as const;
+const VALID_TABS = ["identity", "media", "narrative", "voice", "prompts", "portfolio", "products", "protection", "creators"] as const;
 type BrandTab = typeof VALID_TABS[number];
 
 function BrandProfileContent() {
@@ -135,6 +136,10 @@ function BrandProfileContent() {
         queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
     }, [queryClient]);
 
+    const handleCreatorPrefsSaved = React.useCallback((_data: BrandCreatorPreference) => {
+        queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
+    }, [queryClient]);
+
     const handleMediaUpdate = React.useCallback((updates: Partial<BrandProfile>) => {
         setProfile(prev => prev ? { ...prev, ...updates } : prev);
         queryClient.invalidateQueries({ queryKey: ["profile-completion"] });
@@ -207,7 +212,7 @@ function BrandProfileContent() {
     return (
         <div className="space-y-6">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BrandTab)} className="w-full">
-                <TabsList className="flex w-full h-auto gap-1 p-1 bg-muted/50 overflow-x-auto">
+                <TabsList className="flex w-full h-auto gap-1 p-1 bg-muted/50 overflow-x-auto [&>[data-slot=tabs-trigger]]:shrink-0">
                     <TabsTrigger value="identity" className="py-2 text-xs sm:text-sm whitespace-nowrap">Identity</TabsTrigger>
                     <TabsTrigger value="media" className="py-2 text-xs sm:text-sm whitespace-nowrap">Media</TabsTrigger>
                     <TabsTrigger value="narrative" className="py-2 text-xs sm:text-sm whitespace-nowrap">Narrative</TabsTrigger>
@@ -216,6 +221,7 @@ function BrandProfileContent() {
                     <TabsTrigger value="portfolio" className="py-2 text-xs sm:text-sm whitespace-nowrap">Portfolio</TabsTrigger>
                     <TabsTrigger value="products" className="py-2 text-xs sm:text-sm whitespace-nowrap">Products</TabsTrigger>
                     <TabsTrigger value="protection" className="py-2 text-xs sm:text-sm whitespace-nowrap">IP Protection</TabsTrigger>
+                    <TabsTrigger value="creators" className="py-2 text-xs sm:text-sm whitespace-nowrap">Creators</TabsTrigger>
                 </TabsList>
 
                 <div ref={contentRef} className="mt-6">
@@ -281,6 +287,13 @@ function BrandProfileContent() {
                             businessId={activeBusinessId}
                             isAlreadyEnabled={profile.ipPublisherEnabled}
                             onSuccess={handleFullReload}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="creators">
+                        <CreatorPreferencesForm
+                            businessId={activeBusinessId}
+                            onSuccess={handleCreatorPrefsSaved}
                         />
                     </TabsContent>
                 </div>

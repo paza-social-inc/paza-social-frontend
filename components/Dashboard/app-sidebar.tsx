@@ -154,7 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                             asChild
                                             className="group/menu-button group-data-[collapsible=icon]:px-[5px]! font-medium gap-3 [&>svg]:size-auto"
                                             tooltip={item.title}
-                                            isActive={pathname.includes(item.url)}
+                                            isActive={pathname === item.url}
                                         >
                                             <a href={item.url}>
                                                 {item.icon && (

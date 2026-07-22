@@ -239,6 +239,85 @@ export const MEASUREMENT_SOURCES = [
     "Not measured",
 ];
 
+// ─── BRAND CREATOR PREFERENCES ───────────────────────────────────────────────
+
+/** Categories/niches brands look for in creators */
+export const CREATOR_CATEGORIES = [
+    "Parenting",
+    "Beauty & Makeup",
+    "Finance & Investing",
+    "Fitness & Health",
+    "Fashion & Style",
+    "Food & Cooking",
+    "Travel & Adventure",
+    "Technology & Gaming",
+    "Music & Entertainment",
+    "Sports & Outdoors",
+    "Education & Career",
+    "DIY & Home Improvement",
+    "Lifestyle & Wellness",
+    "Business & Entrepreneurship",
+    "Arts & Crafts",
+    "Pets & Animals",
+    "Comedy & Skits",
+    "News & Politics",
+    "Environmental & Sustainability",
+    "Spirituality & Mindfulness",
+];
+
+/** Content formats brands prefer */
+export const CONTENT_FORMATS = [
+    "Short-form Video (TikTok, Reels, Shorts)",
+    "Long-form Video (YouTube, Vimeo)",
+    "Blogs & Articles",
+    "Podcasts",
+    "Live Streaming",
+    "Newsletters",
+    "Photography / Static Imagery",
+    "Audio-only",
+];
+
+/** Audience size tiers */
+export const AUDIENCE_SIZES = [
+    "Nano (1K – 10K)",
+    "Micro (10K – 50K)",
+    "Mid-tier (50K – 250K)",
+    "Macro (250K – 1M)",
+    "Mega / Celebrity (1M+)",
+];
+
+/** Creator characteristics / vibes brands prefer */
+export const CREATOR_CHARACTERISTICS = [
+    "Professional Expertise / Authority",
+    "Everyday Lifestyle / Relatability",
+    "Humor & Entertainment",
+    "Educational / How-to",
+    "Luxury / Aspirational",
+    "Authentic / Raw",
+    "High Production Value",
+    "Niche / Subculture Knowledge",
+    "Activism & Social Impact",
+    "Storytelling",
+    "Trend-focused",
+    "Family-friendly",
+    "Interactive / Community-driven",
+    "Visual / Aesthetic",
+];
+
+/** Brand safety topic flags */
+export const BRAND_SAFETY_TOPICS = [
+    "No profanity or explicit language",
+    "No political commentary",
+    "No adult / NSFW content",
+    "No alcohol or substance use",
+    "No religious advocacy",
+    "No sensitive news topics",
+    "No competitor mentions",
+    "No controversial figures",
+    "Must be family-friendly at all times",
+    "Must disclose paid partnership clearly",
+];
+
 // ─── IP DECLARATION ENUMS ───────────────────────────────────────────────────
 
 export const IP_TERRITORIES = [

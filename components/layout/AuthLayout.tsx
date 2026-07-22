@@ -1,6 +1,7 @@
 import Image, { ImageProps } from "next/image";
 import Link from "next/link";
 import Footer from "../Home/Footer";
+import { AuthRehydrate } from "@/components/Auth/AuthRehydrate";
 
 interface AuthlayoutProps {
     children: React.ReactNode;
@@ -20,6 +21,7 @@ export default function Authlayout({
 
     return (
         <>
+            <AuthRehydrate />
             <div
                 className={`grid min-h-svh ${isNone ? "grid-cols-1" : "lg:grid-cols-2"
                     }`}
