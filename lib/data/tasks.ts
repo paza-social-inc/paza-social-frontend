@@ -106,7 +106,7 @@ export const tasksApi = {
       if (status === 404) {
         try {
           const fallback = await pazaApi.get<ApiResponse<TaskListItem[]>>(
-            "http://localhost:5001/api/tasks"
+            "https://social-listener-74i5.onrender.com/api/tasks"
           );
           const inner = fallback.data?.data;
           return Array.isArray(inner) ? inner : [];
@@ -130,7 +130,7 @@ export const tasksApi = {
       const status = getAxiosStatus(error);
       if (status === 404) {
         const fallback = await pazaApi.post<ApiResponse<TaskCreateResponse>>(
-          "http://localhost:5001/api/tasks",
+          "https://social-listener-74i5.onrender.com/api/tasks",
           body
         );
         return fallback.data.data;
